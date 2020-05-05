@@ -1,7 +1,0 @@
-﻿@model SelectListItem
-
-@Html.Kendo().ComboBoxFor(p=>p).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListRemovalPart", "GuaranteeRequestApproveDetail")
- .Data("ListRemovalPart()")
- .Type(HttpVerbs.Post)
- )
-.ServerFiltering(false)).AutoBind(true).Suggest(true).Events(c=>c.Select("onPartsSelect"))

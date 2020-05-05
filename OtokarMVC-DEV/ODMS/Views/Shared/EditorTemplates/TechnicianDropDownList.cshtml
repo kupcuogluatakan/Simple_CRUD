@@ -1,7 +1,0 @@
-﻿@model System.Int32
-@using Kendo.Mvc.UI
-
-@(Html.Kendo().DropDownList()
-    .SelectedIndex(0)
-    .BindTo(ViewBag.TechnicianList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").OptionLabel("Seçiniz..").Name("TechnicianUserId").Events(c=>c.Change("onChange"))
-)

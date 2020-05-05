@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<RptDataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Test">
-  <ConnectionProperties>
-    <Extension>SQL</Extension>
-    <ConnectString>Data Source=195.87.241.52;Initial Catalog=Otokar-DMS_TEST</ConnectString>
-  </ConnectionProperties>
-  <DataSourceID>2143e2ff-617c-4fc1-8baf-2a2434d9638c</DataSourceID>
-</RptDataSource>
