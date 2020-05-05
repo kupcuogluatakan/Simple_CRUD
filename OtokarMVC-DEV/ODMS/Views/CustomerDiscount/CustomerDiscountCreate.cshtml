@@ -1,0 +1,74 @@
+﻿@using ODMSCommon.Security
+@model ODMSModel.CustomerDiscount.CustomerDiscountIndexViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.CustomerDiscount_PageTitle_Create;
+}
+
+ 
+<script src="~/Scripts/odms.objectsearch.js"></script>
+
+@using (Html.BeginForm("CustomerDiscountCreate", "CustomerDiscount", FormMethod.Post))
+{
+           
+    <div class="labelDiv">@Html.Label(ODMSCommon.Resources.MessageResource.CustomerDiscount_Display_IdDealer)</div>
+        <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+             @Html.ValidationMessageFor(c => c.IdDealer)
+    </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+    <div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel{ObjectSearchType = CommonValues.ObjectSearchType.Customer, WindowTitle = ODMSCommon.Resources.MessageResource.ObjectSearch_WindowTitle_Customer, ReferenceObjectId = "IdCustomer", ClearCallBackFunction=null, SelectCallBackFunction=null, Required=false, ReferenceObjectValue=Model==null ? null : Model.IdCustomer, ParentWindowId="CustomerDiscountModelWindow"})</div>
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv" >@Html.LabelFor(v => v.PartDiscountRatio)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c=>c.PartDiscountRatio).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new{ type = "text", maxlength="5",data_val_min="0",style="width:204px"})
+                                        @Html.ValidationMessageFor(v => v.PartDiscountRatio)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourDiscountRatio)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c=>c.LabourDiscountRatio).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new{ type = "text", maxlength ="5",data_val_min="0",style="width:204px"})
+                                        @Html.ValidationMessageFor(v => v.LabourDiscountRatio)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+  
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.CustomerDiscount.CustomerDiscountCreate, "CustomerDiscountCreate")          
+
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $("#PartDiscountRatio").on("keydown",function(){
+            var discountRatio = $("#PartDiscountRatio").val().split(",");
+            if(discountRatio != null && discountRatio[1].length > 1)
+            {
+                $("#PartDiscountRatio").val(discountRatio[0] + "," + discountRatio[1].substring(0,1));
+            }
+        });
+
+        $("#LabourDiscountRatio").on("keydown",function(){
+            var discountRatio2 = $("#LabourDiscountRatio").val().split(",");
+            if(discountRatio2 != null && discountRatio2[1].length > 1)
+            {
+                $("#LabourDiscountRatio").val(discountRatio2[0] + "," + discountRatio2[1].substring(0,1));
+            }
+        });
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+
+</script>
+
+

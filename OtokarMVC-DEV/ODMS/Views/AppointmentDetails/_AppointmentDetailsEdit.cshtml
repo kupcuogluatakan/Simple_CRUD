@@ -1,0 +1,229 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.AppointmentDetails
+@using ODMSModel.Common
+@using ODMSModel.ObjectSearch
+@model AppointmentDetailsViewModel
+<style type="text/css">
+    #popupContentWrapper {
+        min-height: 250px !important;
+    }
+</style>
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script src="~/Scripts/custom.js"></script>
+@Html.AntiForgeryToken()
+<script id="ComboBoxWithToolTip" type="text/x-kendo-template">
+    <table style="width:100%">
+    <tr>
+    <td class='combotooltip' data-toggle='tool-tip' title='#=Description#'> #=Text# </td>
+    </tr>
+    </table>
+</script>
+
+<div class="labelDiv">@Html.LabelFor(v => v.AppointmentIndicatorId)</div>
+<div class="shortTxtDiv">@Model.AppointmentId </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IndicatorTypeCode)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IndicatorTypeCode).BindTo(ViewBag.SLAppIndcType as List<SelectListItem>).Events(e => e.Change("onChange")).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.IndicatorTypeCode)
+</div>
+<div id="indicTypeDiv">
+    <div id="IT_C" style="display: none">
+        <div class="labelDiv">@Html.LabelFor(v => v.CampaignCode)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.CampaignCode).BindTo(ViewBag.SLCampaignCode as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  @Html.ValidationMessageFor(v => v.CampaignCode)
+        </div>
+    </div>
+    <div id="IT_K" style="display: none">
+        <div class="labelDiv">@Html.LabelFor(v => v.MaintKId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.MaintKId).BindTo(ViewBag.SLMaint as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  @Html.ValidationMessageFor(v => v.MaintKId)
+        </div>
+    </div>
+    <div id="IT_P" style="display: none">
+        <div class="labelDiv">@Html.LabelFor(v => v.MaintPId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.MaintPId).BindTo(ViewBag.SLMaintByVehicle as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  @Html.ValidationMessageFor(v => v.MaintPId)
+        </div>
+    </div>
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.MainCategoryId)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.MainCategoryId).Events(e => e.Select("OnMainCategoryChange").DataBound("onChange")).Events(e => e.Change("onChange")).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListMainCategories", "AppointmentDetails")
+                                 .Data("GetIndicatorType")
+                                 .Type(HttpVerbs.Post))
+                             .ServerFiltering(true)).Enable(true).AutoBind(false).CascadeFrom("IndicatorTypeCode") @Html.ValidationMessageFor(v => v.MainCategoryId)
+@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml",
+                                                                        new ObjectSearchModel
+                                                                            {
+                                                                                ObjectSearchType = CommonValues.ObjectSearchType.AppointmentIndicatorSubCategory,
+                                                                                WindowTitle = MessageResource.ObjectSearch_WindowTitle_AppointmentIndicatorSubCategory,
+                                                                                ReferenceObjectId = "SelectedSubCategoryId",
+                                                                                ClearCallBackFunction = "ClearSubCategoryChange",
+                                                                                SelectCallBackFunction = "SetSubCategoryChange",
+                                                                                Required = true,
+                                                                                ReferenceObjectValue = Model == null ? null : Model.SelectedSubCategoryId,
+                                                                                ParentWindowId = "modelWindow",
+                                                                                FilterId = Model == null ? null : Model.IndicatorTypeCode,
+                                                                                HideTextBox = true
+                                                                            })
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.CategoryId)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.CategoryId).Events(e=>e.Select("OnCategoryChange")).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListCategories", "AppointmentDetails")
+                                 .Data("GetMainCategoryId")
+                                 .Type(HttpVerbs.Post))
+                                 .ServerFiltering(true)).Enable(true).AutoBind(false).CascadeFrom("MainCategoryId") @Html.ValidationMessageFor(v => v.CategoryId)
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.SubCategoryId)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SubCategoryId).Events(e=>e.Change("OnSubCategoryChange")).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListSubCategories", "AppointmentDetails")
+                                 .Data("GetCategoryId")
+                                 .Type(HttpVerbs.Post))
+                                 .ServerFiltering(true)).Enable(true).AutoBind(false).CascadeFrom("CategoryId") @Html.ValidationMessageFor(v => v.SubCategoryId)
+</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.FailureCodeId)</div>
+<div class="shortTxtDiv">
+    @(Html.Kendo().ComboBox().Name("FailureCodeId").DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.FailureCodeList as List<ComboBoxModel>)
+          .AutoBind(true).TemplateId("ComboBoxWithToolTip")
+          .Events(c => c.Open("MakeItemsToolTip"))
+          )
+     @Html.ValidationMessageFor(v => v.FailureCodeId)
+</div>
+
+
+<div class="clearDiv">&nbsp;</div>
+<script type="text/javascript">
+    function OnCategoryChange() {
+        $('#CategoryId').val('');
+        $('#SubCategoryId').val('');
+        OnSubCategoryChange();
+    }
+    function OnMainCategoryChange() {
+        $('#SubCategoryId').val('');
+        OnSubCategoryChange();
+    }
+    function OnSubCategoryChange() {
+        if ($('#SelectedSubCategoryId').val() != $('#SubCategoryId').val()) {
+            $("#SelectedSubCategoryIdTextContainer").val('');
+        }
+        $('#SelectedSubCategoryId').val($('#SubCategoryId').val());
+           
+    }
+    function ClearSubCategoryChange() {
+        $("#MainCategoryId").data("kendoComboBox").value('');
+        $("#CategoryId").data("kendoComboBox").value('');
+        $("#SubCategoryId").data("kendoComboBox").value('');
+        
+        $("#MainCategoryId").data("kendoComboBox").enable(true);
+        $("#CategoryId").data("kendoComboBox").enable(true);
+        $("#SubCategoryId").data("kendoComboBox").enable(true);
+    }
+    function SetSubCategoryChange() {
+        var subCategoryIdParam = $('#SelectedSubCategoryId').val();
+        if (subCategoryIdParam) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            $("#SubCategoryId").val(subCategoryIdParam);
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("GetAppointmentIndicatorSubCategoryInfo", "Appointment")",
+                data: { subCategoryId: subCategoryIdParam, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    $("#MainCategoryId").data("kendoComboBox").value(result.MainCategoryId);
+                    $("#CategoryId").data("kendoComboBox").value(result.CategoryId);
+                    $("#SubCategoryId").data("kendoComboBox").value(result.SubCategoryId);
+                },
+                dataType: "json"
+            });
+        } 
+    }
+
+    function onClear() {
+        location.reload();
+    }
+    function validateForm() {
+        var canDelete = 0;
+
+        $("#indicTypeDiv > div[id]").each(function() {
+            if ($(this).css('display') == 'none') {
+                $(this).remove();
+            }
+            //$(this).hide();
+        });
+        $("#IndicatorTypeCode").data("kendoComboBox").enable(true);
+        return true;
+    }
+    function onChange() {
+       // $("#IndicatorTypeCode").data("kendoComboBox").enable(false);
+        var indicTypeCode = $('#IndicatorTypeCode').val();
+        $("#indicTypeDiv > div[id]").each(function() {
+            $(this).hide();
+        });
+        $("#" + indicTypeCode).show();
+        
+        @*$.ajax({
+            url: '@Url.Action("ObjectSearch","ObjectSearch")',
+            type: 'GET',
+            async: false,
+            data: {
+                ObjectSearchType: '@CommonValues.ObjectSearchType.AppointmentIndicatorSubCategory',
+                WindowTitle: '@MessageResource.ObjectSearch_WindowTitle_AppointmentIndicatorSubCategory',
+                ReferenceObjectId: "SelectedSubCategoryId",
+                ClearCallBackFunction: "ClearSubCategoryChange",
+                SelectCallBackFunction: "SetSubCategoryChange",
+                Required: true,
+                ReferenceObjectValue: null,
+                ParentWindowId: "modelWindow",
+                FilterId: indicTypeCode
+            },
+            success: function (result) {
+                $("#divObjectSearch").html(result);
+            }
+        });*@
+    }
+
+    function HideShowDetails() {
+        $("#CategoryId").data("kendoComboBox").text('');
+        $("#SubCategoryId").data("kendoComboBox").text('');
+    }
+    function GetMainCategoryId() {
+        return {
+            id: $('#MainCategoryId').val(),
+            typeCode: $('#IndicatorTypeCode').val()
+        };
+    }
+    function GetCategoryId() {
+        return {
+            id: $('#CategoryId').val(),
+            typeCode: $('#IndicatorTypeCode').val()
+        };
+    }
+    function GetIndicatorType() {
+        return {
+            id: $('#IndicatorTypeCode').val()
+        };
+    }
+    function MakeItemsToolTip(e) {
+        $(".combotooltip").each(function (i, e) {
+            $(e).tooltip({ placement: "right", html: true });
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#CategoryId").data("kendoComboBox").text('');
+        $("#MainCategoryId").data("kendoComboBox").text('');
+        $("#SubCategoryId").data("kendoComboBox").text('');
+        $("#IndicatorTypeCode").data("kendoComboBox").text('');
+        $("#FailureCodeId").data("kendoComboBox").text('');
+        
+        if('@Model.AppointmentIndicatorId' == '0')
+            HideShowDetails();
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+</script>

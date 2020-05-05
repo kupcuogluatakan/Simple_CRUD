@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Title = MessageResource.Supplier_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.Supplier
+@model SupplierViewModel
+@using (Html.BeginForm("SupplierUpdate", "Supplier", FormMethod.Post))
+{
+     Html.RenderPartial("_SupplierEdit", Model);
+    <input type="hidden" value="@Model.SupplierId" name="SupplierId" id="SupplierId"/>
+     @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Supplier.SupplierUpdate,"SupplierUpdate")        
+}
+
+
+

@@ -1,0 +1,156 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.Reports
+
+@model WorkOrderPartHistoryReportFilterRequest
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = MessageResource.WorkOrderPartHistoryReport_PageTitle_Index;
+}
+
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.PartCode, new { style = "width:200px;" })</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.BeginDate) <br /> (@MessageResource.WorkOrderDetailReport_Display_WorkOrderDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.BeginDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.EndDate) <br /> (@MessageResource.WorkOrderDetailReport_Display_WorkOrderDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.StockTypeList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.StockTypeList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.StockTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.WorkOrderCardStatList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.WorkOrderCardStatList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.WorkOrderStatusList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.IndicatorList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.IndicatorList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.IndicatorTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", ODMSCommon.CommonValues.PermissionCodes.Reports.WorkOrderPartHistoryReportIndex)
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.WorkOrderPartHistoryExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<WorkOrderPartHistoryReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.Dealer).Sortable(true).Width(180);
+              columns.Bound(p => p.PartCode).HtmlAttributes(new { style = "text-align:center" }).ClientTemplate(string.Format("<a title='{0}' target='_blank' href='{1}?partId=#=PartId#&dealerId=#=DealerId#'>#=PartCode#</a>", CommonUtility.GetResourceValue("StockCard_PageTitle_Details"), Url.Action("StockCardIndex", "StockCard"))).Sortable(true).Width(170);
+              columns.Bound(p => p.PartName).Sortable(true).Width(200);
+              columns.Bound(p => p.StockType).Sortable(true).Width(100);
+              columns.Bound(p => p.WorkOrderId).ClientTemplate(string.Format("<a class='k-link' target='_blank' href='{0}/#=WorkOrderId#'>#=WorkOrderId#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard"))).HtmlAttributes(new { style = "text-align:center" }).Sortable(true).Width(100);
+              columns.Bound(p => p.WorkOrderStatus).Sortable(true).Width(140);
+              columns.Bound(p => p.IndicatorType).Sortable(true).Width(150);
+              columns.Bound(p => p.CustomerAmount).HtmlAttributes(new { style = "text-align:right" }).Format("{0:n}").Sortable(true).Width(150);
+              columns.Bound(p => p.PaidAmount).HtmlAttributes(new { style = "text-align:right" }).Format("{0:n}").Sortable(true).Width(150);
+              columns.Bound(p => p.AddedQuantity).HtmlAttributes(new { style = "text-align:right;background-color:red" }).Sortable(true).Width(150);
+              columns.Bound(p => p.OriginalQuantity).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.ReturnedQuantity).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.AvailableQuantity).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.IsAllAdded).Sortable(true).Width(150);
+              columns.Bound(p => p.IsRemoved).Sortable(true).Width(150);
+              columns.Bound(p => p.AddDate).Format("{0:dd/MM/yyyy}").HtmlAttributes(new { style = "text-align:center" }).Sortable(true).Width(150);
+
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListWorkOrderPartHistoryReport", "Reports", Model).Data("GetParameters"))
+                                       ))
+
+
+</div>
+
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+@Html.Partial("_MultipleSelectionFunc")
+
+<script type="text/javascript">
+    function onDataBinding(e) {
+        if ($("#DealerIdList").val() == "" || $("#DealerIdList").val() == null) {
+            SetErrorMessage('@MessageResource.VehicleServiceDurationReport_Message_DealerIsRequired');
+            e.preventDefault();
+        }
+        @*else if ($("#BeginDate").val() == "" || $("#BeginDate").val() == null) {
+            SetErrorMessage('@MessageResource.Begin_Date_Required_Validation');
+            e.preventDefault();
+        }
+        else if ($("#EndDate").val() == "" || $("#EndDate").val() == null) {
+            SetErrorMessage('@MessageResource.End_Date_Required_Validation');
+            e.preventDefault();
+        }*@
+        else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+    function OpenStartDate() {
+        var dateStart = $("#BeginDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#BeginDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#BeginDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+
+    $(document).ready(init);
+   
+    function GetParameters() {
+        return {
+            BeginDate: $('#BeginDate').val(),
+            EndDate: $('#EndDate').val(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            PartCode: $("#PartCode").val(),
+            StockTypeList: GetQuotedList($("#StockTypeList").data('kendoMultiSelect').value().toString()),
+            WorkOrderCardStatList: $("#WorkOrderCardStatList").data('kendoMultiSelect').value().toString(),
+            IndicatorList: $("#IndicatorList").data('kendoMultiSelect').value().toString(),
+            ReportType: 31,
+            Columns: "Dealer,PartCode,PartName,StockType,WorkOrderId,AddedQuantity,AvailableQuantity,IsAllAdded,IsRemoved,AddDate"
+        };
+    }
+    function init() {
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#DealerIdList").data('kendoMultiSelect').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+
+
+        });
+    }
+
+
+</script>

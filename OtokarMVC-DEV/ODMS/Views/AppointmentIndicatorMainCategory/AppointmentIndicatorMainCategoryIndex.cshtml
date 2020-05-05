@@ -1,0 +1,168 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.AppointmentIndicatorMainCategory
+@model AppointmentIndicatorMainCategoryListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("AppointmentIndicatorMainCategory_PageTitle_Index");
+}
+ 
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", ODMSCommon.CommonValues.PermissionCodes.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickAppointmentIndicatorMainCategory createNewAppointmentIndicatorMainCategory", CommonUtility.GetResourceValue("AppointmentIndicatorMainCategory_PageTitle_Create"), ODMSCommon.CommonValues.PermissionCodes.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryCreate)
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+<script>
+
+    function GetParameters() {
+        return {
+            IsActive: $("#IsActive").val(),
+            ReportType: 3,
+            Columns: "MainCode,AdminDesc,AppointmentIndicatorMainCategoryName"
+        };
+    }
+
+    $(document).ready(function () {
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#AppointmentIndicatorMainCategoryGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            } else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClickAppointmentIndicatorMainCategory", "click", function (e) {
+            $('#modelWindowAppointmentIndicatorMainCategory').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            var height = "350";
+            var width = "950";
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("AppointmentIndicatorMainCategoryUpdate", "AppointmentIndicatorMainCategory", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            } else if ($(this).hasClass("createNewAppointmentIndicatorMainCategory")) {
+                link = "@Url.Action("AppointmentIndicatorMainCategoryCreate", "AppointmentIndicatorMainCategory")";
+            }
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("AppointmentIndicatorMainCategoryDetails", "AppointmentIndicatorMainCategory", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#modelWindowAppointmentIndicatorMainCategory_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindowAppointmentIndicatorMainCategory").data("kendoWindow");
+            //Change Size of Window for different actions
+            windowWidget.wrapper.css({
+                width: width,
+                height: height
+            });
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+
+    });
+
+    function DeleteAppointmentIndicatorMainCategory(cId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AppointmentIndicatorMainCategoryDelete", "AppointmentIndicatorMainCategory")",
+                data: { appointmentIndicatorMainCategoryId: cId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#AppointmentIndicatorMainCategoryGrid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+</script>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+              .Name("modelWindowAppointmentIndicatorMainCategory")
+              .Draggable()
+              .Resizable()
+              .Width(950)
+              .Height(150)
+              .Visible(false)
+              .Modal(true)
+              .Iframe(true)
+              .Events(ev => ev.Close(@"function(e){
+         var grid = $('#AppointmentIndicatorMainCategoryGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+              )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<AppointmentIndicatorMainCategoryListModel>()
+              .Name("AppointmentIndicatorMainCategoryGrid")
+              .Columns(columns =>
+                  {
+                      columns.Bound(p => p.AppointmentIndicatorMainCategoryId).ClientTemplate("<center><a class='details modalClickAppointmentIndicatorMainCategory' id='#=AppointmentIndicatorMainCategoryId#' frameTitle='" + @CommonUtility.GetResourceValue("AppointmentIndicatorMainCategory_PageTitle_Details") + "' href='/AppointmentIndicatorMainCategory/AppointmentIndicatorMainCategoryDetails/#=AppointmentIndicatorMainCategoryId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryDetails));
+                      columns.Bound(p => p.AppointmentIndicatorMainCategoryId).ClientTemplate("<center><a class='edit modalClickAppointmentIndicatorMainCategory' id='#=AppointmentIndicatorMainCategoryId#' frameTitle='" + @CommonUtility.GetResourceValue("AppointmentIndicatorMainCategory_PageTitle_Update") + "' href='/AppointmentIndicatorMainCategory/AppointmentIndicatorMainCategoryUpdate/#=AppointmentIndicatorMainCategoryId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryUpdate));
+                      columns.Bound(o => o.AppointmentIndicatorMainCategoryId).ClientTemplate("<center><a  onclick='DeleteAppointmentIndicatorMainCategory(#=AppointmentIndicatorMainCategoryId#)' href='javascript:void(0);'  id='#=AppointmentIndicatorMainCategoryId#' frameTitle='" + @CommonUtility.GetResourceValue("AppointmentIndicatorMainCategory_PageTitle_Delete") + "'><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryDelete));
+                      columns.Bound(p => p.MainCode).Width(150).Sortable(true);
+                      columns.Bound(p => p.AdminDesc).Width(150).Sortable(true);
+                      columns.Bound(p => p.AppointmentIndicatorMainCategoryName).Width(250).Sortable(true);
+                      columns.Bound(p => p.IsActiveName).Sortable(true).Width(50);
+                      columns.Bound(p => p.AppointmentIndicatorMainCategoryId).Title(@CommonUtility.GetResourceValue("AppointmentIndicatorCategory_PageTitle_Details")).ClientTemplate(Html.ActionLink(@CommonUtility.GetResourceValue("AppointmentIndicatorCategory_PageTitle_Details"), "AppointmentIndicatorCategoryIndex", "AppointmentIndicatorCategory", new { appointmentIndicatorMainCategoryId = "#=AppointmentIndicatorMainCategoryId#" }, new { target = "_blank" }).ToString()).Width(200).Filterable(false).Sortable(false);
+                  })
+              .Pageable()
+              .Sortable()
+              .Scrollable()
+              .DataSource(dataSource => dataSource
+                                            .Ajax()
+                                            .PageSize(10)
+                                            .ServerOperation(true)
+                                            .Read(read => read.Action("ListAppointmentIndicatorMainCategory", "AppointmentIndicatorMainCategory", Model).Data("GetParameters"))
+                                            .Model(model => model.Field(o => o.AppointmentIndicatorMainCategoryId).DefaultValue(-1)))
+
+              )
+</div>
+<br />
+ <h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+    <div class="labelDiv" style="width:80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+        @using (Html.BeginForm("AppointmentIndicatorMainCategoryIndex", "AppointmentIndicatorMainCategory", FormMethod.Post))
+        {
+            @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+            <div id="divExcepUpload">
+                @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+            </div>
+        }
+    </div>

@@ -1,0 +1,186 @@
+﻿@using ODMSCommon.Resources
+@{
+    ViewBag.Title = @MessageResource.Dealer_AccountInfo_Title;
+    var bankCount = ViewBag.DealerAccountInfoCount;
+}
+@Html.AntiForgeryToken()
+@model List<ODMSModel.DealerAccountInfo.DealerAccountListModel>
+
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.DealerAccountInfo_PageTitle_Create, CommonValues.PermissionCodes.DealerAccountInfo.DealerAccountInfoCreate)
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Rack.RackIndex)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.DealerAccountInfo.DealerAccountListModel>(Model)
+          .Name("grid")
+          .Columns(columns =>
+          {
+              columns.Bound(d => d.Id).ClientTemplate("<center><a class='edit modalClick' id='#=Id#' frameTitle='" + MessageResource.Global_Display_Update + "' href='/DealerAccountInfo/DealerAccountInfoUpdate/#=Id#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(MessageResource.Global_Display_Update).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerAccountInfo.DealerAccountInfoUpdate));
+              columns.Bound(b => b.Id).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.Rack_PageTitle_Delete + "' onclick='DeleteDealerAccountInfo(#=Id#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerAccountInfo.DealerAccountInfoDelete));
+              columns.Bound(d => d.BankName).Width(200).Sortable(true);
+              columns.Bound(d => d.Branch).Width(200).Sortable(true);
+              //columns.Bound(d => d.Name).Width(200).Sortable(true);
+              columns.Bound(d => d.Iban).Width(200).Sortable(true);
+              columns.Bound(d => d.IsActiveString).Width(100).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerAccountInfo", "DealerAccountInfo"))
+                                        .Model(model => model.Field(b => b.Id).DefaultValue(-1)))
+    )
+
+</div>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("DealerAccountInfo")
+          .Draggable()
+          .Resizable()
+          .Width(350)
+          .Height(300)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>
+@section Scripts
+{
+    <script>
+        $(function() {
+            RegisterEventHandlers();
+            AdjustControlPositions();
+        });
+
+        function RegisterEventHandlers() {
+            $("body").delegate("#showSearch", "click", function(e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("DealerAccountInfoDetails", "DealerAccountInfo", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("DealerAccountInfoUpdate", "DealerAccountInfo", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                }  else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("CreateDealerAccount", "DealerAccountInfo")";
+                }
+
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+        }
+
+        function AdjustControlPositions() {
+            $("#tagSelectDealerAccountInfoDiv").css("margin-top", 25);
+            $("#tagSelectDealerAccountInfoDiv").css("margin-left", -420);
+
+            $("#cmbSelectDealerAccountInfoDiv").css("margin-top", 25);
+            $("#cmbSelectDealerAccountInfoDiv").css("margin-left", -300);
+
+            $("#tagDealerAccountInfoCodeDiv").css("margin-top", 25);
+            $("#tagDealerAccountInfoCodeDiv").css("margin-left", -20);
+
+            $("#txtDealerAccountInfoCodeDiv").css("margin-top", 25);
+
+            $("#tagDealerAccountInfoNameDiv").css("margin-top", 25);
+
+            $("#txtDealerAccountInfoNameDiv").css("margin-top", 25);
+
+            $("#tagDealerAccountInfoIsActiveDiv").css("margin-top", 25);
+
+            $("#cmbDealerAccountInfoIsActiveDiv").css("margin-top", 25);
+        }
+
+        function DealersDataBound() {
+            var length = $("#cmbDealers").data("kendoComboBox").dataSource.data().length;
+            if (length <= 1) {
+                // eğer bir bayi varsa seç ve combobox'ı disable et. Bayi kullanıcı ise modelde sadece ilgili bayinin bilgisi gelir. Bu durumda combobox'ta sadece o bayinin bilgisi olur
+                $("#cmbDealers").data("kendoComboBox").select(0);
+                $("#cmbDealers").data("kendoComboBox").enable(false);
+            }
+        }
+
+        function GetDealerId() {
+            return {
+                DealerId: $("#cmbDealers").val()
+            };
+        }
+
+        function Search() {
+            return {
+                WarehouseId: $("#cmbWarehouses").val(),
+                Code: $("#Code").val(),
+                //Name: $("#Name").val(),
+                SearchIsActive: $("#cmbIsActive").val(),
+                DealerId: $("#DealerId").val()
+            };
+        }
+
+        function DeleteDealerAccountInfo(Id) {
+            DeleteConfirm(function () {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("DeleteDealerAccount")",
+                    data: { Id: Id, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+}

@@ -1,0 +1,38 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignRequestApprove_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.CampaignRequestApprove.CampaignRequestApproveViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.CampaignRequestId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CampaignRequestId)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ModelKod)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.ModelKod)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.RequestDealerName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.RequestDealerName)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CampaignCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CampaignCode)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CampaignName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CampaignName)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.SupplierTypeName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SupplierTypeName)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.RequestStatusName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.RequestStatusName)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.SupplierDealerName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SupplierDealerName)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.RequestNote)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.RequestNote)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<br />
+
+
+
+

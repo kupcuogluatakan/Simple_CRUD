@@ -1,0 +1,150 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model WorkOrderPartsTotalReportFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.WorkOrderPartsTotalReport_PageTitle_Index;
+    var months = new List<SelectListItem>();
+    months.Add(new SelectListItem { Value = "1", Text = MessageResource.Global_Display_January });
+    months.Add(new SelectListItem { Value = "2", Text = MessageResource.Global_Display_February });
+    months.Add(new SelectListItem { Value = "3", Text = MessageResource.Global_Display_March });
+    months.Add(new SelectListItem { Value = "4", Text = MessageResource.Global_Display_April });
+    months.Add(new SelectListItem { Value = "5", Text = MessageResource.Global_Display_May });
+    months.Add(new SelectListItem { Value = "6", Text = MessageResource.Global_Display_June });
+    months.Add(new SelectListItem { Value = "7", Text = MessageResource.Global_Display_July });
+    months.Add(new SelectListItem { Value = "8", Text = MessageResource.Global_Display_August });
+    months.Add(new SelectListItem { Value = "9", Text = MessageResource.Global_Display_September });
+    months.Add(new SelectListItem { Value = "10", Text = MessageResource.Global_Display_October });
+    months.Add(new SelectListItem { Value = "11", Text = MessageResource.Global_Display_November });
+    months.Add(new SelectListItem { Value = "12", Text = MessageResource.Global_Display_December });
+
+    var years = new List<SelectListItem>();
+    for (int i = DateTime.Now.Year; i > 2000; i--)
+    {
+        years.Add(new SelectListItem { Value = i.ToString(), Text = i.ToString() });
+    }
+}
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.RegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.RegionIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ViewBag.DealerRegionId.ToString()).Enable(ViewBag.DealerRegionId == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerRegionList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.Year)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.Year).HtmlAttributes(new { style = "width:200px;" }).SelectedIndex(0).BindTo(years as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.Month)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.Month).HtmlAttributes(new { style = "width:200px;" }).SelectedIndex(0).BindTo(months as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.InGuarantee)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.InGuarantee).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).BindTo(ViewBag.GuaranteeParameters as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.IndicatorType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IndicatorType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).BindTo(ViewBag.IndicatorTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.Currency)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.Currency).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CurrencyCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.IsPaid)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsPaid).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GuaranteeParameters as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.IsOriginal)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsOriginal).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GuaranteeParameters as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.PartCode)</div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.WorkOrderPartsTotalReportIndex)
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.WorkOrderPartsTotalExcelExport))
+{
+    @Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<WorkOrderPartsTotalReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.PartCode).Sortable(true).Width(200);
+              columns.Bound(p => p.PartName).Sortable(true).Width(200);
+              columns.Bound(p => p.PaidCount).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(200);
+              columns.Bound(p => p.CustomerAmount).HtmlAttributes(new { style = "text-align:right" }).Format("{0:n}").Sortable(true).Width(200);
+              columns.Bound(p => p.PaidAmount).HtmlAttributes(new { style = "text-align:right" }).Format("{0:n}").Sortable(true).Width(200);
+              columns.Bound(p => p.FreeCount).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(200);
+              columns.Bound(p => p.FreeAmount).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(200);
+              columns.Bound(p => p.Currency).Sortable(true).Width(100);
+              columns.Bound(p => p.AvgKm).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(200);
+              columns.Bound(p => p.MinKm).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(200);
+              columns.Bound(p => p.MaxKm).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(200);
+              columns.Bound(p => p.AmountPercent).HtmlAttributes(new { style = "text-align:right" }).Format("{0:n}").Sortable(true).Width(200);
+              columns.Bound(p => p.CountPercent).HtmlAttributes(new { style = "text-align:right" }).Format("{0:n}").Sortable(true).Width(200);
+
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                                .Read(read => read.Action("ListWorkOrderPartsTotalReport", "Reports", Model).Data("GetParameters"))
+                                        )
+
+    )
+</div>
+<div id="PartInfoWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+        if ($("#DealerIdList").val() == null) {
+            SetErrorMessage('@MessageResource.CycleCountResult_Validation_Required');
+            e.preventDefault();
+        } else {
+            SetSuccessMessage("Seçim yapıldı.");
+        }
+    }
+
+    $(document).ready(init);
+    function GetParameters() {
+        return {
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            RegionIdList: $("#RegionIdList").data('kendoMultiSelect').value().toString(),
+            Year: $("#Year").data('kendoComboBox').value().toString(),
+            Currency: $("#Currency").data('kendoComboBox').value().toString(),
+            Month: $("#Month").data('kendoComboBox').value().toString(),
+            IsOriginal: $("#IsOriginal").data('kendoComboBox').value().toString(),
+            IsPaid: $("#IsPaid").data('kendoComboBox').value().toString(),
+            IndicatorType: $("#IndicatorType").data('kendoComboBox').value().toString(),
+            InGuarantee: $("#InGuarantee").data('kendoComboBox').value().toString(),
+            PartCode: $("#PartCode").val(),
+            ReportType: 38,
+            Columns:"PartCode,PartName,PaidCount,CustomerAmount,PaidAmount,FreeCount,FreeAmount,Currency,AvgKm,MinKm,MaxKm,AmountPercent,CountPercent"
+        };
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            //$("#DealerIdList").data('kendoMultiSelect').value('');
+            //$("#RegionIdList").data('kendoMultiSelect').value('');
+            $("#Currency").data('kendoComboBox').value('');
+            $("#Year").data('kendoComboBox').value('');
+            $("#Month").data('kendoComboBox').value('');
+            $("#IsOriginal").data('kendoComboBox').value('');
+            $("#InGuarantee").data('kendoComboBox').value('');
+            $("#IsPaid").data('kendoComboBox').value('');
+            $("#IndicatorType").data('kendoComboBox').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+
+
+
+</script>

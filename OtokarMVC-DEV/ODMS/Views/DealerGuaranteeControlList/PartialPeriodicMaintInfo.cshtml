@@ -1,0 +1,32 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@model PeriodicMaintInfo
+<div class="panel panel-default panel-collapse">
+    <div class="panel-heading">
+        <a data-toggle="collapse" data-parent="#gradPeriodicMaintInfo" href="#collapsePeriodicMaintInfo">
+            <strong style="font-size: 16px;">@MessageResource.Global_Display_PeriodicMaintInfo</strong>
+        </a>
+    </div>
+    <div class="panel-body collapse" id="collapsePeriodicMaintInfo">
+        <table class="table table-bordered table-zipped">
+            <tbody>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.ServiceName) : </th>
+                    <td colspan="5" class="col-md-11">@Html.DisplayFor(p => p.ServiceName)</td>
+
+                </tr>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.MaintCode) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.MaintCode)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.Km) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.Km)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.Date) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.Date)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+

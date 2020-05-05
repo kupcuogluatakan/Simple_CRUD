@@ -1,0 +1,179 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.WorkOrderBatchInvoice
+@model WorkOrderBatchInvoiceList
+@{
+    ViewBag.Title = MessageResource.WorkOrderBatchInvoice_PageTitle_Index;
+}
+
+<button class="btn btn-success btn-sm" onclick="InvoiceItems();">
+    @MessageResource.WorkOrderInvoice_Dislay_FinishInvoice
+</button>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<WorkOrderBatchInvoiceList>()
+          .Name("WorkOrderBatchInvoiceListGrid")
+
+          .Columns(columns =>
+          {
+              columns.Template(c => c.WorkOrderDetailId).ClientTemplate("<span><input class='chkDet' onclick='toggleCheckBox(#=WorkOrderDetailId#, #=CustomerId#)' data-val='#=WorkOrderDetailId#' type=\"checkbox\" id=\"chkWOD#=WorkOrderDetailId#\"></span>").HeaderTemplate("<span><input type=\"checkbox\" id=\"chkWODAll\"></span>").Width(40);
+              columns.Bound(c => c.WorkOrderId).ClientTemplate("<center> <a class='' id='#=WorkOrderId#' href='" + Url.Action("WorkOrderCardIndex", "WorkOrderCard") + "/#=WorkOrderId#'>#=WorkOrderId#</a></center> " ).Sortable(true);
+              columns.Bound(c => c.WorkOrderDetailId).Sortable(true);
+              columns.Bound(c => c.IndicatorName).Sortable(true);
+              columns.Bound(c => c.Plate).Sortable(true);
+              columns.Bound(c => c.VinNo).Sortable(true);
+              columns.Bound(c => c.CustomerFirstName).Sortable(true);
+              columns.Bound(c => c.CustomerLastName).Sortable(true);
+              columns.Bound(c => c.IndicatorTypeName).Sortable(true);
+              columns.Bound(c => c.ProcessTypeName).Sortable(true);
+              columns.Bound(c => c.Price).Format("{0:c}").Sortable(true);
+
+          })
+          .Sortable()
+          .Scrollable()
+          .Events(e=>e.DataBound("DataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        
+                                        .Read(read =>  read.Action("List", "WorkOrderBatchInvoice").Data("GetWorkOrderBatchInvoiceListParameters"))
+                                                            )
+
+          )
+</div>
+<div id="InvoiceWindow"></div>
+@section Scripts
+{
+    <script id="CheckBoxTemplate" type="text/x-kendo-template">
+        <span>
+            <input type="textbox" id="chkWOD<#=WorkOrderDetailId#>">
+        </span>
+    </script>
+    <script src="~/Scripts/odms.objectsearch.js"></script>
+    <script type="text/javascript">
+        var customerId = 0;
+        var customerIdSelected = 0;
+        var selectedIdList = "";
+
+        $(document).ready(init);
+
+        function SetSelectIdList() {
+            var grid = $("#WorkOrderBatchInvoiceListGrid").data("kendoGrid");
+            selectedIdList = "";
+            var ischecked = grid.tbody.find(":checked");
+            $.each(ischecked, function () {
+                var workOrderDetailId = $(this).attr("id");
+                if (selectedIdList != "") {
+                    selectedIdList += "," + workOrderDetailId;
+                } else {
+                    selectedIdList += workOrderDetailId;
+                }
+            });
+        }
+        
+        function toggleCheckBox(wodId, custId) {
+
+            SetSelectIdList();
+
+            var checked = $('#chkWOD' + wodId).attr("checked");
+            if (checked != "checked") {
+                $('#chkWOD' + wodId).attr("checked","checked");
+                
+                customerId = custId;
+            } else {
+                $('#chkWOD' + wodId).removeAttr("checked");
+                                
+                if (selectedIdList == '') {
+                    customerIdSelected = 0;
+                    customerId = 0;
+                }
+            }
+
+            if (customerIdSelected != customerId || (customerId == 0 && customerIdSelected == 0)) {
+                customerIdSelected = customerId;
+                RefreshGrid();
+            }
+        }
+
+        function init() {
+            $("#chkWODAll").change(function (e) {
+                if (customerId == 0) {
+                    $("#chkWODAll").prop("checked", false);
+                }
+                else {
+                    if ($("#chkWODAll").prop("checked") == true) {
+                        $("#WorkOrderBatchInvoiceListGrid .chkDet").prop("checked", true);
+                    } else {
+                        selectedIdList = '';
+                        customerIdSelected = 0;
+                        customerId = 0;
+
+                        $("#WorkOrderBatchInvoiceListGrid .chkDet").prop("checked", false);
+                        RefreshGrid();
+                    }
+                }
+            });
+            SetSelectIdList();
+        }
+
+        function GetWorkOrderBatchInvoiceListParameters() {
+            return {
+                CustomerId: customerId
+            };
+        }
+        function DataBound() {
+            if (selectedIdList != "") {
+                var denemeList = selectedIdList.split(',');
+                $.each(denemeList, function (i) {
+                    $('#'+denemeList[i]).attr("checked", "checked");
+                });
+            }
+        }
+
+        function RefreshGrid() {
+            var grid = $("#WorkOrderBatchInvoiceListGrid").data("kendoGrid");
+            grid.dataSource.read();            
+        }
+
+        function InvoiceItems() {
+            if ($("#WorkOrderBatchInvoiceListGrid .chkDet:checked").size() == 0) {
+                SetErrorMessage("@MessageResource.WorkOrderCard_Warning_MustSelectDetailForInvoice");
+            } else {
+                var checkboxArr = [];
+                $("#WorkOrderBatchInvoiceListGrid .chkDet:checked").each(function(i, e) {
+                    checkboxArr.push($(e).data("val"));
+                   
+                });
+                $("#InvoiceWindow").kwnd("@Url.Action("Invoices")?" + "details=" + checkboxArr.join() + "&customerId=" + customerId, "@Html.Raw(MessageResource.WorkOrderInvoice_Dislay_FinishInvoice)", {
+                    iframe: true,
+                    width: 1200,
+                    height: 700,
+                    onClose: function () {
+                        window.location.reload(false);
+                    }
+                });
+                OpenWindow(document.getElementById("InvoiceWindow"));
+            }
+        }
+
+    </script>
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

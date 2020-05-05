@@ -1,0 +1,125 @@
+﻿@using ODMSCommon.Resources
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    string reciever = ViewBag.Reciever;
+    string sender = ViewBag.Sender;
+    int messageId = ViewBag.MessageId;
+    string title = ViewBag.Title;
+    int recieverId = ViewBag.RecieverId;
+}
+<style>
+    #popupContentWrapper {
+        width: 763px !important;
+        height: 500px !important;
+    }
+
+    #popupContent {
+        width: 750px !important;
+        overflow: hidden;
+    }
+
+    .more-message {
+        text-align: center;
+    }
+
+    .readed {
+        background-color: #DCEDF7 !important;
+    }
+    /*.readed:after + .arrow_box-right:after {
+    border-right-color: #D4E8DC !important;
+}    
+.readed:after +.arrow_box-right:before {
+    border-right-color: #D4E8DC !important;
+}
+
+
+.arrow_box-left + .readed {
+    background-color: #D4E8DC !important;
+}
+
+.readed:after + .arrow_box-left:after {
+    border-left-color: #D4E8DC !important;
+}    
+.readed:before + .arrow_box-left:before {
+    border-left-color: #D4E8DC !important;
+}*/
+    .messages-wrap {
+        margin: 10px;
+        padding: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .send-message {
+        width: 98%;
+        /*height: 80px;*/
+        position: absolute;
+        bottom: 10px;
+    }
+
+    .messages-wrap .arrow_box-left, .messages-wrap .arrow_box-right {
+        border-radius: 6px 6px 6px 6px;
+        min-height: 20px;
+        padding: 6px;
+        max-width: 300px;
+        margin: 5px;
+    }
+
+    .messages-wrap .fr {
+        float: right;
+        margin-right: 40px;
+    }
+
+    .messages-wrap .fl {
+        float: left;
+    }
+</style>
+@Html.AntiForgeryToken()
+<div class="messages-wrap">
+</div>
+<div class="send-message">
+    @using (Html.BeginForm("PrivateMessageSend"))
+    {
+
+        @Html.Hidden("MessageId", messageId)
+        @Html.TextArea("Message", "", new { style = "border: 1px solid #bcd4f0;border-radius: 5px;color: steelblue;height: 28px;padding: 5px;resize: none;width: 646px;", data_val_required = "*", data_val = "true" })
+        @Html.Hidden("Sender", sender)
+        @Html.Hidden("Title", "")
+        @Html.Hidden("Reciever", reciever)
+        @Html.Hidden("RecieverId", recieverId)
+        <button type="submit" style="width: 80px; height: 40px;" class="btn btn-info">
+            <i class="glyphicon glyphicon-pencil"></i>@MessageResource.Global_Display_Send
+        </button>
+        <br />
+        /* @Html.CheckBox("IsUrgent",new{style=" padding-right: 6px;vertical-align: text-bottom"})<label for="IsUrgent">@MessageResource.PrivateMessage_Display_IsUrgent</label>*/
+    }
+</div>
+<script src="~/Scripts/custom.js"></script>
+<script type="text/javascript">
+    var currentPage = 1;
+    
+    $(document).ready(init); 
+    function init() {
+
+        currentPage = 0;
+        GetMessages(true);
+    }
+    function GetMessages(scroll) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        currentPage++;
+        $('.more-message').remove();
+        var request = $.ajax({
+            url: '@Url.Action("GetMessageHistory")',
+            type: "POST",
+            data: { currentPage: currentPage, messageId: @messageId,sender:'@sender',reciever:'@reciever' ,"__RequestVerificationToken": token },
+            dataType: "html"
+        });
+        request.success(function (html) {
+            $(".messages-wrap").prepend(html);
+            if(scroll==true){
+                $('.messages-wrap').scrollTop($('.messages-wrap')[0].scrollHeight);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,143 @@
+﻿@model ODMSModel.CampaignPart.CampaignPartListModel
+@using ODMSCommon.Resources
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickCampaignPart createNewCampaignPart", CommonUtility.GetResourceValue("CampaignPart_PageTitle_Create"), CommonValues.PermissionCodes.CampaignPart.CampaignPartCreate)
+@Html.AntiForgeryToken()
+<br />
+<div id="CampaignPartModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("CampaignPartModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#CampaignPartGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+          )
+
+</div>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.CampaignPart.CampaignPartListModel>()
+          .Name("CampaignPartGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.PartId).ClientTemplate("<center><a class='details modalClickCampaignPart' id='#=CampaignCode#" + "$" + "#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("CampaignPart_PageTitle_Details") + "' href='/CampaignPart/CampaignPartDetails/#=PartId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignPart.CampaignPartDetails));
+                  columns.Bound(p => p.PartId).ClientTemplate("<center><a class='edit modalClickCampaignPart' id='#=CampaignCode#" + "$" + "#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("CampaignPart_PageTitle_Update") + "' href='/CampaignPart/CampaignPartUpdate/#=PartId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignPart.CampaignPartUpdate));
+                  columns.Bound(o => o.PartId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("CampaignPart_PageTitle_Delete") + "' onclick='DeleteCampaignPart(\"#=CampaignCode#\",#=PartId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignPart.CampaignPartDelete));
+                  columns.Bound(p => p.SupplyTypeName).Width(100).Sortable(true);
+                  columns.Bound(p => p.PartCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.PartTypeDesc).Title(MessageResource.PartDefinition_Display_PartName).Width(100).Sortable(true);                  
+                  columns.Bound(p => p.Quantity).Width(100).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCampaignPart", "CampaignPart", Model))
+                                        //.Read(read => read.Action("ListCampaignPart", "CampaignPart", Model).Data("SearchCampParts"))
+                                        .Model(model => model.Field(o => o.PartId).DefaultValue(-1)))
+
+          )
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("body").delegate(".modalClickCampaignPart", "click", function (e) {
+            $('#CampaignPartModelWindow').html('');
+            e.preventDefault();
+            var link;
+            var clickedId = $(this).attr("id");
+            var idList = clickedId.split("$");
+            var campaignCodeParam = idList[0];
+            var partIdParam = idList[1];
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("CampaignPartDetails", "CampaignPart", new { campaignCode = -1, partId = -2 })";
+                link = link.replace("-1", campaignCodeParam);
+                link = link.replace("-2", partIdParam);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("CampaignPartUpdate", "CampaignPart", new { campaignCode = -1, partId = -2 })";
+                link = link.replace("-1", campaignCodeParam);
+                link = link.replace("-2", partIdParam);
+            }
+            else if ($(this).hasClass("createNewCampaignPart")) {
+                link = "@Url.Action("CampaignPartCreate", "CampaignPart", new { campaignCode = Model.CampaignCode })";
+            }
+            $("#CampaignPartModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#CampaignPartModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+    });
+
+    function RejectDealerPurchaseOrderConfirm(obj, poNumber) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        CustomConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("RejectDealerPurchaseOrderConfirm", "DealerPurchaseOrderConfirm")",
+                data: { PoNumber: poNumber, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#DealerPurchaseOrderConfirmGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        }, "@MessageResource.Global_Display_Reject", "@MessageResource.Global_Display_RejectConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+    }
+
+    function SearchCampParts() {
+        return {
+            CampaignCode : '@Model.CampaignCode'
+        };
+    }
+
+    function DeleteCampaignPart(cCode, pId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        DeleteConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteCampaignPart", "CampaignPart")",
+                data: { campaignCode: cCode, partId: pId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#CampaignPartGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>

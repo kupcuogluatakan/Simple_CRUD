@@ -1,0 +1,457 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.StockCard
+
+@model ODMSModel.StockCard.StockCardSearchListModel
+@{
+    ViewBag.Title = MessageResource.StockCard_PageTitle_Search;
+}
+
+@if (!UserManager.UserInfo.IsDealer)
+{
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Kapat"><span aria-hidden="true">&times;</span></button>
+        <strong> <i class="fa fa-info-circle"></i></strong>
+        @MessageResource.StockCardSearch_1 <em>@MessageResource.StockCardSearch_2</em> @MessageResource.StockCardSearch_3<strong>@MessageResource.StockCardSearch_4</strong> @MessageResource.StockCardSearch_5
+    </div>
+}
+<input type="hidden" id="firstCall" value="1" />
+<div id="searchDiv" style="display: block !important">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(c => c.StockLocationId)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.StockLocationId).DataTextField("Text").DataValueField("Value").Events(ev => ev.Change(@"function(e){HideShowDealer();}")).BindTo(ViewBag.StockLocationList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StockTypeName)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.StockTypeId).DataTextField("Text").DataValueField("Value").Events(ev => ev.Change(@"function(e){HideShowStockValues();}")).BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_All"))
+        </div>
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            <div class="labelDiv">@Html.LabelFor(c => c.DealerName) (Merkez)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().MultiSelectFor(v => v.DealerIdsForCentral).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).HtmlAttributes(new { style = "width:200px" }).Events(e => e.Change("SetDealerCookie"))
+            </div>
+        }
+
+
+        <div class="clearDiv">&nbsp;</div>
+        <div id="divDealer">
+            <div class="labelDiv">@Html.LabelFor(c => c.DealerName)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().ComboBoxFor(v => v.DealerId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            </div>
+        </div>
+        <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>
+        <div class="labelDiv">@Html.LabelFor(d => d.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartName) </div>
+
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            <div class="labelDiv">@MessageResource.StockCardSearch_Bolge </div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().MultiSelectFor(v => v.DealerRegionIds).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerRegionList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).HtmlAttributes(new { style = "width:200px" }).Events(e => e.Change("SetRegionCookie"))
+
+                <div class="chkArea">
+                    <label class="chkType" style="display:inline-block;padding:8px;padding-left:0px;">
+                        <input type="radio" checked="checked" name="chkType" value="0" onclick="GetStockValues();" /> <b>@MessageResource.StockCardSearch_All</b>
+                    </label>
+                    <label class="chkType" style="display:inline-block;padding:8px;padding-left:0px;">
+                        <input type="radio" name="chkType" value="1" onclick="GetStockValues();" /> <b>@MessageResource.StockCardSearch_Service</b>
+                    </label>
+                    <label class="chkType" style="display:inline-block;padding:8px;"><input type="radio" name="chkType" value="2" onclick="GetStockValues();" /> <b>@MessageResource.StockCardSearch_Dealer</b> </label>
+                </div>
+                
+            </div>
+           
+        }
+        <div class="clearDiv">&nbsp;</div>
+        @Html.HiddenFor(v => v.StockLocationId)
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockCard.StockCardSearch)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("StockCard_PageTitle_Create"), CommonValues.PermissionCodes.StockCard.StockCardCreate)
+@Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+
+@using (Html.BeginForm("StockCardSearch", "StockCard", FormMethod.Post, new { @class = "searchForm", @style = "position:relative;" }))
+{
+    <input type="hidden" id="PartCodeList" name="PartCodeList" value="@Model.PartCodeList" />
+    <input type="hidden" id="CurrentDealerId" name="CurrentDealerId" value="@((!UserManager.UserInfo.IsDealer) ? null : (int?)UserManager.UserInfo.GetUserDealerId())" />
+    <input type="hidden" id="IsHq" name="IsHq" value="@((!UserManager.UserInfo.IsDealer).ToString())" />
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="row">
+        <div class="col-md-5 col-xs-12">
+            <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+            <div>
+                <a class="k-link2" href="@Url.Action("ExcelSample")">
+                    <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                </a>
+                <br />
+            </div>
+            <div class="labelDiv">@Html.LabelFor(d => d.PartCodeList)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+            </div>
+            <div id="divExcepUpload">
+                @ODMSHelpers.Button("StockCardSearch", CommonUtility.GetResourceValue("Global_Display_Search"), CommonValues.PermissionCodes.StockCard.StockCardSearch, "StockCardSearch")
+            </div>
+            <br />
+            @Html.HiddenFor(v => v.DealerId)
+            @Html.HiddenFor(v => v.StockLocationId)
+            @Html.HiddenFor(v => v.StockTypeId)
+            <br />
+        </div>
+        <div id="stockValues" class="col-md-5 col-xs-12"></div>
+    </div>
+
+
+    <div class="clearDiv">&nbsp;</div>
+
+
+}
+<br />
+<div id="StockCardModelWindowDiv">
+    @(Html.Kendo().Window()
+                                                        .Name("StockCardModelWindow")
+                                                    .Title("Customer")
+                                                     .Draggable()
+                                                    .Resizable()
+                                                    .Width(950)
+                                                    .Height(350)
+                                                    .Visible(false)
+                                                    .Modal(true)
+                                                    .Iframe(true)
+                                                    .Events(ev => ev.Close(@"function(e){
+var grid = $('#grid').data('kendoGrid');
+grid.dataSource.read();
+}"))
+    )
+</div>
+@Html.HiddenFor(c => c.DealerId)
+<div class="kendoGridDiv" id="grd">
+
+    @(Html.Kendo().Grid<StockCardSearchListModel>()
+                                                          .Name("grid")
+                                                          .Columns(columns =>
+                                                          {
+                                                              columns.Bound(b => b.PartId).Width(200).Title("").ClientTemplate("<a href='../DealerPurchaseOrder/DealerPurchaseOrderIndex/0?dID=" + UserManager.UserInfo.GetUserDealerId() + "&sId=#=DealerId#&pId=#=PartId#'>" + CommonUtility.GetResourceValue("StockCard_PageTitle_OrderFromDealer") + "</a>").Sortable(false);
+                                                              columns.Bound(b => b.DealerName).Sortable(true);
+                                                              columns.Bound(b => b.PartCode).Width(200).ClientTemplate("#= OnDatabound(PartCode, PartId, DealerId)#").Sortable(true);
+                                                              columns.Bound(b => b.PartName).Sortable(true);
+                                                              columns.Bound(b => b.StockTypeName).Sortable(true);
+                                                              columns.Bound(b => b.StockQuantity).Sortable(true);
+                                                              columns.Bound(b => b.UnitName).Sortable(true);
+                                                              columns.Bound(b => b.StockQuantityString).Sortable(true);
+                                                              columns.Bound(b => b.DealerName).Sortable(true);
+                                                              columns.Bound(b => b.AveragePrice).Sortable(false);
+                                                              columns.Bound(b => b.SalePrice).Sortable(false);
+                                                          })
+                                                          .Pageable()
+                                                          .Sortable()
+                                                          .Scrollable()
+                                                          .Events(d => d.DataBound("dataBound"))
+                                                          .DataSource(dataSource => dataSource
+                                                                                        .Ajax()
+                                                                                        .PageSize(10)
+                                                                                        .ServerOperation(true)
+                                                                                        .Read(read => read.Action("ListStockCardSearch", "StockCard", Model).Data("GetParameters")))
+    )
+
+</div>
+
+<script>
+    var dealerCookie = '_search_dealer_cookie', regionCookie = '_search_region_cookie';
+    var regionType = 0;
+    function dataBound(e) {
+        $.each(this.dataSource.view(), function () {
+            var grid = $('#grid').data('kendoGrid');
+            if ($('#StockLocationId').val() == 1) {
+                grid.hideColumn(0);
+                grid.showColumn(1);
+                grid.showColumn(5);
+                grid.showColumn(6);
+                grid.hideColumn(7);
+                grid.hideColumn(8);
+                grid.showColumn(9);
+                grid.showColumn(10);
+            } else {
+                grid.showColumn(0);
+                grid.hideColumn(1);
+                grid.hideColumn(5);
+                grid.hideColumn(6);
+                grid.hideColumn(7);
+                grid.showColumn(8);
+                grid.hideColumn(9);
+                grid.hideColumn(10);
+            }
+        });
+    }
+
+    function HideShowStockValues() {
+
+        console.log($('#StockTypeId').val());
+
+        if ($('#StockTypeId').val() != 1 && $('#StockTypeId').val() !='') {
+            $("#stockValues").hide();
+        }
+        else {
+            $("#stockValues").show();
+        }
+
+    }
+
+
+    function HideShowDealer() {
+        if ($('#StockLocationId').val() == 1) {
+            $("#DealerId").data("kendoComboBox").enable(false);
+            $('#divDealer').hide();
+            $("#stockValues").show();
+        }
+        else {
+            $("#DealerId").data("kendoComboBox").enable(true);
+            $("#DealerId").data("kendoComboBox").value('');
+            $('#divDealer').show();
+            $("#stockValues").hide();
+        }
+        var grid = $('#grid').data('kendoGrid');
+        if (grid != null) {
+            grid.dataSource.read();
+        }
+    }
+    
+    function ClearCookie(cookName) {
+        $.removeCookie(cookName, { path: '@Url.Action("StockCardSearch")' });
+    }
+
+    function SetDealerCookie() {
+        $.cookie.raw = true;
+        $.cookie(dealerCookie, $("#DealerIdsForCentral").data('kendoMultiSelect').value().toString(), { expires: 30, path: '@Url.Action("StockCardSearch")' });
+
+        //Servis ve Bölge Aynı anda çalışmıyor o yüzden birini yaparken diğerini temizliyoruz
+        $('#DealerRegionIds').data("kendoMultiSelect").value([]);
+        ClearCookie(regionCookie);
+        $(".chkArea").hide();
+
+        $('input[name="chkType"]').prop('checked', false);
+        $("input[name=chkType]:first").prop('checked', true);
+
+        GetStockValues();
+    }
+
+     function SetRegionCookie() {
+        $.cookie.raw = true;
+        $.cookie(regionCookie, $("#DealerRegionIds").data('kendoMultiSelect').value().toString(), { expires: 30, path: '@Url.Action("StockCardSearch")' });
+
+        //Servis ve Bölge Aynı anda çalışmıyor o yüzden birini yaparken diğerini temizliyoruz
+        $('#DealerIdsForCentral').data("kendoMultiSelect").value([]);
+        ClearCookie(dealerCookie);
+        $(".chkArea").show();
+
+        GetStockValues(); 
+    }
+
+    function GetRegionCookie() {
+        var cookie = $.cookie(regionCookie);
+        if (cookie)
+            return $.cookie(regionCookie);
+        else {
+            return '';
+        }
+    }
+
+    function GetDealerCookie() {
+        var cookie = $.cookie(dealerCookie);
+        if(cookie)
+            return $.cookie(dealerCookie);
+        else {
+            return '';
+        }
+    }
+
+    function GetParameters() {
+        return {
+            FirstCall: $("#firstCall").val(),
+            DealerId: $('#DealerId').val(),
+            IsHq: $('#IsHq').val(),
+            CurrentDealerId: $('#CurrentDealerId').val(),
+            PartCode: $('#PartCode').val(),
+            PartName: $('#PartName').val(),
+            StockLocationId: $('#StockLocationId').val(),
+            PartCodeList: $('#PartCodeList').val(),
+            StockTypeId: $('#StockTypeId').val(),
+            DealerIdsForCentral: $("#DealerIdsForCentral").length > 0 ? $("#DealerIdsForCentral").data('kendoMultiSelect').value().toString() : '',
+            DealerRegionIds: $("#DealerRegionIds").length > 0 ? $("#DealerRegionIds").data('kendoMultiSelect').value().toString() : '',
+            DealerRegionType: ($("input[name='chkType']:checked").length > 0 ? parseInt($("input[name='chkType']:checked").val()) : 0),
+            ReportType: 2,
+            Columns: "DealerName,PartCode,PartName,StockTypeName,StockQuantity,UnitName,DealerName,AveragePrice,SalePrice"
+        };
+        
+    }
+
+    $(document).ready(function () {
+        if ('@UserManager.UserInfo.IsDealer' == 'True') {
+            $.removeCookie(dealerCookie);
+            $.removeCookie(regionCookie);
+
+        } else {
+
+            var dCookie = GetDealerCookie().split(",");
+            var rCookie = GetRegionCookie().split(",");
+
+            $("#DealerIdsForCentral").data('kendoMultiSelect').value(dCookie);
+            $("#DealerRegionIds").data('kendoMultiSelect').value(rCookie);
+
+            if (dCookie.length > 0) {
+
+                if (dCookie[0] != "") {
+                    $(".chkArea").hide();
+                }
+                else {
+                    $(".chkArea").show();
+                }
+             
+            }
+            else {
+                $(".chkArea").show();
+            }
+
+        }
+
+        HideShowDealer();
+        HideShowStockValues();
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            $("#firstCall").val("0");
+            $("#PartCodeList").val("");
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#PartCodeList").val("");
+            $('#divDealer').hide();
+            $('#StockLocationId').data("kendoComboBox").value(1);
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#StockCardModelWindow').html('');
+
+            if ($(this).hasClass("createNew")) {
+                window.location = '@Url.Action("StockCardIndex", "StockCard")';
+            }
+        });
+
+        var partCodeList = "@Model.PartCodeList";
+        if (partCodeList != "")
+            setTimeout(function () {
+                var grid = $('#grid').data('kendoGrid');
+                $("#firstCall").val("0");
+                grid.dataSource.page(1);
+            }, 4000);
+    });
+
+    function OnDatabound(partCode, partId, dealerId) {
+        if ($('#StockLocationId').val() == 1) {
+            return "<a title='"
+                + '@CommonUtility.GetResourceValue("StockCard_PageTitle_Details")'
+                + "' href='../StockCard/StockCardIndex/?partId=" + partId + "&dealerId=" + dealerId + "'>" + partCode + "</a>";
+        }
+        else {
+            return "<a title='"
+                + '@CommonUtility.GetResourceValue("StockCard_PageTitle_Details")'
+                + "'>" + partCode + "</a>";
+        }
+    }
+</script>
+
+<style>
+
+    #stockValues{
+        float:right;
+    }
+
+    #stockValues td, #stockValues th {
+        text-align: center;
+        vertical-align: middle;
+        padding: 8px;
+    }
+</style>
+<script>
+
+        function GetStockValues() {
+
+            $.post('@Url.Action("GetStockCardStockValues", "StockCard")',
+            {
+                DealerId: $('#DealerId').val(),
+                IsHq: $('#IsHq').val(),
+                CurrentDealerId: $('#CurrentDealerId').val(),
+                StockLocationId: $('#StockLocationId').val(),
+                DealerIdsForCentral: $("#DealerIdsForCentral").length > 0 ? $("#DealerIdsForCentral").data('kendoMultiSelect').value().toString() : '',
+                DealerRegionIds: $("#DealerRegionIds").length > 0 ? $("#DealerRegionIds").data('kendoMultiSelect').value().toString() : '',
+                DealerRegionType: parseInt($("input[name='chkType']:checked").val())
+
+            }, function (data) {
+
+                var title1 = "@MessageResource.StockCardSearch_Otokar";
+                var title2 = "@MessageResource.StockCardSearch_TR";
+                var title3 = "@MessageResource.StockCardSearch_Total";
+                var title4 = "@MessageResource.StockCardSearch_AvarageTotal";
+                var title5 = "@MessageResource.StockCardSearch_SalePrice";
+
+                var OriginalAveragePrice = moneyFormat(data.TotalStockValues.OriginalAveragePrice);
+                var TrAveragePrice = moneyFormat(data.TotalStockValues.TrAveragePrice);
+                var AverageTotalPrice = moneyFormat(data.TotalStockValues.AverageTotalPrice);
+
+                var OriginalPrice = moneyFormat(data.TotalStockValues.OriginalPrice);
+                var TrCodePrice = moneyFormat(data.TotalStockValues.TrCodePrice);
+                var TotalPrice = moneyFormat(data.TotalStockValues.TotalPrice);
+
+                $("#stockValues").html();
+
+                var html = "<div>";
+
+                html += "<table class=\"table table-bordered\">";
+                html += "<thead>";
+                html += "<tr class='well'>";
+                html += "<th></th>";
+                html += "<th title='" + title1 + "'>";
+                html += title1;
+                html += " </th>";
+                html += " <th title='" + title2 + "'>" + title2 + "</th>";
+                html += " <th title='" + title3 + "'>" + title3 + "</th>";
+                html += " </tr>";
+                html += "</thead>";
+                html += "<tbody>";
+                html += " <tr>";
+                html += "<th title='" + title4 + "' style='background-color:#f5f5f5;'>" + title4 + "</th>";
+                html += " <td title='" + OriginalAveragePrice + "'>" + OriginalAveragePrice + "</td>";
+                html += " <td title='" + TrAveragePrice + "'>" + TrAveragePrice + "</td>";
+                html += " <td title='" + AverageTotalPrice + "'>" + AverageTotalPrice + "</td>";
+                html += " </tr>";
+                html += " <tr style='display:none;'>";
+                html += "<th title='" + title5 + "'>" + title5 + "</th>";
+                html += " <td title='" + OriginalPrice + "'>" + OriginalPrice + "</td>";
+                html += " <td title='" + TrCodePrice + "'>" + TrCodePrice + "</td>";
+                html += " <td title='" + TotalPrice + "'>" + TotalPrice + "</td>";
+                html += " </tr>";
+                html += " </tbody>";
+                html += " </table>";
+
+                $("#stockValues").html(html);
+
+            });
+        }
+
+        $(document).ready(function () {
+
+            GetStockValues();
+
+        });
+
+</script>

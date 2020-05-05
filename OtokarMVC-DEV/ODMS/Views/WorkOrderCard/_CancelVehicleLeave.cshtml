@@ -1,0 +1,116 @@
+﻿@using ODMSCommon.Resources
+@{
+    Layout = null;
+}
+@model long
+<div class="panel panel-primary" id="write-note">
+    <div class="panel-heading">
+        @MessageResource.WorkOrder_Dislay_CancelVehicleLeave
+    </div>
+    <div class="panel-body">
+        <div class="labelDiv">
+            @MessageResource.WorkOrderCard_Display_Description
+        </div>
+        <div class="shortTxtDiv">
+            @Html.TextArea("Note", "", new { @class = "text-box", style = "resize: none; width:250px; height:100px", data_max_length = "1000" })
+        </div>
+        <div id="warning-wrap2uyuy" class="alert alert-warning" style=" margin-left:6px;display:none; width:240px; float:left">
+            <a class="close" onclick="$('.alert').fadeOut();">&times;</a>
+            <strong></strong>
+        </div>
+        <div class="clearDiv"></div>
+        <div><label class=" label label-success" id="charsLeft">500</label></div>
+        <div style="margin-top:6px;" id="buttons">
+            <button class="btn btn-default" onclick="SaveNote()">
+                <i class="glyphicon glyphicon-save"></i> @MessageResource.Global_Display_Save
+            </button>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.k-loading').removeClass("hide");
+        updateCountdown();
+        $('#Note').focus(updateCountdown);
+        $('#Note').blur(updateCountdown);
+        $('#Note').change(updateCountdown);
+        $('#Note').keyup(updateCountdown);
+    });
+
+    function updateCountdown() {
+        var remaining = 500 - $('#Note').val().length;
+        if (remaining <= 0) {
+            $("#Note").val($("#Note").val().substring(0, 500));
+        }
+        if (remaining > 250) {
+            $('#charsLeft').removeClass("label-info").removeClass("label-danger").addClass("label-success");
+        } else if (remaining > 100)
+            $('#charsLeft').removeClass("label-success").removeClass("label-danger").addClass("label-info");
+        else {
+            $('#charsLeft').removeClass("label-success").removeClass("label-info").addClass("label-danger");
+        }
+        remaining = 500 - $('#Note').val().length;
+        $('#charsLeft').text(remaining);
+    }
+
+    function SaveNote() {
+        var note = $("#Note").val();
+        if (note.length > 0) {
+            $('.k-loading').removeClass("hide");
+            
+            CustomConfirm2(function() {
+                var request = $.ajax({
+                    url: '@Url.Action("CancelVehicleLeave", "WorkOrderCard")',
+                    type: "POST",
+                    cache:false,
+                    data: { workOrderId: @Model, reason: $("#Note").val() },
+                    dataType: "JSON"
+                });
+                request.success(function(json) {
+                    $('.k-loading').addClass("hide");
+                    if (json.Result !== 1) {
+                        FixWarningWrapBug();
+                        $("#warning-wrap2uyuy").addClass("alert-danger");
+                        $("#warning-wrap2uyuy strong").html(json.Message);
+
+                    } else {
+                        FixWarningWrapBug();
+                        $("#warning-wrap2uyuy").addClass("alert-success");
+                        $("#warning-wrap2uyuy strong").html(json.Message);
+
+                        $('.glyphicon-save').removeClass("glyphicon-save").addClass("glyphicon-saved");
+                        $("#buttons button").addClass("disabled");
+                        $("#Note").attr("disabled", "disabled");
+                    }
+                    $("#warning-wrap2uyuy").slideDown();
+                });
+        }, '@MessageResource.Global_Display_Warning', '@Html.Raw(MessageResource.WorkOrderCard_Question_VechileLeaveCancelConfirm)', '@MessageResource.Global_Display_Yes', '@MessageResource.Global_Display_No');
+        
+
+
+           
+
+        } else {
+            FixWarningWrapBug();
+            $("#warning-wrap2uyuy").addClass("alert-warning");
+            $("#warning-wrap2uyuy strong").html("@MessageResource.WorkOrderCard_Validation_WriteContactInfo");
+            $("#warning-wrap2uyuy").slideDown();
+        }
+    }
+
+    function FixWarningWrapBug() {
+        var warningWrap = $("#warning-wrap2uyuy");
+        if (warningWrap.hasClass("alert-success")) {
+            warningWrap.removeClass("alert-success");
+        }
+        if (warningWrap.hasClass("alert-danger")) {
+            warningWrap.removeClass("alert-danger");
+        }
+        if (warningWrap.hasClass("alert-warning")) {
+            warningWrap.removeClass("alert-warning");
+        }
+    }
+</script>
+
+

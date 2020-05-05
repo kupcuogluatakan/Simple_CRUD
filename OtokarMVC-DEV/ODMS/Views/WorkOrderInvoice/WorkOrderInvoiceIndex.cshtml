@@ -1,0 +1,152 @@
+﻿@model ODMSModel.WorkOrderInvoice.WorkOrderInvoicesViewModel
+@using ODMSCommon.Resources
+@using ODMSModel.WorkOrderInvoice
+
+@{
+    ViewBag.Title = MessageResource.WorkOrderInvoice_PageTitle_Index;
+}
+
+@if (Model.HideElements)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            SetErrorMessage("@MessageResource.Error_DB_NoRecordFound");
+            });
+    </script>
+}
+else
+{
+    <div id="appointmentdetaillabourContent" style="padding: 10px;">
+        <div class="shortTxtDiv" style="font-size: 24px">
+            <strong>@MessageResource.WorkorderListInvoices_Display_InvAmount</strong>:<i>@Model.InvoiceAmount.ToString("F")&nbsp;@Model.Currrency</i>
+        </div>
+        <div class="clearDiv">
+        </div>
+        @Html.HiddenFor(c => c.WorkOrderId)
+        @*search start*@
+
+        @*serach end*@
+        @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("WorkOrderInvoice_Dislay_AddNewPayment"), "Create", "modalClick2 createNew", CommonUtility.GetResourceValue("WorkOrderInvoice_PageTitle_Create"), CommonValues.PermissionCodes.WorkorderInvoice.WorkOrderInvoiceCreate)
+        @ODMSHelpers.LinkButton("btnFinishInvoice", CommonUtility.GetResourceValue("WorkOrderInvoice_Dislay_FinishInvoice"), "FinishInvoice", "modalClick2 finishInvoice", CommonUtility.GetResourceValue("WorkOrderInvoice_PageTitle_Create"), CommonValues.PermissionCodes.WorkorderInvoice.WorkOrderInvoiceUpdate)
+
+        @*grid start*@
+        <div class="kendoGridDiv" id="grdLabours">
+            @(Html.Kendo().Grid<WorkOrderInvoicesListModel>()
+                  .Name("grid2")
+                  .Columns(columns =>
+                  {
+                      columns.Bound(p => p.WorkOrderInvoiceId).ClientTemplate("<center><a class='details modalClick2' id='#=WorkOrderInvoiceId#' frameTitle='" + @CommonUtility.GetResourceValue("WorkOrderInvoice_PageTitle_Details") + "' href='" + Url.Action("WorkOrderInvoiceDetails") + "/#=WorkOrderInvoiceId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkorderInvoice.WorkOrderInvoiceDetails));
+                      columns.Bound(o => o.WorkOrderInvoiceId).ClientTemplate("<center><a href='javascript:void(0);' id='#=WorkOrderInvoiceId#' frameTitle='" + CommonUtility.GetResourceValue("WorkOrderInvoice_PageTitle_Delete") + "' onclick='DeleteWorkOrderInvoice(#=WorkOrderInvoiceId#)' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkorderInvoice.WorkOrderInvoiceDelete));
+                      columns.Bound(p => p.CustomerName).Width(100).Sortable(true);
+                      columns.Bound(p => p.InvoiceNo).Width(100).Sortable(true);
+                      columns.Bound(p => p.InvoiceDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+                      columns.Bound(p => p.InvoiceAmount).Width(120).Sortable(true);
+                      columns.Bound(p => p.InvoiceRatio).Width(60).Sortable(true);
+                      columns.Container.NoRecordsTemplate.Html = "<div style='text-align:center'>"+MessageResource.Error_DB_NoRecordFound+"</div>";
+                  })
+                  .Scrollable()
+                  .Sortable()
+                  .Pageable()
+                  .DataSource(dataSource => dataSource
+                      .Ajax()
+                      .ServerOperation(true)
+                      .Read(read => read.Action("ListWorkOrderInvoice", "WorkOrderInvoice", new { id = Model.WorkOrderId }).Data("GetWorkOrderId"))
+                      .Model(model => model.Field(o => o.WorkOrderInvoiceId).DefaultValue(-1)))
+
+                  )
+        </div>
+        @*grid end*@
+
+
+        @*modelWindow start*@
+        <div id="modelWindowDiv">
+            @(Html.Kendo().Window()
+                  .Name("modelWindow2")
+                  .HtmlAttributes(new{style="overflow-y:auto !important;"})
+                  .Title("Customer")
+                  .Draggable()
+                  .Resizable()
+                  .Width(950)
+                  .Height(480)
+                  .Visible(false)
+                  .Modal(true)
+                  .Iframe(true)
+                  .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid2').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+                  )
+        </div>
+         
+        @*modelWindow end*@
+
+    </div>
+}
+@*scripts start*@
+
+<script type="text/javascript">
+
+    function GetWorkOrderId() {
+        return {
+            WorkOrderId:@Model.WorkOrderId
+        };
+    }
+    $(document).ready(init2);
+
+    function init2() {
+        $("body").delegate(".modalClick2", "click", function (e) {
+            $('#modelWindow2').html('');
+            e.preventDefault();
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+               if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("WorkOrderInvoiceCreate", "WorkOrderInvoice", new { id = Model.WorkOrderId })";
+               }
+                if ($(this).hasClass("details")) {
+                    link = "@Url.Action("WorkOrderInvoiceDetails", "WorkOrderInvoice")";
+                    link = link + '/' + clickedId;
+                }
+            
+                $("#modelWindow2_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow2").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+                //$('.k-overlay').unbind('click');
+                //$('.k-overlay').click(function () {
+                //    var popup = $("#modelWindow2").data("kendoWindow");
+                //    if (popup)
+                //        popup.close();
+                //    $('#modelWindow2').html('');
+                //});
+            });
+    }
+
+    function DeleteWorkOrderInvoice(id) {
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("WorkOrderInvoiceDelete", "WorkOrderInvoice")",
+                    data: { id: id },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid2', '#appointmentdetaillabourContent').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+</script>
+@*scripts end*@
+

@@ -1,0 +1,129 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Menu.MenuIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Menu_PageTitle_Index");
+}
+ 
+  <div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+         <div class="labelDiv">@Html.LabelFor(v => v.MenuText)</div>
+        <div class="shortTxtDiv">
+            @Html.TextBoxFor(p=>p.MenuText)
+        </div>
+    </div>
+    <br />
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.GuaranteeRequestApprove.GuaranteeRequestApproveIndex)
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelMenuWindow")
+    .Title("Menu")
+     .Draggable()
+    .Resizable()
+    .Width(490)
+    .Height(390)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#gridMenu').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    function SearchMenu() {
+        return {
+            MenuText : $("#MenuText").val()
+        };
+    }
+
+    $(document).ready(function() {
+        $("body").delegate("#btnSearch", "click", function(e) {
+            var grid = $('#gridMenu').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function(e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            } else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        $("body").delegate(".modalClick", "click", function(e) {
+            $('#modelMenuWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            var menuName = $(this).attr("textName");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("MenuDetails", "Menu", new {id = -1})";
+                link = link.replace("-1", clickedId);
+            } else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("MenuUpdate", "Menu", new {id = -1})";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("placement")==true) {
+                link = "@Url.Action("MenuPlacementUpdate", "Menu", new {id = -1,menuName = -5})";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-5", menuName);
+            }
+            $("#modelMenuWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelMenuWindow").data("kendoWindow");
+            windowWidget.wrapper.css({
+                width: 490,
+                height: 390
+            });
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+
+    });
+
+</script>
+
+<div class="kendoGridDiv" id="grd" name="grd">
+    @(Html.Kendo().Grid<ODMSModel.ListModel.MenuListModel>()
+          .Name("gridMenu")
+
+          .Columns(columns =>
+          {
+              columns.Bound(m => m.MenuId).ClientTemplate("<center><a class='placement modalClick'  id='#=MenuId#' textName='#=MenuText#' frameTitle='" + @CommonUtility.GetResourceValue("Menu_PageTitle_Place") + "' href='/Menu/MenuPlacementUpdate?id=#=MenuId#&menuName=#=MenuText#'><img style='width:16px;height:16px;' class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Menu_PageTitle_Place")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Menu.MenuIndex));
+              columns.Bound(m => m.MenuId).ClientTemplate("<center><a class='details modalClick' id='#=MenuId#' frameTitle='" + @CommonUtility.GetResourceValue("Menu_PageTitle_Details") + "' href='/Menu/MenuDetails/#=MenuId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Menu.MenuDetails));
+              columns.Bound(m => m.MenuId).ClientTemplate("<center><a class='edit modalClick' id='#=MenuId#' frameTitle='" + @CommonUtility.GetResourceValue("Menu_PageTitle_Update") + "' href='/Menu/MenuUpdate/#=MenuId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Menu.MenuUpdate));
+              columns.Bound(m => m.OrderNo).Width(40).Sortable(true);
+              columns.Bound(m => m.MenuText).Width(140).Sortable(true);
+              columns.Bound(m => m.LinkName).Width(140).Sortable(true);
+              columns.Bound(m => m.Status).Width(40).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(CommonValues.GridPageSize.Long)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListMenu", "Menu",Model).Data("SearchMenu"))
+              .Model(model => model.Field(m => m.MenuId).DefaultValue(-1)))
+
+          )
+</div>
+

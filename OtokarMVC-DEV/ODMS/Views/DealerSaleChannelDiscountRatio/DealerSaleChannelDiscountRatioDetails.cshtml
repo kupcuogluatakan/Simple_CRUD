@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.DealerSaleChannelDiscountRatios_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@model ODMSModel.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioViewModel
+<div class="labelDiv">@Html.LabelFor(v => v.DealerClassName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.DealerClassCode)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ChannelName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.ChannelCode)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.SparePartClassCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SparePartClassCode)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.TseValidDiscountRatio)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.TseValidDiscountRatio)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.TseInvalidDiscountRatio)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.TseInvalidDiscountRatio)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+

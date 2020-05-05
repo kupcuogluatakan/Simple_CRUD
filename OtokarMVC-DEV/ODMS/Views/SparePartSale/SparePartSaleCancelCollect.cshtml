@@ -1,0 +1,116 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.WorkOrderPickingDetail
+@model ODMSModel.WorkOrderPicking.WorkOrderPickingListModel
+
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<div id="bodyContainer">
+    @Html.HiddenFor(f => f.PartSaleId)
+    <div id="grd">
+        @(Html.Kendo().Grid<ODMSModel.WorkOrderPicking.WorkOrderPickingListModel>()
+              .Name("grid")
+              .Columns(columns =>
+              {
+                  columns.Bound(p => p.IsSelected).ClientTemplate("<input type='checkbox' onchange='selectChange(this);' class='cbSelect' name='IsSelected' /> ").Title(CommonUtility.GetResourceValue("Global_Display_Select")).Width(50).Sortable(false);
+                  columns.Bound(c => c.No).Sortable(true);
+                  columns.Bound(c => c.Status).Sortable(true);
+                  columns.Bound(c => c.CreateDate).Format("{0:dd/MM/yyyy}").Sortable(true);
+              })
+              .Pageable()
+              .Sortable()
+              .Scrollable()
+              .ClientDetailTemplateId("template")
+              .Events(events => events.DataBound("dataBound"))
+              .DataSource(dataSource => dataSource
+                  .Ajax()
+                  .PageSize(CommonValues.GridPageSize.Short)
+                  .ServerOperation(true)
+                  .Read(read => read.Action("ListSparePartSaleWorkOrderPicking", "SparePartSale").Data("WorkOrderPickingSearch"))
+                  .Model(model => model.Field(o => o.WorkOrderPickingId).DefaultValue(-1)))
+              )
+    </div>
+</div>
+
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().Grid<WorkOrderPickingDetailListModel>()
+          .Name("grid_#=WorkOrderPickingId#")
+          .Columns(columns =>
+          {
+              //columns.Bound(p => p.PartId).Width(100).Sortable(true);
+              columns.Bound(p => p.PartCodeName).Width(150).Sortable(true);
+              columns.Bound(p => p.PartName).Width(150).Sortable(true);
+              columns.Bound(p => p.RequestQuantity).Width(100).Sortable(true);
+              columns.Bound(p => p.PickQuantity).Width(100).Sortable(true);
+              //columns.Bound(p => p.CreateDate).Width(100).Sortable(true);
+          })
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+                      .Read(read => read.Action("ListWorkOrderPickingDetail", "WorkOrderPickingDetail", new { WOPMstId = "#=WorkOrderPickingId#" }))
+          )
+          .Pageable()
+          .Sortable()
+          .ToClientTemplate())
+
+
+</script>
+<div class="btn-group" style="height: 40px;">
+    <button class="btn btn-info btnCancelCollect" onclick=" CancelCollect(this) ">
+        <i class="fa fa-check"></i> &nbsp;
+        @MessageResource.SparePartSale_Display_CancelCollect
+    </button>
+</div>
+<script type="text/javascript">
+    function selectChange(obj) {
+        var grid = $('#grid').data("kendoGrid");
+        var row = $(obj).closest("tr");
+        var item = grid.dataItem(row);
+        item.IsSelected = $(obj).prop("checked");
+    }
+    function WorkOrderPickingSearch() {
+        return {
+            PartSaleId: $('#PartSaleId').val()
+        };
+    }
+    function dataBound() {
+        this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+
+    function CancelCollect(obj) {
+        var items = [];
+
+        $(".btnCancelCollect").addClass("disabled");
+        var grid = $('#grid').data("kendoGrid");
+        var list = grid.dataSource.data();
+
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].IsSelected == true) {
+                items.push({ WorkOrderPickingId: list[i].WorkOrderPickingId });
+            }
+        }
+
+        $.ajax('@Url.Action("SparePartSaleCancelCollect", "SparePartSale")?sparePartSaleId=' + $('#PartSaleId').val(),
+        {
+            traditional: true,
+            cache: false,
+            success: function (json) {
+                if (json.Status == 0)
+                    SetErrorMessage(json.Message);
+                else {
+                    SetSuccessMessage("@MessageResource.Global_Display_Success");
+                    $(".btnCancelCollect").removeClass("disabled");
+                    grid.dataSource.read();
+                }
+            },
+            error: function (xhr) {
+                SetErrorMessage(xhr.responseText);
+            },
+            data: JSON.stringify(items),
+            dataType: "json",
+            method: "post"
+        });
+    }
+</script>
+

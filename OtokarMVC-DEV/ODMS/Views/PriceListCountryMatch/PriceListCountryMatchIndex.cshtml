@@ -1,0 +1,202 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.PriceListCountryMatch.PriceListCountryMatchSaveModel
+
+@{
+    ViewBag.Title = MessageResource.PriceListCountryMatch_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+
+<style type="text/css">
+    .ListItemText{padding: 0 6px;}
+     .ListItemText input {
+         margin: 4px 6px !important;
+     }
+    .ListItemText label {
+        margin: 4px 0 !important;
+    }
+    .k-state-selected label{
+        color: #fff;
+    }
+</style>
+
+<script type="text/x-kendo-tmpl" id="PriceListItemTemplate">
+    <div class="ListItemText">
+    <table>
+    <tr>
+        <td><input id="#=Value#_IsDefault" type="checkbox" name="#=Value#_IsDefault" 
+    #if(Selected){#
+     checked="checked"
+    #}#
+    /></td>
+        <td><label for="#=Value#_IsDefault" data-countryid=#=Value#>#:Text#</label></td>
+    </tr>
+    </table>
+    </div>
+</script>
+<div>
+    <div class="panel panel-danger @(Model.CountryList.Count==0?Html.Raw("hide"):Html.Raw("show"))">
+        <div class="panel-heading">@MessageResource.PriceListCountryMatch_Display_CountriesWithoutDeafultPriceList</div>
+        <div class="panel-body">
+            <ul id="exception-list" class="list-inline">
+                @foreach (var countryname in  Model.CountryList)
+                {
+                    <li><label class="label label-danger" style="margin:6px 5px">@countryname</label></li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="labelDiv">
+        @Html.Label(MessageResource.PriceListCountryMatch_Display_SelectPriceList)
+    </div> 
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBox()
+              .Name("priceListId")
+              .Placeholder(MessageResource.Global_Display_Select)
+              .BindTo(ViewBag.PriceList as List<SelectListItem>)
+              .AutoBind(true)
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .HtmlAttributes(new{style="width:300px;"})
+              .Events(e => e.Change("SelectedPriceListChanged"))
+              )
+    </div>
+    <div class="clearfix"></div>
+</div>
+<div id="roles-wrapper" style="width:700px; margin-left: 30px;">
+        <div style="float:left;width:280px;">
+        <h4>
+            @MessageResource.PriceCountryMatch_Display_ExcludedList
+        </h4>
+        @(Html.Kendo().ListView<ODMSModel.Common.ComboBoxModel>()
+              .Name("lstPriceListNotIncludedInCountry")
+              .Selectable(v=>v.Mode(ListViewSelectionMode.Multiple))
+              .ClientTemplateId("PriceListItemTemplate")
+              .TagName("div")              
+              .DataSource(ds => ds.Read(read =>
+                  read.Action("ListPriceListNotIncludedInCountry", "PriceListCountryMatch").Data("GetSelectedPriceListId")))
+              .HtmlAttributes(new{@style="height:200px;overflow-y:auto;"})    
+              )
+    </div>
+    <div style="float:left; width:140px; margin-top: 40px;">
+        <div style="text-align: center; margin-top:10px;">
+            @ODMSHelpers.LinkButton("btnAdd", "&raquo;", "", "arrow-btn", "","")
+        </div>
+        <div style="text-align: center; margin-top: 10px;">
+            @ODMSHelpers.LinkButton("btnRemove", "&laquo;", "", "arrow-btn", "","")
+        </div>
+    </div>
+    
+    <div style="float:left; width:280px">
+        <h4>
+            @MessageResource.PriceCountryMatch_Display_IncludedList
+        </h4>
+        @(Html.Kendo().ListView<ODMSModel.Common.ComboBoxModel>()
+              .Name("lstPriceListIncludedInCountry")
+              .Selectable(v=>v.Mode(ListViewSelectionMode.Multiple))
+              .ClientTemplateId("PriceListItemTemplate")
+              .TagName("div")
+              .HtmlAttributes(new{@style="height:200px;overflow-y:auto;"})
+              .DataSource(ds => ds.Read(read =>
+                  read.Action("ListPriceListIncludedInCountry", "PriceListCountryMatch").Data("GetSelectedPriceListId"))))
+    </div>
+    
+ <div class="clearfix" style="margin-bottom: 15px;"></div>
+  @ODMSHelpers.LinkButton("btnSave", MessageResource.Global_Display_Save, "", "", "","") 
+</div>
+
+
+
+
+
+@section Scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#roles-wrapper').hide();
+            $('#btnAdd').click(AddRoleHandler);
+            $('#btnRemove').click(RemoveRoleHandler);
+            $('#btnSave').click(SaveRolesHandler);
+        });
+
+        function SelectedPriceListChanged() {
+            //console.log(GetSelectedPriceListId().priceListId)
+            if (GetSelectedPriceListId().priceListId != 0) {
+                $('#roles-wrapper').show();
+                var includedRolelist = $("#lstPriceListIncludedInCountry").data("kendoListView");
+                var notIncludedRolelist = $("#lstPriceListNotIncludedInCountry").data("kendoListView");
+
+                includedRolelist.dataSource.read();
+                notIncludedRolelist.dataSource.read();
+            } else {
+                $('#roles-wrapper').hide();
+            }
+        }
+
+        function GetSelectedPriceListId() {
+            return { priceListId: $('#priceListId').val() };
+        }
+
+        function AddRoleHandler() {
+            $(".k-state-selected", "#lstPriceListNotIncludedInCountry").each(function(i, e) {
+                $("#lstPriceListIncludedInCountry").append($(e).clone()).html();
+                $(e).remove();
+            });
+        }
+
+        function RemoveRoleHandler() {
+            $(".k-state-selected", "#lstPriceListIncludedInCountry").each(function (i, e) {
+                $("#lstPriceListNotIncludedInCountry").append($(e).clone()).html();
+                $(e).remove();
+            });
+        }
+
+        function SaveRolesHandler() {
+            var userId = parseInt($('#priceListId').val());
+            if (userId == 0) {
+                SetErrorMessage('@MessageResource.UserRoles_Display_SelectUser');
+                return;
+            }
+            var includedPriceListIds = [];
+            var IsDefaultList = [];
+            $("#lstPriceListIncludedInCountry").children().each(function (i, e) {
+                var countryid = $("label", e).data("countryid");
+                includedPriceListIds[i] = countryid;
+                var isdefault = $("input", e).prop("checked");
+                IsDefaultList[i] = isdefault;
+                //console.log(isdefault)
+            });
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Save","PriceListCountryMatch")",
+                data: { PriceListId: userId, includedPriceListIds: includedPriceListIds, IsDefaultList: IsDefaultList, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Result == false)
+                        SetErrorMessage(result.Message);
+                    else
+                        SetSuccessMessage(result.Message);
+                    
+                    //refresh country list
+                    if (result.countryList.length == 0) {
+                        $("#exception-list").parents("div.panel").first().addClass("hide");
+                        $("#exception-list").html('');
+                    } else {
+                        $("#exception-list").parents("div.panel").first().removeClass("hide");
+                        $("#exception-list").parents("div.panel").first().slideDown();
+                        var html = '';
+                        $(result.countryList).each(function(i, e) {
+                            html += ' <li><label class="label label-danger" style="margin:6px 5px">'+e+'</label></li>';
+                        });
+                        $("#exception-list").html(html);
+                    }
+                },
+                dataType: "json"
+            });
+
+
+        }
+    </script>
+}

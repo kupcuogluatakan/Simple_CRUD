@@ -1,0 +1,53 @@
+﻿@model ODMSModel.EducationDates.EducationDatesViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("EducationDates_PageTitle_Delete");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("EducationDatesDelete", "EducationDates", FormMethod.Post))
+{
+    if (!Model.HideFormElements)
+    {
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationCode)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationTimeDT)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducaitonTime)</div>@*
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationHour)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationHour)</div>*@
+    
+    <div class="clearDiv">&nbsp;</div>
+   
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationPlace)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationPlace)</div>  
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Instructor)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Instructor)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.MaximumAtt)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.MaximumAtt)</div>   
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.MinimumAtt)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.MinimumAtt)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Notes)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Notes)</div> 
+      
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.EducationCode)
+    @Html.HiddenFor(v => v.RowNumber)
+    @Html.HiddenFor(v => v.EducationTimeDT)
+    @ODMSHelpers.Button("Delete", CommonUtility.GetResourceValue("Global_Display_Delete"), null, "EducationDatesDelete")    
+    }
+
+}
+

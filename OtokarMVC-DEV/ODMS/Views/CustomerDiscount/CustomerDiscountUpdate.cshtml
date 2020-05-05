@@ -1,0 +1,76 @@
+﻿@model ODMSModel.CustomerDiscount.CustomerDiscountIndexViewModel
+@{
+    ViewBag.Title = ViewBag.Title = ODMSCommon.Resources.MessageResource.CustomerDiscount_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CustomerDiscountUpdate", "CustomerDiscount", FormMethod.Post))
+{  
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerName)</div>    
+    <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.DealerName)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PartDiscountRatio)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(c=>c.PartDiscountRatio).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new{ type = "text", maxlength ="5",data_val_min="0",style="width:204px"})
+        @Html.ValidationMessageFor(c => c.PartDiscountRatio)
+    </div>
+   
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourDiscountRatio)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(c=>c.LabourDiscountRatio).Decimals(2).Format("{0:N}").Spinners(false).HtmlAttributes(new{ type = "text", maxlength ="5",data_val_min="0",style="width:204px"})
+        @Html.ValidationMessageFor(v => v.LabourDiscountRatio)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.CustomerDiscount.CustomerDiscountUpdate, "CustomerDiscountUpdate")
+    @Html.HiddenFor(v => v.IdCustomer)
+    @Html.HiddenFor(v => v.IdDealer)
+    @Html.HiddenFor(v => v.CustomerName)
+    @Html.HiddenFor(v => v.DealerName)
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv" style="visibility:hidden">@Html.LabelFor(v => v.IdCustomer)</div>
+    
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function GetDealerId() {
+        return {
+            IdDealer: $('#IdDealer').val()
+        };
+    }
+    function GetCustomerId() {
+        return {
+            IdCustomer: $('#IdCustomer').val()
+        };
+    }
+    $(document).ready(function () {
+
+        $("#PartDiscountRatio").on("keydown",function(){
+            var discountRatio = $("#PartDiscountRatio").val().split(",");
+            if(discountRatio != null && discountRatio[1].length > 1)
+            {
+                $("#PartDiscountRatio").val(discountRatio[0] + "," + discountRatio[1].substring(0,1));
+            }
+        });
+
+        $("#LabourDiscountRatio").on("keydown",function(){
+            var discountRatio2 = $("#LabourDiscountRatio").val().split(",");
+            if(discountRatio2 != null && discountRatio2[1].length > 1)
+            {
+                $("#LabourDiscountRatio").val(discountRatio2[0] + "," + discountRatio2[1].substring(0,1));
+            }
+        });
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

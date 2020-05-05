@@ -1,0 +1,138 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.TechnicianOperation.TechnicianOperationViewModel
+@{
+    ViewBag.Title = MessageResource.TechnicianOperation_PageTitle_Index;
+}
+@if (Model == null)
+{
+    using (Html.BeginForm("TechnicianOperationIndex", "TechnicianOperation", FormMethod.Post, new { AutoComplete = "off" }))
+    {
+    <script>
+        $(document).ready(function () {
+            $('#divDetails').hide();
+        });
+    </script>
+    <div class="labelDiv">@Html.LabelFor(v => v.DmsUserId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DmsUserId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLUser as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Password)</div>
+    <div class="shortTxtDiv">@Html.PasswordFor(p => p.Password)</div>
+    
+    @ODMSHelpers.Button("btnCreate", CommonUtility.GetResourceValue("SystemAdministration_Display_Login"), "", "TechnicianOperationIndex")        
+    }
+}
+else
+{
+    if (Model.IsLogin)
+    {
+    <script>
+        $(document).ready(function () {
+            loadTabs();
+        });
+    </script>
+    <div class="labelDiv">@Html.LabelFor(v => v.DmsUserId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DmsUserId).Enable(false).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLUser as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div> 
+    @ODMSHelpers.Button("btnCreate", CommonUtility.GetResourceValue("SystemAdministration_Display_Logout"), "", "TechnicianOperationIndex", "logout()")    
+    }
+    else
+    {
+        using (Html.BeginForm("TechnicianOperationIndex", "TechnicianOperation", FormMethod.Post))
+        {        
+    <script>
+        $(document).ready(function () {
+            $('#divDetails').hide();
+        });
+    </script>
+    <div class="labelDiv">@Html.LabelFor(v => v.DmsUserId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DmsUserId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLUser as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Password)</div>
+    <div class="shortTxtDiv">@Html.PasswordFor(p => p.Password)</div>
+    
+    @ODMSHelpers.Button("btnCreate", CommonUtility.GetResourceValue("SystemAdministration_Display_Login"), "", "TechnicianOperationIndex")        
+        }
+    }
+
+
+}
+<div class="clearDiv">&nbsp;</div>
+<div id="divDetails">
+    @(Html.Kendo().TabStrip()
+          .Name("TechnicianOperationDetails")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.TechnicianOperationControl_PageTitle_Index).LoadContentFrom(Url.Action("TechnicianOperationControlIndex", "TechnicianOperationControl")))
+          .Items(tabStrip => tabStrip.Add().Text(MessageResource.TechnicianOperationDetail_PageTitle_Index).LoadContentFrom(Url.Action("TechnicianOperationDetailIndex", "TechnicianOperationDetail", new { userId = Model == null ? 0 : Model.DmsUserId })))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.User_PageTitle_ChangePassword).LoadContentFrom(Url.Action("UserChangePassword", "User", new { userId = Model == null ? 0 : Model.DmsUserId })))
+         )
+</div>
+<script>
+
+    function loadTabs() {
+
+        var tabStrip = $('#TechnicianOperationDetails').kendoTabStrip().data("kendoTabStrip");
+
+        var eduDatesTab = tabStrip.contentElements[0];
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("TechnicianOperationControlIndex", "TechnicianOperationControl")',
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $(eduDatesTab).html(result);
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+
+        @*var detailsTab = tabStrip.contentElements[1];
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("TechnicianOperationDetailIndex", "TechnicianOperationDetail", new { userId = Model == null ? 0 : Model.DmsUserId })',
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $(detailsTab).html(result);
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+        var passTab = tabStrip.contentElements[2];
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("UserChangePassword", "User", new { userId = Model == null ? 0 : Model.DmsUserId })',
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $(passTab).html(result);
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });*@
+        
+        $('#divDetails').show();
+    }
+
+    function logout() {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("TechnicianOperationLogout", "TechnicianOperation")",
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0) {
+                    SetErrorMessage(result.Message);
+                } else {
+                    window.location = '@Url.Action("TechnicianOperationIndex", "TechnicianOperation")';
+                }
+            },
+            dataType: "json"
+        });
+    }
+</script>

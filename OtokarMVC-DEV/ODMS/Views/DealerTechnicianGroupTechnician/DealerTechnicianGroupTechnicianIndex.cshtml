@@ -1,0 +1,194 @@
+﻿@using ODMSCommon.Resources
+@{
+    ViewBag.Title = MessageResource.DealerTechnicianGroupTechnician_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+  
+    <script type="text/x-kendo-tmpl" id="DealerItemTemplate">
+    <div class="ListItemText" style="padding:3px 0 0 5px; cursor:default">
+        <span style="word-wrap:break-word" data-dealerid=#:Value#>#:Text#</span>
+    </div>
+</script>
+      <script type="text/javascript">
+          $(document).ready(function () {
+           // $('#roles-wrapper').hide();
+            $('#btnAdd2').click(AddDealerHandler);
+            $('#btnAddAll2').click(AddDealerAllHandler);
+            $('#btnRemove2').click(RemoveDealerHandler);
+            $('#btnRemoveAll2').click(RemoveDealerAllHandler);
+            $('#btnSave2').click(SaveDealersHandler);
+            
+            $(document).ready(function () {
+                //Popup
+                $("body").delegate(".modalClick", "click", function (e) {
+                    $('#modelWindow').html('');
+                    e.preventDefault();
+
+                    var link;
+                    var frameTitle = $(this).attr("frameTitle");
+
+                    if ($(this).hasClass("createNew") == true) {
+                        link = "@Url.Action("UserCreate", "User")";                       
+                    }
+
+                    $("#modelWindow_wnd_title").html(frameTitle);
+
+                    var windowWidget = $("#modelWindow").data("kendoWindow");
+
+                    windowWidget.refresh({
+                        url: link
+                    }).center();
+                    windowWidget.center();
+                    
+                });
+            });
+
+
+        });
+
+        function SelectedTechnicianGroupIdChanged() {
+            var notIncludedDealerlist = $("#lstDealersNotIncludedInAnnouncement").data("kendoListView");
+            notIncludedDealerlist.dataSource.read();
+            var IncludedDealerlist = $("#lstDealersIncludedInAnnouncement").data("kendoListView");
+            IncludedDealerlist.dataSource.read();
+        }
+
+        function GetData() {
+            return {
+                id: $("#TechinicianGroupId").val(),
+            };
+        }
+
+        function AddDealerHandler() {
+            $(".k-state-selected", "#lstDealersNotIncludedInAnnouncement").each(function(i, e) {
+                $("#lstDealersIncludedInAnnouncement").append($(e).clone()).html();
+                $(e).remove();
+            });
+        }
+        function AddDealerAllHandler() {
+            $(".ListItemText", "#lstDealersNotIncludedInAnnouncement").each(function(i, e) {
+                $("#lstDealersIncludedInAnnouncement").append($(e).clone()).html();
+                $(e).remove();
+            });
+        }
+
+        function RemoveDealerHandler() {
+            $(".k-state-selected", "#lstDealersIncludedInAnnouncement").each(function(i, e) {
+                $("#lstDealersNotIncludedInAnnouncement").append($(e).clone()).html();
+                $(e).remove();
+            });
+        }
+        function RemoveDealerAllHandler() {
+            $(".ListItemText", "#lstDealersIncludedInAnnouncement").each(function(i, e) {
+                $("#lstDealersNotIncludedInAnnouncement").append($(e).clone()).html();
+                $(e).remove();
+            });
+        }
+
+        function SaveDealersHandler() {
+            var includedDealerIds = [];
+            $("#lstDealersIncludedInAnnouncement").children().each(function(i, e) {
+                var dealerId = $("span", e).data("dealerid");
+                includedDealerIds[i] = dealerId;
+            });
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SaveTechnicianGroupTechnicians", "DealerTechnicianGroupTechnician")",
+                data: { dealerTechnicianGroupId: $("#TechinicianGroupId").val(), TechinicanIds: includedDealerIds, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == false)
+                        SetErrorMessage(result.Message);
+                    else
+                        SetSuccessMessage(result.Message);
+                },
+                dataType: "json"
+            });
+
+
+        }
+    </script>
+
+<div style="margin-left:30px;">
+    <div class="labelDiv">@Html.Label(MessageResource.DealerTechnicianGroupTechnician_Display_TechnicianGroup)</div> 
+    <div class="shortTxtDiv">@(Html.Kendo().ComboBox().Name("TechinicianGroupId").Placeholder(MessageResource.Global_Display_Select).BindTo(ViewBag.DealerTechnicianGroups as List<SelectListItem>).DataTextField("Text").DataValueField("Value").Events(e => e.Change("SelectedTechnicianGroupIdChanged")).Enable((int)ViewBag.DealerTechnicianGroupId==0).Value(ViewBag.DealerTechnicianGroupId>0?ViewBag.DealerTechnicianGroupId.ToString():string.Empty))</div>
+
+    
+        
+    @ODMSHelpers.LinkButton("btnNewTechnician", CommonUtility.GetResourceValue("Global_Display_NewTechnician"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("Global_Display_NewTechnician"), string.Empty)
+
+</div>
+
+<div id="roles-wrapper" style="width: 700px; margin-left: 30px;">
+    <div style="float: left; width: 280px;">
+        <h4>
+            @MessageResource.DealerTechnicianGroupTechnician_Display_TechnicianExcluded
+        </h4>
+        @(Html.Kendo().ListView<SelectListItem>()
+              .Name("lstDealersNotIncludedInAnnouncement")
+              .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+              .ClientTemplateId("DealerItemTemplate")
+              .TagName("div")
+              .DataSource(ds => ds.Read(read =>
+                  read.Action("ListTechnicianGroupTechniciansExcluded", "DealerTechnicianGroupTechnician").Data("GetData")))
+              .HtmlAttributes(new { style = "height:200px;" })
+              )
+    </div>
+    <div style="float: left; width: 140px; margin-top: 40px;">
+        <div style="text-align: center; margin-top: 10px;">
+            @ODMSHelpers.LinkButton("btnAdd2", "&rsaquo;", "", "arrow-btn", "", "")
+        </div>
+        <div style="text-align: center; margin-top: 10px;">
+            @ODMSHelpers.LinkButton("btnRemove2", "&lsaquo;", "", "arrow-btn", "", "")
+        </div>
+        <div style="text-align: center; margin-top: 10px;">
+            @ODMSHelpers.LinkButton("btnAddAll2", "&raquo;", "", "arrow-btn", "", "")
+        </div>
+        <div style="text-align: center; margin-top: 10px;">
+            @ODMSHelpers.LinkButton("btnRemoveAll2", "&laquo;", "", "arrow-btn", "", "")
+        </div>
+    </div>
+    
+    <div style="float: left; width: 280px">
+        <h4>
+            @MessageResource.DealerTechnicianGroupTechnician_Display_TechnicianIncluded
+        </h4>
+        @(Html.Kendo().ListView<SelectListItem>()
+              .Name("lstDealersIncludedInAnnouncement")
+              .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+              .ClientTemplateId("DealerItemTemplate")
+              .TagName("div")
+              .HtmlAttributes(new { @style = "height:200px;" })
+              .DataSource(ds => ds.Read(read =>
+                  read.Action("ListTechnicianGroupTechniciansIncluded", "DealerTechnicianGroupTechnician").Data("GetData"))))
+    </div>
+    
+    <div class="clearfix" style="margin-bottom: 15px;"></div>
+    @ODMSHelpers.LinkButton("btnSave2", MessageResource.Global_Display_Save, "", "", "", "") 
+</div>
+
+
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Title("DealerTechnicianGroupRelation")
+        .Draggable()
+        .Resizable()
+        .Width(950)
+        .Height(700)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+            var notIncludedDealerlist = $('#lstDealersNotIncludedInAnnouncement').data('kendoListView');
+            notIncludedDealerlist.dataSource.read();
+             
+            var IncludedDealerlist = $('#lstDealersIncludedInAnnouncement').data('kendoListView');
+            IncludedDealerlist.dataSource.read();
+        }"))
+    )
+</div>

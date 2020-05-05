@@ -1,0 +1,10 @@
+﻿@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@model ODMSModel.VatRatio.VatRatioExpModel
+@using (Html.BeginForm("VatRatioExpCreate", "VatRatio", FormMethod.Post))
+{
+    Html.RenderPartial("_VatRatioExpEdit", Model);
+     <input type="hidden" name="VatRatio" value="@Model.VatRatio.ToString()" />
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.VatRatioExp.VatRatioExpCreate,"VatRatioExpCreate")        
+}

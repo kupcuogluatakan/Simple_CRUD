@@ -1,0 +1,7 @@
+﻿@(Html.Kendo().ComboBoxFor(m => m)
+      .AutoBind(false)
+      .DataTextField("Text")
+      .DataValueField("Value")
+      .DataSource(dataSource => dataSource.Read(read => read.Action("GetStockTypes", "ScrapDetail").Data("getPartID()")).ServerFiltering(true)).CascadeFrom("PartId")
+            .Events(e => e.Change("SetStockTypeID")))
+@(Html.ValidationMessageFor(m => m))

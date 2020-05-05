@@ -1,0 +1,58 @@
+﻿@using ODMSCommon.Resources
+@model List<ODMSModel.WorkOrderCard.CampaignDetail.DocumentModel>
+@{
+    Layout = null;
+}
+
+<style>
+    .k-link:link, .k-link:visited, .k-nav-current.k-state-hover .k-link {
+    color: #428BCA;
+}
+
+</style>
+
+<div class="">
+    <table class="table table-bordered table-responsive">
+        <thead>
+            <tr>
+                <th>
+                    @MessageResource.CampaignDocument_Display_DocName
+                </th>
+                <th>
+                    @MessageResource.CampaignDocument_Display_DocumentDesc
+                </th>
+                <th>
+                    @MessageResource.Global_Display_Download
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @item.DocumentName
+                        </td>
+                        <td>
+                            @item.Description
+                        </td>
+                        <td>
+                            <a class="k-link" href="@Url.Action("WorkOrderDocumentsDownload","WorkOrderDocuments",new {id=item.DocumentId})">@MessageResource.Global_Display_Download</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center">
+                         @MessageResource.Error_DB_NoRecordFound
+                    </td>
+                </tr>
+               
+            }
+        </tbody>
+    </table>
+</div>

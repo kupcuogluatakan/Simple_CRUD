@@ -1,0 +1,32 @@
+﻿@model ODMSModel.VehicleNoteProposal.VehicleNotesProposalModel
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.VehicleNote_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using (Html.BeginForm("VehicleNotesProposalUpdate", "VehicleNotesProposal", FormMethod.Post))
+{
+    @Html.HiddenFor(d => d.DealerId)
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+    //Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartSearch.DefaultText, DefaultValue = Model.PartSearch.DefaultValue });
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.DealerName) @Html.ValidationMessageFor(v => v.DealerName) </div>
+    //<div class="labelDiv">@Html.LabelFor(v => v.VehicleName)</div>
+    //<div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleName)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(d => d.VehicleNotesId)
+    <div class="labelDiv">@Html.LabelFor(v => v.Note)</div>
+    <div class="textarea">@Html.TextAreaFor(v => v.Note) @Html.ValidationMessageFor(v => v.Note) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive) @Html.ValidationMessageFor(v => v.IsActive) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.VehicleNotes.VehicleNotesUpdate, "VehicleNotesUpdate")
+}
+

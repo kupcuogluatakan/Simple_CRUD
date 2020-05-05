@@ -1,0 +1,225 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.Reports
+@using ODMSBusiness
+
+@model PersonnelInfoReportFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.PersonnelInfoReport_PageTitle_Index;
+}
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.UserCodeList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.UserCodeList).MinLength(3).Filter(FilterType.StartsWith).DataTextField("Text").DataValueField("Value").AutoBind(false).DataSource(s => s.Read(r => r.Action("ListUserCode", "Reports").Type(HttpVerbs.Post)).ServerFiltering(true)).HtmlAttributes(new { style = "width:250px" })</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IdentityNoList) </div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.IdentityNoList).MinLength(3).Filter(FilterType.StartsWith).DataTextField("Text").DataValueField("Value").AutoBind(false).DataSource(s => s.Read(r => r.Action("ListIdentityNo", "Reports").Type(HttpVerbs.Post)).ServerFiltering(true)).HtmlAttributes(new { style = "width:250px" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsActive).BindTo(CommonBL.ListStatusAll(2).Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All) </div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.TitleList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.TitleList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.TitleList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ShowEducationDetails)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(c => c.ShowEducationDetails, new { onchange = "ShowEducationDetailsChange();" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div id="educationDetailsFilters" class="hide">
+            <div class="labelDiv">@Html.LabelFor(b => b.EducationCode)</div>
+            <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.EducationCode).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.EducationCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Value")</div>
+            <div class="labelDiv">@Html.LabelFor(b => b.EducationName)</div>
+            <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.EducationName).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.EducationCodeList as List<SelectListItem>).DataValueField("Text").DataTextField("Text")</div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(b => b.VehicleModel)</div>
+            <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModel).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+            <div class="labelDiv">@Html.LabelFor(b => b.EducationType)</div>
+            <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.EducationType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.EducationTypeList as List<SelectListItem>).DataValueField("Text").DataTextField("Text")</div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.EducationBeginDate) </div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EducationBeginDate).Events(e => e.Open("function(){ODMS.Component.OpenBeginDate('EducationBeginDate','EducationEndDate');}").Change("function(){ODMS.Component.OpenEndDate('EducationEndDate','EducationBeginDate');}")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.EducationEndDate) </div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EducationEndDate).Events(e => e.Open("function(){ODMS.Component.OpenEndDate('EducationEndDate','EducationBeginDate');}").Change("function(){ODMS.Component.OpenBeginDate('EducationBeginDate','EducationEndDate');}")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+            <div class="clearDiv">&nbsp;</div>
+        </div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.PersonnelInfoReportIndex)
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.PersonnelInfoExcelExport))
+{
+    @Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PersonnelInfoReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.UserId).ClientTemplate("<img style='height:50px' src='" + Url.Action("Image", "User") + "/#=UserId#' />").Sortable(false).HtmlAttributes(new { style = "text-align:center" }).Title(MessageResource.PersonnelInfoReport_Display_Image);
+              columns.Bound(p => p.RegionName).Sortable(true).Visible(UserManager.UserInfo.DealerID == 0);
+              columns.Bound(p => p.DealerSAPCode).Sortable(true);
+              columns.Bound(p => p.DealerName).Sortable(true);
+              columns.Bound(p => p.CreateDate).Sortable(true).Format("{0:dd/MM/yyyy hh:mm}");
+              columns.Bound(p => p.UserCode).Sortable(true);
+              columns.Bound(p => p.IdentityNo).Sortable(true);
+              columns.Bound(p => p.FirstName).Sortable(true);
+              columns.Bound(p => p.MidName).Sortable(true);
+              columns.Bound(p => p.LastName).Sortable(true);
+              columns.Bound(p => p.Email).Sortable(true);
+              columns.Bound(p => p.IsActive).Sortable(true);
+              columns.Bound(p => p.HireDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+              columns.Bound(p => p.LeaveDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+              columns.Bound(p => p.Gender).Sortable(true);
+              columns.Bound(p => p.BirthDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+              columns.Bound(p => p.Title).Sortable(true);
+              columns.Bound(p => p.EducationCode).Sortable(true);
+              columns.Bound(p => p.EducationName).Sortable(true);
+              columns.Bound(p => p.VehicleModel).Sortable(true);
+              columns.Bound(p => p.EducationDate).Format("{0:dd/MM/yyyy hh:mm}").Sortable(true);
+              columns.Bound(p => p.EducationDurationDay).Sortable(true);
+              columns.Bound(p => p.EducationDurationHour).Sortable(true);
+              columns.Bound(p => p.EducationGrade).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Events(e => e.DataBound("onDataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                                .Read(read => read.Action("ListPersonnelInfoReport", "Reports", Model).Data("GetParameters"))
+                                        )
+
+    )
+</div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+@Html.Partial("_MultipleSelectionFunc")
+
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+        @*if ($("#DealerIdList").val() == null) {
+            SetErrorMessage('@MessageResource.CycleCountResult_Validation_Required');
+            e.preventDefault();
+        } else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }*@
+    }
+
+    $(document).ready(init);
+    function ShowEducationDetailsChange() {
+
+        if ($('#ShowEducationDetails').prop("checked") == true) {
+            $("#educationDetailsFilters").removeClass("hide");
+            $("#EducationBeginDate").val("");
+            $("#EducationEndDate").val("");
+            $("#EducationCode").data('kendoMultiSelect').value("");
+            $("#EducationName").data('kendoMultiSelect').value("");
+            $("#VehicleModel").data('kendoMultiSelect').value("");
+            $("#EducationType").data('kendoMultiSelect').value("");
+
+
+            //$('#Properties').val($('#Properties').val() + 'EducationCode,');
+            //$('#Properties').val($('#Properties').val() + 'EducationName,');
+            //$('#Properties').val($('#Properties').val() + 'EducationType,');
+            //$('#Properties').val($('#Properties').val() + 'VehicleModel,');
+            //$('#Properties').val($('#Properties').val() + 'EducationDateToExcel,');
+            //$('#Properties').val($('#Properties').val() + 'CertificateNo,');
+
+
+
+        } else {
+            $("#educationDetailsFilters").addClass("hide");
+
+            //$('#Properties').val($('#Properties').val().replace('EducationCode,', ''));
+            //$('#Properties').val($('#Properties').val().replace("EducationName,", ""));
+            //$('#Properties').val($('#Properties').val().replace("EducationType,", ""));
+            //$('#Properties').val($('#Properties').val().replace("VehicleModel,", ""));
+            //$('#Properties').val($('#Properties').val().replace("EducationDateToExcel,", ""));
+            //$('#Properties').val($('#Properties').val().replace("CertificateNo,", ""));
+        }
+    }
+
+    function Search() { return { a: 1 }; }
+    
+    function GetParameters() {
+        return {
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            UserCodeList: GetQuotedList($("#UserCodeList").data('kendoMultiSelect').value().toString()),
+            EducationBeginDate: $("#EducationBeginDate").val(),
+            EducationEndDate: $("#EducationEndDate").val(),
+            IdentityNoList: GetQuotedList($("#IdentityNoList").data('kendoMultiSelect').value().toString()),
+            TitleList:GetQuotedList($("#TitleList").data('kendoMultiSelect').value().toString()),
+            EducationCode:GetQuotedList($("#EducationCode").data('kendoMultiSelect').value().toString()),
+            EducationName: GetQuotedList($("#EducationName").data('kendoMultiSelect').value().toString()),
+            VehicleModel: GetQuotedList($("#VehicleModel").data('kendoMultiSelect').value().toString()),
+            EducationType: GetQuotedList($("#EducationType").data('kendoMultiSelect').value().toString()),
+            IsActive: $("#IsActive").val(),
+            ShowEducationDetails: $("#ShowEducationDetails").prop("checked"),
+            ReportType: 44,
+            Columns: "UserId,RegionName,DealerSAPCode,DealerName,CreateDate,UserCode,IdentityNo,FirstName,MidName,LastName,Email,IsActive,HireDate,LeaveDate,Gender,BirthDate,Title,Phone,Mobile,Extension,Address,MaritalStatus,EducationCode,EducationName,VehicleModel,EducationDate,EducationDurationDay,EducationDurationHour,EducationGrade"
+        };
+    }
+
+    function init() {
+
+        $("#searchDiv").show("slow");
+        ShowEducationDetailsChange();
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#DealerIdList").data('kendoMultiSelect').value("");
+            $("#UserCodeList").data('kendoMultiSelect').value("");
+            $("#EducationBeginDate").val("");
+            $("#EducationEndDate").val("");
+            $("#IdentityNoList").data('kendoMultiSelect').value("");
+            $("#TitleList").data('kendoMultiSelect').value("");
+            $("#EducationCode").data('kendoMultiSelect').value("");
+            $("#EducationName").data('kendoMultiSelect').value("");
+            $("#VehicleModel").data('kendoMultiSelect').value("");
+            $("#EducationType").data('kendoMultiSelect').value("");
+            $("#IsActive").prop("checked", false);
+            $("#ShowEducationDetails").prop("checked", false);
+            $("#educationDetailsFilters").addClass("hide");
+
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+
+    function onDataBound(e) {
+        var showDetails = $('#ShowEducationDetails').prop("checked");
+        if (showDetails == true) {
+            this.showColumn("EducationCode");
+            this.showColumn("EducationName");
+            this.showColumn("VehicleModel");
+            this.showColumn("EducationDate");
+            this.showColumn("EducationDurationDay");
+            this.showColumn("EducationDurationHour");
+            this.showColumn("EducationGrade");
+
+
+
+        }
+        else {
+            this.hideColumn("EducationCode");
+            this.hideColumn("EducationName");
+            this.hideColumn("VehicleModel");
+            this.hideColumn("EducationDate");
+            this.hideColumn("EducationDurationDay");
+            this.hideColumn("EducationDurationHour");
+            this.hideColumn("EducationGrade");
+        }
+    }
+
+
+</script>

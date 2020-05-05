@@ -1,0 +1,27 @@
+﻿@model ODMSModel.SparePartSAPUnit.SparePartSAPUnitViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Detail");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<div class="labelDiv">@Html.LabelFor(v => v.SparePartCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SparePartCode)</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.SparePartName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SparePartName)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.UnitName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.UnitName)</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.ShipQuantity)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.ShipQuantity)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv" style="width: 147px">@Html.LabelFor(v => v.Status)</div>
+<div class="shortTxtDiv" style="margin-left: 2px">@Html.DisplayFor(v => v.StateName)</div>
+<div class="clearDiv">&nbsp;</div>
+

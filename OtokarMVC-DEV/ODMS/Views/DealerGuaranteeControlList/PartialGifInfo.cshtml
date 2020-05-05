@@ -1,0 +1,52 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@using ODMSCommon.Security;
+@model GifModel
+<div class="panel panel-default panel-collapse">
+    <div class="panel-heading">
+        <a data-toggle="collapse" data-parent="#gradGifInfo" href="#collapseGifInfo">
+            <strong style="font-size: 16px;">@MessageResource.Global_Display_GifInfo</strong>
+        </a>
+    </div>
+    <div class="panel-body collapse" id="collapseGifInfo">
+        <table class="table table-bordered table-zipped">
+            <tbody>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.WorkOrderId) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.WorkOrderId)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.WorkOrderDetId) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.WorkOrderDetId)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.ProcessName) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.ProcessName)</td>
+                </tr>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.IndicatorName) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.IndicatorName)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.BrokenDate) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.BrokenDate)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.VehicleLeaveDate) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.VehicleLeaveDate)</td>
+                </tr>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.VehicleKm) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.VehicleKm)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.CampaignName) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.CampaignName)</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.GifNo) : </th>
+                    <td class="col-md-3">@Html.DisplayFor(p => p.GifNo)</td>
+                </tr>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.SpecialNotes) : </th>
+                    <td class="col-md-4">@Html.DisplayFor(p => p.SpecialNotes)</td>
+                </tr>
+                @if (UserManager.UserInfo.DealerID == 0)
+                {
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(p => p.Notes) : </th>
+                        <td class="col-md-4">@Html.DisplayFor(p => p.Notes)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

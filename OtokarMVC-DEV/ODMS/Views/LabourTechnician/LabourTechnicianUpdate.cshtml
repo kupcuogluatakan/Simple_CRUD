@@ -1,0 +1,215 @@
+﻿@using ODMSCommon.Resources
+
+
+@model ODMSModel.LabourTechnician.LabourTechnicianViewModel
+@{
+    ViewBag.Title = MessageResource.LabourTechnician_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("LabourTechnicianUpdate", "LabourTechnician", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(b => b.WorkOrderId)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.WorkOrderId) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(b => b.Plate)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Plate) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(b => b.LabourCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourCode) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(b => b.LabourName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourName) &nbsp;</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.WorkTimeEstimate)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.WorkTimeEstimate).Decimals(0).Format("{0:N}").Min(1).Max(99999).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })
+    @Html.ValidationMessageFor(v => v.WorkTimeEstimate)
+    </div>
+
+    if (Model.WorkshopPlanTypeId == 0)
+    {
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.LabourTimeEstimate)&nbsp;</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.TotalLabourTimeEstimate)&nbsp;</div>
+    }
+        @*<div class="labelDiv">@Html.LabelFor(b => b.UserNameSurname)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().MultiSelectFor(c => c._UserID).BindTo(ViewBag.TechnicianList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(d => d.UserID)
+    </div>*@
+    <div class="clearDiv">&nbsp;</div>
+    @*<div class="labelDiv">@Html.LabelFor(d => d.WorkTimeReal)</div>
+    <div class="shortTxtDiv">
+        @if (Model.WorkshopPlanTypeId == 0)
+        {
+            @Html.Kendo().NumericTextBoxFor(v => v.WorkTimeReal).Decimals(0).Format("{0:N}").Min(1).Max(99999).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })
+            @Html.ValidationMessageFor(v => v.WorkTimeReal)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.WorkTimeReal)
+        }
+    </div>*@
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.LabourTechnicianId)
+    @Html.HiddenFor(v => v.WorkOrderId)
+    @Html.HiddenFor(v => v.Plate)
+    @Html.HiddenFor(v => v.LabourCode)
+    @Html.HiddenFor(v => v.LabourName)
+    @Html.HiddenFor(v => v.LabourId)
+    @Html.HiddenFor(v => v.WorkshopPlanTypeId)
+    @Html.HiddenFor(v => v.IsDealerDuration)
+    @Html.HiddenFor(v => v.StatusId)
+
+    @(Html.Kendo().Grid(Model.TecnicianUsers)
+    .Name("TecnicianUsers")
+    .Columns(columns =>
+    {
+        if (Model.WorkshopPlanTypeId == 0)//Basic
+        {
+            columns.Bound(p => p.TechnicianUserId).Width(180).EditorTemplateName("TechnicianDropDownList").ClientTemplate("#:TechnicianUserName #"
+                    + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserId' value='#= TechnicianUserId #' />"
+                    + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserName' value='#= TechnicianUserName #' />");
+            columns.Bound(p => p.WorkTime).Width(130).ClientTemplate("#= WorkTime #" + "<input type='hidden' name='TecnicianUsers[#= index(data)#].WorkTime' value='#= WorkTime #' />");
+            if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+            Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+                columns.Command(command => command.Custom("deleteRow").Text("Sil").Click("deleteItem")).Width(150);
+        }
+        else//Advanced
+        {
+            columns.Bound(p => p.TechnicianUserId).Width(180).EditorTemplateName("TechnicianDropDownList").ClientTemplate("#:TechnicianUserName #"
+        + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserId' value='#= TechnicianUserId #' />"
+        + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserName' value='#= TechnicianUserName #' />");
+           //columns.Bound(p => p.WorkTime).Width(130).ClientTemplate("#= WorkTime #" + "<input type='hidden' name='TecnicianUsers[#= index(data)#].WorkTime' value='#= WorkTime #' />");
+            if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+            Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+                columns.Command(command => command.Custom("deleteRow").Text("Sil").Click("deleteItem")).Width(150);
+        }
+
+
+    })
+    .ToolBar(toolBar =>
+    {
+        if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+         Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+            toolBar.Create().Text("Personel Ekle");
+    })
+    .Editable(editable => editable.Mode(GridEditMode.InCell))
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Batch(true)
+        .Events(events => events.Error("error_handler"))
+        .Model(model =>
+        {
+            model.Id(p => p.TechnicianUserId);
+            if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+        Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+            {
+                if (Model.WorkshopPlanTypeId == 0)//Basic
+                {
+                    model.Field(p => p.TechnicianUserId).Editable(true);
+                    model.Field(p => p.TechnicianUserName).Editable(true);
+                    model.Field(p => p.WorkTime).Editable(true);
+                }
+                else
+                {
+                    model.Field(p => p.TechnicianUserId).Editable(true);
+                    model.Field(p => p.TechnicianUserName).Editable(true);
+                    model.Field(p => p.WorkTime).Editable(false);
+                }
+
+            }
+            else
+            {
+                model.Field(p => p.TechnicianUserId).Editable(false);
+                model.Field(p => p.TechnicianUserName).Editable(false);
+                model.Field(p => p.WorkTime).Editable(false);
+            }
+
+        })
+        .ServerOperation(false)
+    )
+    )
+
+
+    if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+        Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+    {
+        @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.LabourTechnician.LabourTechnicianUpdate, "LabourTechnicianUpdate")
+    }
+}
+
+
+
+
+
+
+
+<script>
+    function onChange(e) {
+        var grid = $('#TecnicianUsers').data("kendoGrid");
+
+        var selectedItemUId = this.element.parent().closest('tr').attr('data-uid');
+        var item = grid.dataSource.getByUid(selectedItemUId);
+
+        var newValue = $("#TechnicianUserId").data("kendoDropDownList").text();
+        this.value(newValue);
+        item.set("TechnicianUserName", newValue);
+    }
+    function index(dataItem) {
+        var data = $("#TecnicianUsers").data("kendoGrid").dataSource.data();
+
+        return data.indexOf(dataItem);
+    }
+    function deleteItem(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (confirm("@MessageResource.LabourTechnician_Delete_Details")) {
+            var grid = $("#TecnicianUsers").data("kendoGrid");
+            grid.dataSource.remove(dataItem);
+            grid.dataSource.sync();
+            grid.refresh();
+        }
+    }
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+    $(document).ready(function () {
+
+        $("#WorkTimeEstimate").prop("readonly", true);
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+</script>

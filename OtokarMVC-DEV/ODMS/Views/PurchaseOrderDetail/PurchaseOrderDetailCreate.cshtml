@@ -1,0 +1,739 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.PurchaseOrderDetail
+@model PurchaseOrderDetailViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PurchaseOrderDetail_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+<style>
+    #showExcelUpload {
+        color: #428BCA;
+        cursor: pointer;
+        display: table;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .locked {
+        margin: 0 auto;
+        z-index: 100011; /*because you could set some z-indexes in your code before, so lets make sure that this will be over every elements in html*/
+        height: 100%;
+        top: 50%;
+        position: absolute;
+        left: 45%;
+    }
+
+    .lockedwrapper {
+        background-color: black;
+        opacity: 0.5;
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 100012;
+    }
+</style>
+<script>
+    function DisplayTotalPrice(e) {
+       
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("GetTotalPrice", "PurchaseOrderDetail")",
+            data: { poNumber: e.response.PoNumber, "__RequestVerificationToken": token },
+        traditional: true,
+        success: function (result) {
+            if (result.Status == 0)
+                SetErrorMessage(result.Message);
+            else {
+                $("#totalPrice").html(result.TotalPrice)
+            }
+        },
+        dataType: "json"
+    });
+    }
+    function SetRowsColor() {
+        if ($('#PurchaseOrderDetailGrid2').data() != null) {
+            var dataSource = $('#PurchaseOrderDetailGrid2').data().kendoGrid.dataSource;
+            var count = dataSource.total();
+            for (var i = 0; i < count; i++) {
+                var item = dataSource.data()[i];
+                if (item != null) {
+                    //DealerPriceEmpty
+                    if (item.DealerPrice == 0) {
+                        $('tr[data-uid="' + item.uid + '"] ').css("background-color", "Pink");
+                    }
+                    //sipariş adet ile paket adet aynı değilse
+                    if (item.OrderQuantity != item.DesireQuantity) {
+                        $('tr[data-uid="' + item.uid + '"] ').css("background-color", "Yellow");
+                    }
+                }
+            }
+        }
+    }
+    function DeletePurchaseOrderDetail(purchaseOrderDetailSeqNoParam) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeletePurchaseOrderDetail", "PurchaseOrderDetail")",
+                data: { purchaseOrderDetailSeqNo: purchaseOrderDetailSeqNoParam, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#PurchaseOrderDetailGrid2').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+    function onComplete() {
+        $('.lockedwrapper').css('display', 'none');
+    }
+</script>
+@Html.AntiForgeryToken()
+<link href="~/Style/Content.css" rel="stylesheet" />
+<div class="lockedwrapper">
+    <div class="locked">
+        <div class="conteneur_78390">
+            <div class="decalage_pers_78390">
+                <div class="cercle_rouge_78390"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@using (Html.BeginForm("PurchaseOrderDetailCreate", "PurchaseOrderDetail", FormMethod.Post, new { id = "frm_PurchaseOrderPart" }))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.SupplierName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(c => c.SupplierName)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PoTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(c => c.PoTypeName) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.StockTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(c => c.StockTypeName) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(c => c.VehicleName) </div>
+    <div class="clearDiv">&nbsp;</div>
+    if (!Model.IsCampaignPO && Model.StatusMst == 0)
+    {
+        @*<div id="ajax-load" class="ajax-loading" style="display: none !important;"></div>*@
+
+        <div id="showExcelUpload">@MessageResource.PurchaseOrderDetail_Display_FileUpload</div>
+        <div id="divExcelUpload">
+            <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+            <div>
+                <a class="k-link2" href="@Url.Action("ExcelSample")">
+                    <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                </a>
+                <br />
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            @Html.Kendo().Upload().Messages(m => m.Select(MessageResource.PurchaseOrderDetail_Display_FileUpload)).Name("excelFile").Multiple(false).HtmlAttributes(new { title = MessageResource.PurchaseOrderDetail_Display_FileUpload })
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div id="divSave">
+            <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+            <div id="divPart">
+                @if (ViewBag.IsMstSupplierIdEmpty || Model.SupplyTypeMst == (int)CommonValues.SupplyPort.DealerService)
+                {
+                    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartName, DefaultValue = Model.PartId, CallbackFunction = "GetValues" });
+                }
+                else
+                {
+                    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "NotOrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartName, DefaultValue = Model.PartId, CallbackFunction = "GetValues" });
+                }
+            </div>
+            @Html.ValidationMessageFor(v => v.PartId)
+
+            <div class="clearDiv">&nbsp;</div>
+            
+
+            <div id="divPartDetails">
+
+                <div id="divPrice">
+                    <div class="labelDiv">
+                        <label style="font-weight: bold">Otokar Miktar:</label>
+                    </div>
+                    <div class="shortTxtDiv">
+                        <h4> <label id="lblPartQuantity" class="label  label-danger"></label></h4>
+                    </div>
+                </div>
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.DesireQuantity)</div>
+                <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.DesireQuantity).Events(ev => ev.Change(@"function(e){CalculateValues();}")).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "8", data_val_min = "0.01", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.DesireQuantity) </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.PackageQuantity)</div>
+                <div class="shortTxtDiv">
+                    <span class="txtPackageQuantity">
+                        @Html.DisplayFor(model => model.PackageQuantity)
+                    </span>
+                    <span class="txtUnitName">
+                        @Html.DisplayFor(model => model.UnitName)
+                    </span>
+                </div>
+                <div class="clearDiv">&nbsp;</div>
+                <div class="labelDiv">@Html.LabelFor(v => v.OrderQuantity)</div>
+                <div class="shortTxtDiv">
+                    <span class="txtOrderQuantity">
+                        @Html.DisplayFor(model => model.OrderQuantity)
+                    </span>
+                </div>
+                <div class="labelDiv">@Html.LabelFor(v => v.OrderPrice)</div>
+                <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.OrderPrice).Events(ev => ev.Change(@"function(e){OrderPriceChanged();}")).Spinners(false).Decimals(2).Format("{0:N2}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", style = "width:204px" }) @Html.ValidationMessageFor(v => v.OrderPrice)</div>
+                @if (Model.SupplyTypeMst == (int)CommonValues.SupplyPort.DealerService)
+                {
+                    <div class="clearDiv">&nbsp;</div>
+                    <div class="labelDiv">@Html.LabelFor(v => v.ListPrice)</div>
+                    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.ListPrice).Spinners(false).Decimals(2).Format("{0:N2}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", style = "width:204px" }) @Html.ValidationMessageFor(v => v.ListPrice)</div>
+                    <div class="labelDiv">@Html.LabelFor(v => v.ListDiscountRatio)</div>
+                    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.ListDiscountRatio).Spinners(false).Decimals(2).Format("{0:N2}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", style = "width:204px" }) @Html.ValidationMessageFor(v => v.ListDiscountRatio)</div>
+                    <div class="clearDiv">&nbsp;</div>
+                    <div class="labelDiv">@Html.LabelFor(v => v.AppliedDiscountRatio)</div>
+                    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.AppliedDiscountRatio).Spinners(false).Decimals(2).Format("{0:N2}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", style = "width:204px" }) @Html.ValidationMessageFor(v => v.AppliedDiscountRatio)</div>
+                }
+                <div class="clearDiv">&nbsp;</div>
+                <div class="labelDiv">@Html.LabelFor(v => v.DesireDeliveryDate)</div>
+                <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.DesireDeliveryDate).Culture("en-GB").Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" })@Html.ValidationMessageFor(v => v.DesireDeliveryDate)</div>
+
+
+                <div class="labelDiv">@Html.LabelFor(v => v.CurrencyCode)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(v => v.CurrencyCode).Events(e => e.DataBound("CurrencyDataBound")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.CurrencyCodeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                    @Html.ValidationMessageFor(c => c.CurrencyCode)
+                </div>
+                <div class="clearDiv">&nbsp;</div>
+
+                <div id="alternatePartDiv">
+                    <div class="redLabelDiv">@Html.LabelFor(v => v.AlternatePart)</div>
+                    <div class="redShortTxtDiv">
+                        <label style="width:200px">@Html.TextBoxFor(v => v.AlternatePart, new { style = "color:red" })</label>
+                    </div>
+                    <div class="redShortTxtDiv">
+                        <label style="color:red;font-weight:bold">@MessageResource.StockCard_Display_AlternatePartUsage</label>
+                    </div>
+                    <div class="clearDiv">&nbsp;</div>
+                    <div class="redLabelDiv">@Html.LabelFor(v => v.CostPrice)</div>
+                    <div class="redShortTxtDiv">
+                        <label style="width:200px">@Html.TextBoxFor(v => v.CostPrice, new { style = "color:red" })</label>
+                    </div>
+                    <div class="clearDiv">&nbsp;</div>
+                </div>
+            </div>
+        </div>
+    }
+    @Html.HiddenFor(v => v.PurchaseOrderNumber)
+    @Html.HiddenFor(c => c.StatusId)
+    @Html.HiddenFor(c => c.SupplyTypeMst)
+    @Html.HiddenFor(c => c.SupplierName)
+    @Html.HiddenFor(c => c.PoTypeName)
+    @Html.HiddenFor(c => c.StockTypeName)
+    @Html.HiddenFor(c => c.UnitName)
+    @Html.HiddenFor(c => c.VehicleName)
+    @Html.HiddenFor(v => v.PoTypeId)
+    @Html.HiddenFor(v => v.ManuelPriceAllow)
+    @Html.HiddenFor(v => v.MstDealerCustomerId)
+    @Html.HiddenFor(v => v.MstSupplierIdDealer)
+    @Html.HiddenFor(v => v.OrderQuantity)
+    if (Model.StatusMst == 0)
+    {
+        if (!Model.IsCampaignPO)
+        {
+            @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.PurchaseOrderDetail.PurchaseOrderDetailCreate, "PurchaseOrderDetailCreate", "return partControl();")
+        }
+        @ODMSHelpers.Button("Complete", MessageResource.PurchaseOrder_Display_CompleteOrder, CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderCreate, "PurchaseOrderComplete")
+    }
+    <div style="float: right">
+        <label class="">@CommonUtility.GetResourceValue("PurchaseOrder_Display_TotalPrice") </label><strong style="padding-left:3px; padding-right:20px;" id="totalPrice"></strong>
+    </div>
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PurchaseOrderDetailListModel>()
+                  .Name("PurchaseOrderDetailGrid2")
+
+                  .Columns(columns =>
+                  {
+                      columns.Bound(p => p.PurchaseOrderDetailSeqNo).ClientTemplate("#if(StatusId==-1){#<center><a class='edit modalClickPurchaseOrderDetailDetail' id='#=PurchaseOrderDetailSeqNo#' frameTitle='" + @CommonUtility.GetResourceValue("PurchaseOrderDetail_PageTitle_Update") + "' href='/PurchaseOrderDetail/PurchaseOrderDetailUpdate/#=PurchaseOrderDetailSeqNo#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(30).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrderDetail.PurchaseOrderDetailUpdate)).Visible(ViewBag.PoStatusId != (int)CommonValues.PurchaseOrderStatus.ClosePurchaseOrder &&
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ViewBag.PoStatusId != (int)CommonValues.PurchaseOrderStatus.CanceledPurhcaseOrder && !Model.IsCampaignPO);
+                      columns.Bound(o => o.PurchaseOrderDetailSeqNo).ClientTemplate("#if(StatusId==-1){#<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("PurchaseOrderDetail_PageTitle_Delete") + "' onclick='DeletePurchaseOrderDetail(#=PurchaseOrderDetailSeqNo#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrderDetail.PurchaseOrderDetailDelete)).Visible(ViewBag.PoStatusId != (int)CommonValues.PurchaseOrderStatus.ClosePurchaseOrder &&
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ViewBag.PoStatusId != (int)CommonValues.PurchaseOrderStatus.CanceledPurhcaseOrder && !Model.IsCampaignPO);
+                      columns.Bound(p => p.PartCode).Width(120).Sortable(true);
+                      columns.Bound(p => p.PartName).Width(150).Sortable(true);
+                      columns.Bound(p => p.PackageQuantityString).Width(100).Sortable(true).HtmlAttributes(new { style = "text-align:right" });
+                      columns.Bound(p => p.DesireQuantity).Width(60).Sortable(true).HtmlAttributes(new { style = "text-align:right" });
+                      columns.Bound(p => p.DesireDeliveryDate).Format("{0:dd/MM/yyyy}").Width(50).Sortable(true).HtmlAttributes(new { style = "text-align:center" });
+                      columns.Bound(p => p.OrderQuantity).Width(60).Sortable(true).HtmlAttributes(new { style = "text-align:right" });
+                      columns.Bound(p => p.OrderPriceS).Width(80).Sortable(true).HtmlAttributes(new { style = "text-align:right" });
+                      columns.Bound(p => p.ConfirmPriceS).Width(80).Sortable(true).HtmlAttributes(new { style = "text-align:right" });
+                      columns.Bound(p => p.CurrencyCode).Width(50).Sortable(true);
+                  })
+                  .Pageable()
+                  .Sortable()
+                  .Scrollable()
+                   .Events(e => e.DataBound("SetRowsColor"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Events(e => e.RequestEnd("DisplayTotalPrice"))
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListPurchaseOrderDetail", "PurchaseOrderDetail", Model))
+                                        .Model(model => model.Field(o => o.PurchaseOrderDetailSeqNo).DefaultValue(-1)))
+
+    )
+</div>
+<div class="clearDiv">&nbsp;</div>
+@Html.ExportExcelButton(new ExcelExportDto("PurchaseOrderDetail", "ListPurchaseOrderDetail", "PurchaseOrderPartsSearch", "sdfsdf").Build<PurchaseOrderDetailListModel, object>(c => c.PartCode, c => c.PartName, c => c.PackageQuantity, c => c.DesireQuantity, c => c.DesireDeliveryDate, c => c.OrderQuantity, c => c.OrderPriceS))
+<link href="~/Style/Content.css" rel="stylesheet" />
+<div id="PurchaseOrderDetailModelDetailWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("PurchaseOrderDetailModelDetailWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(483)//352
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#PurchaseOrderDetailGrid2').data('kendoGrid');
+        grid.dataSource.read();
+    }"))
+    )
+    @Html.HiddenFor(v => v.PurchaseOrderNumber)
+    @Html.HiddenFor(v => v.StatusMst)
+    @Html.HiddenFor(v => v.ManuelPriceAllow)
+</div>
+<script type="text/javascript">
+    function partControl()
+    {
+        if($("#divSave").is(":visible"))
+        {
+            var invoicePrice = $("#OrderPrice").data("kendoNumericTextBox").value();
+            var qty = $("#DesireQuantity").data("kendoNumericTextBox").value();
+            var partId = $('#PartId').val();
+            if(invoicePrice == null || qty == null || qty == 0 || partId == "")
+            {
+                SetErrorMessage("@MessageResource.PurchaseOrderDetailCreate_IsRequired");
+                return false;
+            }
+
+            return OrderPriceChanged();
+        }
+        else
+        {
+            var len = $("#excelFile").data("kendoUpload").wrapper.find(".k-file").length;
+            if(len === 0) {
+                SetErrorMessage("@MessageResource.PurchaseOrderDetailCreate_ExcelIsRequired");
+                return false;
+            }
+            else
+                return true;
+        }
+    }
+
+    function CurrencyDataBound() {
+        var length = $("#CurrencyCode").data("kendoComboBox").dataSource.data().length;
+        if (length == 1) {
+            $("#CurrencyCode").data("kendoComboBox").select(0);
+            $("#CurrencyCode").data("kendoComboBox").readonly(true);
+        }
+        else {
+            $("#CurrencyCode").data("kendoComboBox").readonly(false);
+        }
+    }
+    function GetPoTypeId() {
+        return {
+            id: $('#PoTypeId').val()
+        };
+    }
+    function PurchaseOrderPartsSearch() {
+        return { PurchaseOrderNumber: $("#PurchaseOrderNumber").val() };
+    }
+
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+    $(document).ready(function () {
+                
+        if($("#AlternatePart").val() == "")            
+            $("#alternatePartDiv").hide();
+        else            
+            $("#alternatePartDiv").show();
+
+
+        $("#frm_PurchaseOrderPart").submit(function (e) {
+            $('.lockedwrapper').css('display', 'block');
+        });
+
+        if ("@Model.ManuelPriceAllow" == "False" && '@Model.SupplyTypeMst' == 1) {//Otokar=1, Supplier=2, Supplier Fiyat Değiştirebilir.
+            $("#OrderPrice").data("kendoNumericTextBox").readonly();
+        }
+        if ('@ViewBag.IsExcelUpload' != 'True') {
+            $("#divExcelUpload").hide();
+            if ('@ViewBag.IsSuccessfullyInserted' == 'True') {
+                $('#divPartDetails').hide();
+            }
+            $('#divSave').show();
+        } else {
+            $('#divSave').hide();
+        }
+
+        if ('@Model.StatusMst' != '0') {
+            $('#divSave').hide();
+            $('#divPartDetails').hide();
+        }
+
+        $("body").delegate("#showExcelUpload", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("excelUploadVisible"));
+
+            if (!IsVisible) {
+
+                $(this).html('@MessageResource.SparePartSaleDetail_Display_FileUpload');
+                $(this).addClass("excelUploadVisible");
+                $("#divExcelUpload").show("slow");
+                $('#divSave').hide("slow");
+                $('#Complete').hide("slow");
+            } else {
+
+                $(this).html('@MessageResource.SparePartSaleDetail_Display_FileUpload');
+                $(this).removeClass("excelUploadVisible");
+                $("#divExcelUpload").hide("slow");
+                $('#divSave').show("slow");
+                $('#divPartDetails').hide();
+                $('#Complete').show("slow");
+            }
+        });
+
+        $("body").delegate(".modalClickPurchaseOrderDetailDetail", "click", function (e) {
+            $('#PurchaseOrderDetailModelDetailWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var width = 750;
+            var height = 500;
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("PurchaseOrderDetailUpdate", "PurchaseOrderDetail", new { purchaseOrderDetailSeqNo = -1, supplyTypeMst = Model.SupplyTypeMst })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#PurchaseOrderDetailModelDetailWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#PurchaseOrderDetailModelDetailWindow").data("kendoWindow");
+            windowWidget.wrapper.css({
+                width: width,
+                height: height
+            });
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+
+        kendo.culture("tr-TR");
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+    });
+
+    function GetValues() {
+        $('.lockedwrapper').css('display', 'block');
+        $('#divPrice').removeClass("hide");
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        $.post("@Url.Action("GetSparePartChangeInfo", "PurchaseOrderDetail")", {
+            partId: $('#PartId').val(),
+            purchaseOrderNumber:$('#PurchaseOrderNumber').val(),
+            "__RequestVerificationToken": token
+        }, function (json) {
+            var message = "";
+            if (json.MessageChange != "") {
+                message = json.MessageChange;
+            }
+            if (json.MessageSplit != "") {
+                message += " ";
+                message += json.MessageSplit;
+            }
+            if(json.AccessPermission != "")
+            {
+                message+=" ";
+                message += json.AccessPermission;
+                $('#divPartDetails').hide();
+            }
+            if (message != "") {
+                SetErrorMessage(message);
+            }
+            if (message != "") {
+
+
+                AddConfirm(function () {
+                    if (@Model.MstSupplierIdDealer != "") {
+                        $('.lockedwrapper').css('display', 'block');
+                        $("#PartId").val(json.NewPartId);
+                        SetPartDetail(json.PartName, json.NewPartId, token);
+                        $('.lockedwrapper').css('display', 'none');
+                    }
+                    if (json.NewPartId != $('#PartId').val()) {
+
+                        $('.lockedwrapper').css('display', 'block');
+                        $("#PartId").val(json.NewPartId);
+                        SetPartDetail(json.PartName, json.NewPartId, token);
+                        $('.lockedwrapper').css('display', 'none');
+                    }
+
+                });
+
+            } else {
+                SetPartDetail(json.PartName, json.NewPartId, token);
+            }
+
+            $('.lockedwrapper').css('display', 'none');
+            GetPartQuantity();
+        }, "JSON");
+
+    }
+
+    function SetPartDetail(partName, partId, token) {
+        if ('@ViewBag.IsMstSupplierIdEmpty' == 'True' || @Model.SupplyTypeMst == '3') { // otokar ya da bayi servis ise
+            $.ajax({
+                url: '@Url.Action("AutocompleteSearch", "AutocompleteSearch")',
+                dataType: 'html',
+                data: { SearchType: "OrginalSparePart", ControlId: "PartId", Title1: "", Title2: "", DefaultText: partName, DefaultValue: partId },
+                traditional: true,
+                type: 'POST',
+                success: function (content) {
+                    $("#divPart").html(content);
+                    GetPartQuantityPriceDetails(token);
+                }
+            });
+        } else {
+            $.ajax({
+                url: '@Url.Action("AutocompleteSearch", "AutocompleteSearch")',
+                dataType: 'html',
+                data: { SearchType: "NotOrginalSparePart", ControlId: "PartId", Title1: "", Title2: "", DefaultText: partName, DefaultValue: partId },
+                traditional: true,
+                type: 'POST',
+                success: function (content) {
+                    $("#divPart").html(content);
+                    GetPartQuantityPriceDetails(token);
+                }
+            });
+        }
+    }
+
+    function OrderPriceChanged() {
+        var listPrice = $("#ListPrice").val();
+        if (listPrice == null || parseInt(listPrice) == 0)
+            return true;
+
+        var orderPrice = parseFloat($("#OrderPrice").val().replace(",", "."));
+        listPrice = parseFloat(listPrice.replace(",", "."));
+
+        if (listPrice != orderPrice) {
+            if (listPrice < orderPrice) {
+                SetWarningMessage('@MessageResource.PurchaseOrderDetailCreate_Warning_OrderPriceGreaterThanListPrice');
+                return false;
+            } else {
+                var appDiscountRatio = ((listPrice - orderPrice) * 100) / listPrice;
+                $("#AppliedDiscountRatio").kendoNumericTextBox({
+                    value: appDiscountRatio,
+                    spinners: false
+                });
+
+                if ($("#AppliedDiscountRatio").data("kendoNumericTextBox")!= null)
+                    $("#AppliedDiscountRatio").data("kendoNumericTextBox").readonly(true);
+            }
+        }
+
+        return true;
+    }
+    function GetPartQuantityPriceDetails(token) {
+
+        $.post("@Url.Action("GetPriceDetails", "PurchaseOrderDetail")", {
+            dealerCustomerId: '@Model.MstDealerCustomerId', supplierIdDealer: '@Model.MstSupplierIdDealer', partId: $('#PartId').val(),
+            "__RequestVerificationToken": token
+        }, function (json) {
+            if (json) {              
+                if(json.AlternatePart != "")
+                {
+                    $("#AlternatePart").val(json.AlternatePart);
+                    $("#AlternatePart").attr("readonly", "readonly");
+                    
+                    $("#CostPrice").val(json.CostPrice);
+                    $("#CostPrice").attr("readonly", "readonly");
+
+                    $("#alternatePartDiv").show();
+                }
+                else
+                {
+                    $("#AlternatePart").val("");
+                    $("#CostPrice").val("");
+
+                    $("#alternatePartDiv").hide();
+                }
+
+                if (json.ListPrice == 0) {
+                    SetWarningMessage('@MessageResource.PurchaseOrderDetailCreate_Warning_ListPriceNotFound');
+                }
+                if ('@Model.SupplyTypeMst' != 3) {
+                    $("#OrderPrice").kendoNumericTextBox({
+                        value: json.OrderPrice,
+                        spinners: false
+                    });
+                } else {
+                    $("#ListPrice").kendoNumericTextBox({
+                        value: json.ListPrice,
+                        spinners: false
+                    });
+                    $("#ListPrice").data("kendoNumericTextBox").readonly();
+                    $("#ListDiscountRatio").kendoNumericTextBox({
+                        value: json.ListDiscountRatio,
+                        spinners: false
+                    });
+                    $("#ListDiscountRatio").data("kendoNumericTextBox").readonly();
+                    var confirmPrice = json.ListPrice * ((100 - json.ListDiscountRatio) / 100);
+                    /*LIST_PRICE*((100-LIST_DISCOUNT_RATIO/100))*/
+                    $("#OrderPrice").kendoNumericTextBox({
+                        value: confirmPrice,
+                        spinners: false
+                    });
+                    $("#AppliedDiscountRatio").kendoNumericTextBox({
+                        value: json.ListDiscountRatio,
+                        spinners: false
+                    });
+                    $("#AppliedDiscountRatio").data("kendoNumericTextBox").readonly();
+                }
+                if ("@Model.ManuelPriceAllow" == "False" && "@Model.SupplyTypeMst" == "1") {//Otokar=1, Supplier=2, Supplier Fiyat Değiştirebilir.
+                    $("#OrderPrice").data("kendoNumericTextBox").readonly();
+                }
+            }
+        }, "JSON");
+
+        $.post("@Url.Action("GetPackageQuantity", "PurchaseOrderDetail")", {
+            partId: $('#PartId').val(),
+            "__RequestVerificationToken": token
+        }, function (json) {
+            if (json) {
+                $('.txtPackageQuantity').html(json.PackageQuantity);
+                $('.txtUnitName').html(json.UnitName);
+                $("#DesireQuantity").prev().focus();
+                CalculateValues();
+            }
+        }, "JSON");
+
+        $('#divPartDetails').show();
+    }
+
+
+    function CalculateValues() {
+        var desireQuantity =  $("#DesireQuantity").val() != '' ? parseFloat($("#DesireQuantity").val().replace('.', ',')) : '';
+        var packageQuantity = $('.txtPackageQuantity').html() != '' ? parseFloat($('.txtPackageQuantity').html()) : '';
+        var orderQuantity;
+        if (desireQuantity != '' && packageQuantity != '' && '@Model.SupplyTypeMst' == '@((int)CommonValues.SupplyPort.Otokar)') {
+            orderQuantity = (((desireQuantity - (desireQuantity % packageQuantity)) / packageQuantity) +
+            ((desireQuantity % packageQuantity) != 0 ? 1 : 0)) * packageQuantity;
+            $('.txtOrderQuantity').html(orderQuantity.toFixed(2).replace('.',','));
+            $('#OrderQuantity').val(orderQuantity.toFixed(2).replace('.',','));
+        } else if (desireQuantity != '' && packageQuantity != '' && '@Model.SupplyTypeMst' != '@((int)CommonValues.SupplyPort.Otokar)' && desireQuantity%packageQuantity!=0) {
+            CustomConfirm(function() {
+                $('.txtOrderQuantity').html(desireQuantity);
+                $('#OrderQuantity').val(desireQuantity);
+            }, "@MessageResource.Global_Display_Warning", "@MessageResource.SparePartSale_OtokarPackage_Confirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No",
+                function() {
+                    $('.txtOrderQuantity').html('0');
+                    $("#DesireQuantity").kendoNumericTextBox({
+                        value: 0,
+                        spinners: false
+                    });
+                    $('#OrderQuantity').val('0');
+                });
+        } else {
+            orderQuantity = (((desireQuantity - (desireQuantity % packageQuantity)) / packageQuantity) +
+           ((desireQuantity % packageQuantity) != 0 ? 1 : 0)) * packageQuantity;
+            $('.txtOrderQuantity').html(orderQuantity.toFixed(2).replace('.',','));
+            $('#OrderQuantity').val(orderQuantity.toFixed(2).replace('.',','));
+        }
+    }
+
+    function GetPartQuantity() {
+
+        var txtPartCode = $('#txtPartId').val().toString().split("/")[0];
+        if (txtPartCode) {
+            $.post("@Url.Action("GetPartQuantity", "PurchaseOrder")", {
+                PartCode: txtPartCode
+            }, function (json) {
+                if (json) {
+                    $("#lblPartQuantity").html(json.Quantity);
+                }
+            }, "JSON");
+        }
+    }
+
+    function AddConfirm(addFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_AddConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#add-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".add-confirm")
+            .click(function () {
+                if ($(this).hasClass("add-confirm")) {
+                    confirm = true;
+                    if (addFunction) {
+                        addFunction();
+                        $("#DesireQuantity").prev().focus();
+                    }
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+</script>
+
+<script id="add-confirmation" type="text/x-kendo-template">
+    <p class="add-message">@MessageResource.PurchaseOrderDetail_Confirm_InsertionTopPartMessage</p>
+    <p style="text-align:right">
+        <button class="add-confirm k-button">@MessageResource.Global_Display_Yes</button>
+    </p>
+</script>
+
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContentWrapper").css("min-height", 600);//350
+    }
+
+</script>
+

@@ -1,0 +1,193 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.PDIVehicleResult;
+
+@model PDIVehicleResultListModel
+
+@{
+    ViewBag.Title = MessageResource.PDIVehicleResult_PageTitle_Index;
+    bool result = false;
+    if (@ViewBag.idDealer != null || @ViewBag.idDealer != 0)
+    {
+        result = true;
+    }
+    else
+    {
+        result = false;
+    }
+
+}
+<script src="~/Scripts/odms.objectsearch.js"></script>
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.GroupName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.GroupId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.GroupList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Enable(result)</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+
+        <div class="labelDiv">@Html.LabelFor(v => v.ModelKod)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.ModelKod).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.ModelKodList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TypeName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.TypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.TypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VinNo)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+        <div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel { ObjectSearchType = CommonValues.ObjectSearchType.Customer, WindowTitle = MessageResource.ObjectSearch_WindowTitle_Customer, ReferenceObjectId = "CustomerId", ReferenceObjectValue = null, Required = true, SelectCallBackFunction = "" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StatusName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.PDIVehicleResult.PDIVehicleResultIndex)
+<br />
+<div id="PDIVehicleResultModelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("PDIVehicleResultModelWindow")
+          .Draggable()
+          .Resizable()
+          .Width(950)
+          .Height(600)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+         var grid = $('#PDIVehicleResultGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<div id="PdiPackageResultsWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<script type="text/javascript">
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    $(document).ready(init);
+    function PDIVehicleResultSearch() {
+        return {
+            GroupId: $('#GroupId').val(),
+            TypeId: $('#TypeId').val(),
+            ModelKod: $('#ModelKod').val(),
+            VinNo: $('#VinNo').val(),
+            CustomerId: $('#CustomerId').val(),
+            StatusId: $('#StatusId').val(),
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val()
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#PDIVehicleResultGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#PDIVehicleResultModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+
+            if ($(this).hasClass("detailsPopup") == true) {
+                link = "@Url.Action("PdiVehicleResultDetailIndex", "PDIVehicleResult", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#PDIVehicleResultModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#PDIVehicleResultModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+
+
+    }
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PDIVehicleResultListModel>()
+          .Name("PDIVehicleResultGrid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.WorkOrderId).ClientTemplate("<center><a class='detailsPopup modalClick' id='#=WorkOrderId#' frameTitle='" + CommonUtility.GetResourceValue("PDIVehicleResult_PageTitle_Details") + "' href='/PDIVehicleResult/PDIVehicleResultDetails/\"#=WorkOrderId#\"'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PDIVehicleResult.PDIVehicleResultDetails));
+              columns.Bound(p => p.WorkOrderId).ClientTemplate("<center><a class='' id='#=WorkOrderId#' href='" + Url.Action("WorkOrderCardIndex", "WorkOrderCard") + "/#=WorkOrderId#'><img class=iconLink src='" + @Url.Content("~/Images/select.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("WorkOrder_Display_WorkOrder")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkOrder.WorkOrderIndex));
+              columns.Bound(p => p.GroupName).Sortable(true);
+              columns.Bound(p => p.DealerName).Sortable(true);
+              columns.Bound(p => p.DealerSsId).Sortable(true);
+              columns.Bound(p => p.TypeName).Sortable(true);
+              columns.Bound(p => p.VinNo).Sortable(true);
+              columns.Bound(p => p.EngineNo).Sortable(true);
+              columns.Bound(p => p.ModelKod).Sortable(true);
+              columns.Bound(p => p.CustomerName).Sortable(true);
+              columns.Bound(p => p.TransmissionSerialNo).Sortable(true);
+              columns.Bound(p => p.DifferentialSerialNo).Sortable(true);
+              columns.Bound(p => p.PDICheckNote).Sortable(true);
+              columns.Bound(p => p.ApprovalNote).Sortable(true);
+              columns.Bound(p => p.ApprovalUserName).Sortable(true);
+              columns.Bound(p => p.StatusName).Sortable(true);
+              columns.Bound(p => p.CreateDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListPDIVehicleResult", "PDIVehicleResult", Model).Data("PDIVehicleResultSearch"))
+                                        .Model(model => model.Field(o => o.PDIVehicleResultId).DefaultValue(-1)))
+
+    )
+</div>

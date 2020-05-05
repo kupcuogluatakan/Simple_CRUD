@@ -1,0 +1,48 @@
+﻿@model ODMSModel.AppointmentIndicatorFailureCode.AppointmentIndicatorFailureCodeViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.AppointmentIndicatorFailureCode_PageTitle_Create;
+}
+
+
+@using (Html.BeginForm("AppointmentIndicatorFailureCodeCreate", "AppointmentIndicatorFailureCode", FormMethod.Post))
+{           
+    <div class="labelDiv">@Html.LabelFor(v => v.Code)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Code) @Html.ValidationMessageFor(v => v.Code) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc) @Html.ValidationMessageFor(v => v.AdminDesc) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.DescriptionML)</div>
+    <div class="shortTxtDiv">
+        @{
+            Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model == null ? string.Empty : Model.MultiLanguageContentAsText, IsEnabled = true });
+            @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+        }
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.AppointmentIndicatorFailureCode.AppointmentIndicatorFailureCodeCreate, "AppointmentIndicatorFailureCodeCreate")          
+
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+</script>
+
+

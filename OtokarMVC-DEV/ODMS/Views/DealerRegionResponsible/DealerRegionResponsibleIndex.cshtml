@@ -1,0 +1,216 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.DealerRegionResponsible
+
+@model DealerRegionResponsibleIndexModel
+@{
+    ViewBag.Title = @MessageResource.DealerRegionResponsible_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div id="tagSelectDealerDiv" class="labelDiv" style="width: 120px">@Html.LabelFor(d => d.DealerRegionList)</div>
+        <div id="cmbSelectDealerDiv" class="shortTxtDiv">
+            @(Html.Kendo().ComboBox()
+                  .Name("cmbDealerRegions")
+                  .Placeholder(@MessageResource.Global_Display_SelectDealerRegion)
+                  .BindTo(Model.DealerRegionList)
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+                  )
+        </div>
+
+        <div id="tagUserNameDiv" class="labelDiv">@Html.LabelFor(d => d.Name)</div>
+        <div id="txtUserNameDiv" class="shortTxtDiv">@Html.TextBoxFor(d => d.Name) </div>
+
+        <div id="tagUserSurnameDiv" class="labelDiv">@Html.LabelFor(d => d.Surname)</div>
+        <div id="txtUserSurnameDiv" class="shortTxtDiv">@Html.TextBoxFor(d => d.Surname) </div>
+
+        <div id="tagUserPhoneDiv" class="labelDiv">@Html.LabelFor(d => d.Phone)</div>
+        <div id="txtUserPhoneDiv" class="shortTxtDiv">@Html.TextBoxFor(d => d.Phone) </div>
+
+        <div id="tagUserEmailDiv" class="labelDiv">@Html.LabelFor(d => d.Email)</div>
+        <div id="txtUserEmailDiv" class="shortTxtDiv">@Html.TextBoxFor(d => d.Email) </div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerRegionResponsible.DealerRegionResponsibleIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.DealerRegionResponsible_PageTitle_Create, CommonValues.PermissionCodes.DealerRegionResponsible.DealerRegionResponsibleCreate)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<DealerRegionResponsibleListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(d => d.UserId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.DealerRegionResponsible_PageTitle_Details + "' onclick='DealerRegionResponsibleDetails(this,#=DealerRegionId#, #=UserId#);'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerRegionResponsible.DealerRegionResponsibleDetails));
+                  columns.Bound(d => d.UserId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.DealerRegionResponsible_PageTitle_Delete + "' onclick='DeleteDealerRegionResponsible(this,#=DealerRegionId#, #=UserId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerRegionResponsible.DealerRegionResponsibleDelete));
+                  columns.Bound(d => d.DealerRegionName).Width(200).Sortable(true);
+                  columns.Bound(d => d.Name).Width(200).Sortable(true);
+                  columns.Bound(d => d.Surname).Width(200).Sortable(true);
+                  columns.Bound(d => d.Phone).Width(200).Sortable(true);
+                  columns.Bound(d => d.Email).Width(200).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerRegionResponsibles", "DealerRegionResponsible").Data("Search"))
+                                        )
+          )
+
+</div>
+
+<br />
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("LabourDuration")
+          .Draggable()
+          .Resizable()
+          .Width(380)
+          .Height(250)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+          )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+@section Scripts
+{
+    <script>
+        $(function() {
+            RegisterEventHandlers();
+            AdjustControlPositions();
+            $("#Phone").mask("(999) 999 99 99", { placeholder: " " });
+        });
+        
+        function Search() {
+            return {
+                DealerRegionId: $("#cmbDealerRegions").val(),
+                Name: $("#Name").val(),
+                Surname: $("#Surname").val(),
+                Phone: $("#Phone").val(),
+                Email: $("#Email").val()
+            };
+        }
+
+        function RegisterEventHandlers() {
+            $("body").delegate("#showSearch", "click", function(e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            
+            $("body").delegate("#btnSearch", "click", function () {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+            });
+
+            $("body").delegate("#btnCreate", "click", function () {
+                $('#modelWindow').html('');
+
+                var frameTitle = $(this).attr("frameTitle");
+                var link = "@Url.Action("DealerRegionResponsibleCreate", "DealerRegionResponsible")";
+
+                ShowPopup(frameTitle, link);
+            });
+        }
+        
+        function ShowPopup(frameTitle, link) {
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        }
+        
+        function AdjustControlPositions() {
+            $("#tagUserNameDiv").css("margin-top", 25);
+            $("#tagUserNameDiv").css("margin-left", -420);
+            $("#tagUserNameDiv").css("width", 120);
+            
+            $("#txtUserNameDiv").css("margin-top", 25);
+            $("#txtUserNameDiv").css("margin-left", -300);
+            
+            $("#tagUserSurnameDiv").css("margin-top", 25);
+            $("#tagUserSurnameDiv").css("margin-left", -50);
+            $("#tagUserSurnameDiv").css("width", 120);
+            
+            $("#txtUserSurnameDiv").css("margin-top", 25);
+            $("#txtUserSurnameDiv").css("margin-left", -50);
+            
+            $("#tagUserPhoneDiv").css("margin-top", 25);
+            $("#tagUserPhoneDiv").css("margin-left", -50);
+            $("#tagUserPhoneDiv").css("width", 120);
+            
+            $("#txtUserPhoneDiv").css("margin-top", 25);
+            $("#txtUserPhoneDiv").css("margin-left", -50);
+            
+            $("#tagUserEmailDiv").css("margin-top", 25);
+            $("#tagUserEmailDiv").css("margin-left", -50);
+            $("#tagUserEmailDiv").css("width", 120);
+            
+            $("#txtUserEmailDiv").css("margin-top", 25);
+            $("#txtUserEmailDiv").css("margin-left", -50);
+        }
+        
+        function DealerRegionResponsibleDetails(obj, dealerRegionId, userId) {
+            $('#modelWindow').html('');
+
+            var frameTitle = $(obj).attr("frameTitle");
+
+            var link = "@Url.Action("DealerRegionResponsibleDetails", "DealerRegionResponsible", new { dealerRegionId = "p1", userId = "p2" })";
+            link = link.replace("p1", dealerRegionId);
+            link = link.replace("p2", userId);
+
+            ShowPopup(frameTitle, link);
+        }
+
+        function DeleteDealerRegionResponsible(obj, dealerRegionId, userId) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("DealerRegionResponsibleDelete","DealerRegionResponsible")",
+                    data: { dealerRegionId: dealerRegionId, userId: userId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+}

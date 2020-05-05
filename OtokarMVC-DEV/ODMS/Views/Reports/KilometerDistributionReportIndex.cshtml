@@ -1,0 +1,183 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+@using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical
+
+@model KilometerDistributionFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.KilometerDistributionReport_PageTitle_Index;
+}
+
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.BeginDate) <br /> (@MessageResource.WorkOrderDetailReport_Display_WorkOrderDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.BeginDate).Events(e => e.Open("OpenBeginDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate) <br /> (@MessageResource.WorkOrderDetailReport_Display_WorkOrderDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenBeginDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerIdList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.VehicleModelList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModelList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.RegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.RegionIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ViewBag.DealerRegionId.ToString()).Enable(ViewBag.DealerRegionId == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.RegionIdList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ProcessTypeList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ProcessTypeList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ProcessTypeCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CustTypeList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CustTypeList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CustTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CustomerIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CustomerIdList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.GroupType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.GroupType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GroupType as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.KilometerDistributionReportIndex)
+
+@*@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", "")*@
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.KilometerDistributionExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<KilometerDistributionReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.GroupType).Sortable(true).Visible(false);
+              columns.Bound(p => p.GroupName).Sortable(true).Width(100).Title(MessageResource.CarServiceDurationReport_Display_GroupName);
+              columns.Bound(p => p.GROUPCODE).Sortable(true).Visible(false);
+              columns.Bound(p => p.TotalWorkOrderCardNumber).Sortable(true).Width(100).Title(MessageResource.CarServiceDurationReport_Display_TotalWorkOrderNumber);
+              columns.Bound(p => p.TotalWinNumber).ClientTemplate("<a class='k-link' onclick='OpenWorkOrderDetail(#=GroupType#,\"#=GROUPCODE#\")'>#=TotalWinNumber#</a>").Sortable(true).Width(100).Title(MessageResource.KilometerDistributionReport_Display_TotalWinNumber);
+              columns.Bound(p => p.AverageKilometer).Sortable(true).Width(100).Title(MessageResource.KilometerDistributionReport_Display_AverageKilometer);
+
+              columns.Bound(p => p.MaxKM).Sortable(true).Width(100).Title(MessageResource.KilometerDistributionReport_Display_MaxKm);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .Events(evt => evt.RequestStart("CheckGroupType"))
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                                .Read(read => read.Action("KilometerDistributionReport", "Reports", Model).Data("GetParameters"))
+                                        )
+
+    )
+</div>
+<div id="PartInfoWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+@Html.Partial("_MultipleSelectionFunc")
+<script type="text/javascript">
+
+    function OpenBeginDate() {
+        var dateStart = $("#BeginDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#BeginDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#BeginDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    $(document).ready(init);
+
+    function CheckGroupType(e) {
+        var groupType = $("#GroupType").data('kendoComboBox').value().toString();
+
+        if (!groupType || groupType == "0") {
+            SetErrorMessage('@MessageResource.VehicleServiceDurationReport_Message_GroupTypeIsRequired');
+            e.preventDefault();
+            return false;
+        }
+
+        SetSuccessMessage('@MessageResource.VehicleServiceDurationReport_Message_GroupTypeChoose');
+    }
+    
+    function GetParameters() {
+        var groupType = $("#GroupType").data('kendoComboBox').value().toString();
+
+        return {
+            BeginDate: $('#BeginDate').val(),
+            EndDate: $('#EndDate').val(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            VehicleModelList: GetQuotedList($("#VehicleModelList").data('kendoMultiSelect').value().toString()),
+            RegionIdList: $("#RegionIdList").data('kendoMultiSelect').value().toString(),
+            ProcessTypeList: GetQuotedList($("#ProcessTypeList").data('kendoMultiSelect').value().toString()),
+            CustTypeList: GetQuotedList($("#CustTypeList").data('kendoMultiSelect').value().toString()),
+            CustomerIdList: $("#CustomerIdList").data('kendoMultiSelect').value().toString(),
+            GroupType: groupType,
+            ReportType:39,
+            Columns: "GroupName,TotalWorkOrderCardNumber,TotalWinNumber,AverageKilometer,MaxKM"
+        };
+    }
+
+
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            //$("#DealerIdList").data('kendoMultiSelect').value('');
+            //$("#RegionIdList").data('kendoMultiSelect').value('');
+            $("#VehicleModelList").data('kendoMultiSelect').value('');
+            $("#CustTypeList").data('kendoMultiSelect').value('');
+            $("#CustomerIdList").data('kendoMultiSelect').value('');
+            $("#ProcessTypeList").data('kendoMultiSelect').value('');
+            $("#GroupType").data('kendoComboBox').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+
+    function OpenWorkOrderDetail(GroupType, GroupCode) {
+        var VehicleModelList = $("#VehicleModelList").data('kendoMultiSelect').value().toString();
+        var ProcessTypeList= $("#ProcessTypeList").data('kendoMultiSelect').value().toString();
+        var CustTypeList= $("#CustTypeList").data('kendoMultiSelect').value().toString();
+        var CustomerIdList = $("#CustomerIdList").data('kendoMultiSelect').value().toString();
+
+
+
+        $('#PartInfoWindow').kwnd('@Url.Action("KilometerReportInfo", "Reports")' + '?GroupType=' + GroupType + '&GroupCode=' + GroupCode + '&VehicleModelList=' + VehicleModelList + '&ProcessTypeList=' + ProcessTypeList + '&CustTypeList=' + CustTypeList + '&CustomerIdList=' + CustomerIdList, '@Html.Raw(MessageResource.PartExchangeReport_Display_PartInfo)',
+        {
+            iframe: false,
+            width: 1250,
+            height: 450,
+            onClose: function () {
+                $("#PartInfoWindow").html('');
+            }
+        });
+        $('#PartInfoWindow').removeClass("hide");
+        OpenWindow($('#PartInfoWindow'));
+    }
+
+</script>

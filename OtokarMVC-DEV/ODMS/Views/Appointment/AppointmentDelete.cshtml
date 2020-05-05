@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = "AppointmentDelete";
+    Layout = null;
+}
+
+<script src="~/Scripts/jquery-1.9.1.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+@using (Html.BeginForm("AppointmentCreate", "Appointment", FormMethod.Post, new { @id = "test", @name = "test" }))
+{
+    @ODMSHelpers.CustomHiddenFieldWithValidation("CustomerId", null, true)
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Appointment.AppointmentCreate, "AppointmentCreate")
+}
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+
+
+

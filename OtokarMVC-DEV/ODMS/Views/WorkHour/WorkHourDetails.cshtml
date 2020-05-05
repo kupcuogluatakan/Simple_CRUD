@@ -1,0 +1,106 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.WorkHour
+@model WorkHourViewModel
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@{
+    ViewBag.Title = MessageResource.WorkHour_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<script type="text/x-kendo-tmpl" id="TeaBreaksTemplate">
+    <div class="ListItem" style='padding:2px 5px 0'>
+        <span>#:Text#</span>
+        <input type='hidden' name='TeaBreaks.StartTime_' value=#:StartTime#>
+        <input type='hidden' name='TeaBreaks.EndTime_' value=#:EndTime#>
+    </div>
+</script>
+
+@Html.AntiForgeryToken()
+<div class="labelDiv">@Html.LabelFor(v => v.WeekDays)</div>
+<div style="float:left">
+    @Html.CheckBox("WeekDays[0]", Model.WeekDays[0], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Monday.GetStringValue(), new { @for = "WeekDays_0_" }) <span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[1]", Model.WeekDays[1], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Tuesday.GetStringValue(), new { @for = "WeekDays_1_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[2]", Model.WeekDays[2], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Wednesday.GetStringValue(), new { @for = "WeekDays_2_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[3]", Model.WeekDays[3], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Thursday.GetStringValue(), new { @for = "WeekDays_3_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[4]", Model.WeekDays[4], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Friday.GetStringValue(), new { @for = "WeekDays_4_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[5]", Model.WeekDays[5], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Saturday.GetStringValue(), new { @for = "WeekDays_5_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[6]", Model.WeekDays[6], new { disabled = "disabled" }) @Html.Label("", WorkHourViewModel.DayOfWeek.Sunday.GetStringValue(), new { @for = "WeekDays_6_" })<span style="width:15px">&nbsp;</span>
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.DealerName)</div>
+<div class="shortTxtDiv">
+    @Model.DealerName
+
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+<div class="shortTxtDiv StartDate">@Convert.ToDateTime(Model.StartDate).ToString("dd/MM/yyyy")</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+<div class="shortTxtDiv EndDate">@Convert.ToDateTime(Model.EndDate).ToString("dd/MM/yyyy") </div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.StatusOfWork)</div>
+<div class="shortTxtDiv">
+    @Model.StatusOfWork.GetStringValue()
+
+</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.MeetingInterval)</div>
+<div class="shortTxtDiv">@Model.MeetingInterval</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Description) &nbsp;</div>
+<div class="shortTxtDiv">@Model.Description</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Priority)</div>
+<div class="shortTxtDiv">@Model.Priority</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.WorkStartHour)</div>
+<div class="shortTxtDiv">
+    @Model.WorkStartHour.ToDisplayString()
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.WorkEndHour)</div>
+<div class="shortTxtDiv">
+    @Model.WorkEndHour.ToDisplayString()
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+
+<div class="labelDiv">@Html.LabelFor(c => c.LaunchBreakStartHour)</div>
+<div class="shortTxtDiv">@Model.LaunchBreakStartHour.ToDisplayString()</div>
+<div class="labelDiv">@Html.LabelFor(c => c.LaunchBreakEndHour)</div>
+<div class="shortTxtDiv">@Model.LaunchBreakEndHour.ToDisplayString()</div>
+<div class="clearDiv">&nbsp;</div>
+<div id="teabreak">
+    <div class="labelDiv"><label>@MessageResource.WorkHour_Display_TeaBreak</label></div>
+    <div style="float:left">
+        @* @(Html.Kendo().ListView<ODMSModel.Common.ComboBoxModel>().Name("TeaBreakList") .HtmlAttributes(new{style="width:200px; height:80px; overflow-y:auto;"}).ClientTemplateId("TeaBreaksTemplate").TagName("div")
+             .DataSource(c=>c.Create(m=>m.Action("TeaBreakList","WorkHour",new{workHourId=Model.WorkHourId}).Type(HttpVerbs.Post)).Events(d=>d.RequestEnd("ArrangeTeaBreakList"))).AutoBind(true))*@
+
+        @(Html.Kendo().ListView<ODMSModel.WorkHour.TeaBreakModel>()
+          .Name("TeaBreaksList")
+          .ClientTemplateId("TeaBreaksTemplate")
+          .TagName("div")
+          .AutoBind(true)
+          .DataSource(ds => ds.Read(read =>
+              read.Action("TeaBreakList", "WorkHour", new { workHourId = Model.WorkHourId })))
+          .HtmlAttributes(new { style = "width:200px; height:80px; overflow-y:auto;" })
+        )
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<script>
+    $(document).ready(function () {
+        $(".StartDate").text($(".StartDate").text().replace('.', '/').replace('.', '/'))
+        $(".EndDate").text($(".EndDate").text().replace('.', '/').replace('.', '/'))              
+    });
+</script>
+
+
+

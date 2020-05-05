@@ -1,0 +1,62 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Common
+@{
+    Layout = null;// "~/Views/Shared/Popup_Layout.cshtml";
+    var wokrOrderId = ViewBag.WorkOrderId;
+    var workOrderDetailId = ViewBag.WorkOrderDetailId;
+    var code = ViewBag.FailureCode.ToString();
+}
+
+<script type="text/javascript">
+    function UpdateCode() {
+        mvc.build("@Url.Action("FailureCodeUpdate","WorkOrderCard")", null, null, { workOrderId: @wokrOrderId, workOrderDetailId: @workOrderDetailId,failureCode:$('#FailureCodeId').val()}, true, "json");
+        mvc.post(null, function(json) {
+    
+            if (json.Result == false) {
+                $("#warning-wrap331").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+                $("#warning-wrap331  strong").html(json.Message);
+            } else {
+                $("#warning-wrap331").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+                $("#warning-wrap331  strong").html(json.Message);
+            }
+            $('#warning-wrap331').slideDown();
+        }, null);
+    }
+    
+    function MakeItemsToolTip(e) {
+        $(".combotooltip").each(function(i, e) {
+            $(e).tooltip({ placement: "right" ,html:true});
+        });
+    }
+
+</script>
+
+<script id="ComboBoxWithToolTip" type="text/x-kendo-template">
+    <table style="width:100%">
+    <tr>
+    <td  data-toggle='tool-tip' >(#=Text#) #=Description#  </td>
+    </tr>
+    </table>
+ </script>  
+    <div id="warning-wrap331" class="alert alert-warning" style="display:none">
+        <strong></strong>
+        </div>
+    <div style="margin-top: 20px;">
+
+        <div class="col-sm-2 labelDiv">
+            @MessageResource.AppointmentIndicatorFailureCode_Display_Code
+        </div>
+        <div style="width:300px !important;" class="col-sm-6 shortTxtDiv">
+            @(Html.Kendo().ComboBox().Name("FailureCodeId").DataValueField("Value").DataTextField("Description").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.FailureCodeList as List<ComboBoxModel>)
+                                      .AutoBind(true).TemplateId("ComboBoxWithToolTip").HtmlAttributes(new{style="width:100%"})
+                                      .SelectedIndex((ViewBag.FailureCodeList as List<ComboBoxModel>).FindIndex(c=>c.Text==code))
+                                      
+                                        )
+        </div>
+        <div class="clearfix"></div>
+        <div class="text-left" style="margin-right:30px; margin-top:10px">
+            @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.WorkOrderCard.WorkOrderCardUpdate,"WorkOrderCardUpdate","UpdateCode();")        
+        </div>
+       
+  
+    </div>

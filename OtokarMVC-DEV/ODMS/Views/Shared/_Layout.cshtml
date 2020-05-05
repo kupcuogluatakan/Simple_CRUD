@@ -1,0 +1,776 @@
+﻿@using System.Text
+@using ODMSCommon.Resources
+@using ODMSCommon.Security
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+    <link href="~/Style/default.css" rel="stylesheet" />
+    <link href="~/Style/Site.css" rel="stylesheet" />
+    <title>@ViewBag.Title - OTOKAR DMS</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <meta name="viewport" content="width=device-width" />
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/bundles/odms/css/commons")
+    @Styles.Render("~/Content/kendo/css")
+    <link href="~/Style/bootstrap-theme.css" rel="stylesheet" />
+    <link href="~/Style/bootstrap.css" rel="stylesheet" />
+   
+
+    <link href="@Url.Content("~/Content/layout.css")" rel="stylesheet" />
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/kendo")
+    @{
+        var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.ToString();
+        var user = UserManager.UserInfo;
+        string userFullName = string.Empty;
+        if (user != null)
+        {
+            userFullName = new StringBuilder().Append(user.FirstName).Append(" ").Append(user.MiddleName ?? string.Empty).Append(" ").Append(user.LastName).ToString();
+        }
+    }
+    <script id="fileTemplate" type="text/x-kendo-template">
+        <span class='k-progress'></span>
+        <div id="holderTemp" class='file-wrapper'>
+            <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
+            <h5 class='file-heading file-name-heading'>
+                Name: #=name#</h4>
+                <h5 class='file-heading file-size-heading'>
+                    Size: #=size# bytes</h4>
+                    <button type='button' class='k-upload-action'></button>
+        </div>
+    </script>
+
+    <script src="~/Scripts/custom.js?v=1.1"></script>
+    <script type="text/javascript">
+
+        function InputToUpper(obj) {
+            if (obj.value != "") {
+                obj.value = obj.value.toUpperCase();
+            }
+        }
+        function InputToUpperWithoutWhiteSpace(obj) {
+            if (obj.value != "") {
+                obj.value = obj.value.toUpperCase();
+                obj.value = obj.value.replace(' ', '');
+            }
+        }
+        root = '@Url.Content("~")';
+        function onSelect(e) {
+            var result = true;
+            var files = e.files;
+            $.each(files, function () {
+
+                if (this.extension.toLowerCase() != '@CommonValues.ExcelExtOld' && this.extension.toLowerCase() != '@CommonValues.ExcelExtNew') {
+                    SetErrorMessage('@MessageResource.Global_Warning_TypeExcel');
+                    e.preventDefault();
+                    $('#divExcepUpload').hide();
+                    result = false;
+                }
+
+                if (this.size / 1024 / 1024 > 5) {
+                    SetErrorMessage('@MessageResource.Global_Warning_FileSize');
+                    e.preventDefault();
+                    $('#divExcepUpload').hide();
+                    result = false;
+                }
+
+            });
+
+            if (result == true) {
+                $('#divExcepUpload').show();
+            }
+
+            //console.log(result);
+        }
+
+        function addExtensionClass(extension) {
+            switch (extension) {
+                case '.jpg':
+                case '.img':
+                case '.png':
+                case '.gif':
+                    return "img-file";
+                case '.doc':
+                case '.docx':
+                    return "doc-file";
+                case '.xls':
+                case '.xlsx':
+                    return "xls-file";
+                case '.pdf':
+                    return "pdf-file";
+                case '.ppt':
+                    return "ppt-file";
+                case '.zip':
+                case '.rar':
+                    return "zip-file";
+                case '.mov':
+                case '.mpg':
+                    return "vid-file";
+                default:
+                    return "default-file";
+            }
+        }
+
+        $(document).ready(function () {
+            backgroundChange();
+        });
+
+        function backgroundChange() {
+            var d = new Date();
+            var n = d.getHours();
+
+            var bgImage = "@Url.Content("~/images/clouds.jpg")";
+            if (n == 9 || n == 14)
+            {
+                bgImage = "@Url.Content("~/images/clouds_1.jpg")";
+            }
+            else if (n == 10 || n == 15) {
+                bgImage = "@Url.Content("~/images/clouds_2.jpg")";
+            }
+            else if (n == 11 || n == 16) {
+                bgImage = "@Url.Content("~/images/clouds_3.jpg")";
+            }
+            else if (n == 12 || n == 17) {
+                bgImage = "@Url.Content("~/images/clouds_4.jpg")";
+            }
+            else if (n == 13 || n == 18) {
+                bgImage = "@Url.Content("~/images/clouds_5.jpg")";
+            }
+
+            $("#bgimgwrapper img:first").attr("src", bgImage);
+        }
+
+    </script>
+
+
+    <style scoped>
+        .file-icon
+        {
+            display: inline-block;
+            float: left;
+            width: 32px;
+            height: 32px;
+            margin-left: 5px;
+            margin-top: 2px;
+        }
+
+        .img-file { background-image: url(@Url.Content("~/Images/pic.png")) }
+        .doc-file { background-image: url(@Url.Content("~/Images/doc.png")) }
+        .pdf-file { background-image: url(@Url.Content("~/Images/pdf.png")) }
+        .ppt-file { background-image: url(@Url.Content("~/Images/ppt.png")) }
+        .vid-file { background-image: url(@Url.Content("~/Images/vid.png")) }
+        .xls-file { background-image: url(@Url.Content("~/Images/excel.png")) }
+        .zip-file { background-image: url(@Url.Content("~/Images/zip-icon.png")) }
+        .default-file { background-image: url(@Url.Content("~/Images/default.png")) }
+
+        #file-wrapper .file-heading
+        {
+            font-family: Arial;
+            font-size: 1.1em;
+            display: inline-block;
+            float: left;
+            width: 450px;
+            margin: 0 0 0 25px;
+            height: 25px;
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            overflow:hidden;
+            white-space:nowrap;
+        }
+
+        #file-wrapper .file-name-heading
+        {
+            font-weight: bold;
+        }
+
+        #file-wrapper .file-size-heading
+        {
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        li.k-file .file-wrapper .k-upload-action
+        {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        li.k-file div.file-wrapper
+        {
+            position: relative;
+            height: 75px;
+        }
+
+    </style>
+
+    <script src="@Url.Content("~/Scripts/kendo/cultures/kendo.culture." + culture + ".min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/languages/kendo." + culture + ".js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/globalize.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/cultures/globalize.culture." + culture + ".js")"></script>
+    <script src="~/Scripts/JSONProblemSolver.js"></script>
+    <script src="~/Scripts/respond.js"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            $('#divExcepUpload').hide();
+
+            if (navigator.appName.indexOf("Internet Explorer") != -1) {
+                var badBrowser = (navigator.appVersion.indexOf("MSIE 7") != -1);
+                if (badBrowser) {
+                    $("#browserNotification").css('display', 'block');
+                    $("#contentHtml").css('display', 'none');
+                }
+            }
+        });
+        function pageLoad() {
+            CheckAlertBox();
+        }
+        (function ($) {
+
+            var pr = 0, bgWidth = true, bgResize;
+
+
+
+            $(document).ready(function () {
+                $(".ScreenName").html("@ViewBag.Title");
+                kendo.culture("@culture");
+                CheckAlertBox();
+                $(".DoLogout").on("click", function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("DoLogout", "SystemAdministration")",
+                        contentType: 'application/json',
+                        traditional: true,
+                        dataType: "json",
+                        success: function (result) {
+                            window.location = '@Url.Action("Login", "SystemAdministration")';
+                            //if (result.Status == 0)
+                            //    SetErrorMessage(result.Message);
+                            //else
+                            //    SetSuccessMessage(result.Message);
+                        }
+
+                    });
+                });
+                $(".close").on("click", function () {
+                    $(".messageDiv").fadeOut("slow");
+                });
+            });
+        })(jQuery);
+        function SetPageTitle(pageTitle) {
+            $(".ScreenName").html(pageTitle);
+        }
+        function CheckAlertBox() {
+
+            $('div[id="successDiv"]:visible').each(function () {
+
+                $(this).css("display", "none");
+                $(this).fadeIn(2000, function () {
+                });
+            });
+            $('div[id="errorDiv"]:visible').each(function () {
+                $(this).css("display", "none");
+                $(this).fadeIn(2000, function () {
+                });
+            });
+        }
+        $(document).ready(function () {
+            $.validator.methods.number = function (value, element) {
+                return !isNaN(Globalize.parseFloat(value));
+            };
+            Globalize.culture('tr-TR');
+            $(".languageFlag").on("click", function () {
+                changeLang($(this).attr("lang"));
+            });
+            //search button change
+            $("#showSearch").addClass("btn btn-default");
+
+
+            try {
+                var settings = $('form').validate().settings;
+                if (settings) {
+                    settings.wrapper = "label";
+                    settings.showErrors = function (errorMap, errorList) {
+                        this.defaultShowErrors();
+                        $(".field-validation-error").each(function (i, e) {
+                            //alert($("a", e).length);
+                            if ($("a", e).length > 0) return;
+                            var html = $("label", e).text().replace("'", "").replace("'", "");
+                            var newHtml = "<a title='" + html + "' data-toggle='tool-tip'><img style='width:16px'  class='' src='@Url.Content("~/images/messagebox_warning.png")' /> </a>";
+                            $(e).html(newHtml);
+
+                            //$("a", e).tooltip({ placement: "right" });
+                        });
+                    };
+                }
+                $(".field-validation-error").each(function (i, k) {
+                    // if ($("a", e).length > 0) return;
+                    ////console.log("k=>" + $(k).html());
+                    var html = $(k).html().replace("'", "").replace("'", "");
+                    var newHtml = "<a title='" + html + "' data-toggle='tool-tip'><img style='width:16px'  class='' src='@Url.Content("~/images/messagebox_warning.png")' /> </a>";
+                    $(k).html(newHtml);
+
+                    $("a", k).tooltip({ placement: "right", html: true });
+                });
+            }
+            catch (m) { }
+        });
+
+        function changeLang(lang) {
+            var date = new Date();
+            date.setDate(date.getDate() + 50 * 365);
+            $.removeCookie("ODMSApplicationLang", { path: '/' });
+            $.cookie('ODMSApplicationLang', lang, { expires: date, path: '/' });
+            var request = $.ajax({
+                url: '@Url.Action("ChangeLanguage", "Home")',
+                data: "lang=" + lang,
+                type: "POST",
+                dataType: "json"
+            });
+            request.done(function (msg) {
+                window.location.reload();
+            });
+
+
+
+        }
+    </script>
+
+</head>
+<body>
+    <style>
+        .locked {
+            margin: 0 auto;
+            z-index: 100011; /*because you could set some z-indexes in your code before, so lets make sure that this will be over every elements in html*/
+            height: 100%;
+            top: 50%;
+            position: absolute;
+            left: 45%;
+        }
+
+        .lockedwrapper {
+            background-color: black;
+            opacity: 0.5;
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100012;
+        }
+    </style>
+    @if (UserManager.UserInfo != null && !UserManager.UserInfo.IsTechnician && UserManager.UserInfo.HasSystemRole)
+    {
+        @Html.Partial("_MenuPartial", (new ODMS.Security.UserPermissionManager().UserMenu))
+    }
+    <div id="bgimgwrapper">
+        <img alt="" src="~/images/clouds.jpg" class="bg" style="width: 100%;" />
+    </div>
+
+
+    <div id="contentWrapper">
+        <div style="width: 100%;">
+            <div id="headerDiv">
+                <div style="float: left">
+                    <img src="~/images/smalllogo.png" />
+                </div>
+                <div id="ScreenName" class="ScreenName"></div>
+                <div style="float: right; padding-top: 5px; text-align: right; padding-right: 20px;">
+                    <img src="~/images/tr.gif" class="languageFlag" lang="tr-TR" style="cursor: pointer; width: 22px; height: 14px;" />
+                    &nbsp;
+                    <img src="~/images/us.gif" class="languageFlag" lang="en-US" style="cursor: pointer; width: 22px; height: 14px;" />
+                    &nbsp;
+                    <img src="~/images/de.gif" class="languageFlag" lang="de-DE" style="cursor: pointer; width: 22px; height: 14px;" />
+                    &nbsp;
+                    <img src="~/images/fr.gif" class="languageFlag" lang="fr-FR" style="cursor: pointer; width: 22px; height: 14px;" />
+                    &nbsp;
+                    <img src="~/images/ru.gif" class="languageFlag" lang="ru-RU" style="cursor: pointer; width: 22px; height: 14px;" />
+                    <br />
+                    @{
+                        if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ActiveDealerChoice.ActiveDealerChoiceIndex) && UserManager.UserInfo.IsPasswordSet)
+                        {
+                            Html.RenderAction("ActiveDealerChoice", "ActiveDealer");
+                        }
+                    }
+
+                    @{
+                        if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ActiveAnnouncements.ActiveAnnouncementsIndex) && UserManager.UserInfo.IsPasswordSet)
+                        {
+                            Html.RenderAction("ActiveAnnouncementsLink", "ActiveAnnouncements");
+                        }
+                    }
+                    <span style="color: White">@userFullName </span><span style="color: White; padding-left: 10px;">-</span><span style="padding-left: 10px; padding-right: 10px;"><a href="#" class="DoLogout" style="color: White; text-decoration: none">@MessageResource.SystemAdministration_Display_Logout</a></span>
+
+                </div>
+            </div>
+
+            @{
+                if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ActiveAnnouncements.ActiveAnnouncementsIndex) && UserManager.UserInfo.IsPasswordSet)
+                {
+                    Html.RenderAction("ActiveSlideAnnouncements", "ActiveAnnouncements");
+                }
+            }
+
+
+
+
+        </div>
+
+        <div id="content" class="rounded" style="margin-top: 5px; background-color: #fbfbfb !important; padding-top: 15px; box-shadow: 0 5px 4px #646464;">
+            <div id="browserNotification" class="alert alert-warning messageDiv" style="display: none">
+                <h2>@CommonUtility.GetResourceValue("Global_Page_Browser_Notification")</h2>
+                <ul>
+                    <h3>
+                        <li><a target="_blank" href="http://windows.microsoft.com/tr-tr/internet-explorer/download-ie">Internet Explorer </a></li>
+                        <li><a target="_blank" href="http://www.google.com/chrome/">Chrome</a></li>
+                    </h3>
+                </ul>
+            </div>
+
+            <div id="contentHtml" style="padding: 10px; display: block">
+                <div style="width: 100%; ">
+                    @if (Convert.ToBoolean(TempData["DealerNotSelected"]))
+                    {
+                        <span style="font-size:25px;">@Html.Raw(CommonUtility.GetResourceValue("Global_Error_ActiveDealerNotSelected"))</span>
+                        <div id="bodyContent" style="display: none">
+                            @RenderBody()
+                        </div>
+                        <script>
+                            $(document).ready(function () {
+                                $("#bodyContent").remove();
+                            });
+                        </script>
+                    }
+                    else
+                    {
+                        @Html.Partial("MessageHolder")
+                        <div id="bodyContent">@RenderBody()</div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <p style="float:left; width: 400px; text-align: left; padding-left: 3%;">Server : @ODMSCommon.General.Server Database : @ODMSCommon.General.DatabaseName</p>
+            <p>
+                Copyright &copy; 2013 Otokar.com.tr
+            </p>
+        </div>
+    </div>
+
+    @RenderSection("Scripts", false)
+    <script id="delete-confirmation" type="text/x-kendo-template">
+        <p class="delete-message">@MessageResource.Global_Display_DeleteConfirmQuestion</p>
+        <p style="text-align:right">
+            <button class="delete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="delete-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+    </script>
+
+    <script id="add-confirmation" type="text/x-kendo-template">
+        <p class="add-message">@MessageResource.Global_Display_AddConfirmQuestion</p>
+        <p style="text-align:right">
+            <button class="add-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="add-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+    </script>
+
+    <script id="changeStatus-confirmation" type="text/x-kendo-template">
+        <p class="changeStatus-message">@MessageResource.Global_Display_ChangeStatusConfirmQuestion</p>
+        <p style="text-align:right">
+            <button class="changeStatus-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="changeStatus-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+    </script>
+
+    <script type="text/javascript">
+        $(document).ajaxStart(function () {
+            $('.lockedwrapper').css('display', 'block');
+        });
+        $(document).ajaxComplete(function (event, request, settings) {
+            $('.lockedwrapper').css('display', 'none');
+        });
+        var searchHtml;
+        $(document).ready(function () {
+
+            $("body").delegate("a.tabs,a.loadTab", "click", function (e) {
+                var selectedRow = $("tr.k-state-selected", $(this).parents("table"));
+                selectedRow.removeClass("k-state-selected");
+                $(this).parents("tr").eq(0).addClass("k-state-selected");
+            });
+
+
+
+
+            $.validator.methods.date = function (value, element) {
+                return this.optional(element) || Globalize.parseDate(value, "dd/MM/yyyy", "tr-TR") || Globalize.parseDate(value, "dd/MM/yyyy HH:mm", "tr-TR") || Globalize.parseDate(value, "HH:mm", "tr-TR");
+
+            };
+            $(".ScreenName").html("@ViewBag.Title");
+            kendo.culture("@culture");
+            CheckAlertBox();
+            $(".close").on("click", function () {
+                $(".messageDiv").fadeOut("slow");
+            });
+
+            Globalize.culture('tr-TR');
+            var $search = $('#searchDiv');
+            var resetButtonHtml;
+            resetButtonHtml = "<button class='k-button' style='font-weight:bold !important;' id='btnReset' onclick='ResetSearch();'><i class=' glyphicon glyphicon-remove'></i> " + '@MessageResource.Global_Display_Clear' + "</button>";
+            $search.after(resetButtonHtml);
+            //searchHtml = $search.html();
+            $search.keypress(function (e) {
+                var code = e.keyCode || e.which;
+                if (code == 13) {
+
+                    var isTagInput = 0;
+                    $.each(e.target.attributes, function () {
+                        if (this.nodeName == "taginput") {
+                            isTagInput = 1;
+                        }
+                    });
+
+                    if (isTagInput == 0) {
+                        $('#btnSearch').trigger("click");
+                    }
+                }
+            });
+            $("body").delegate("div.k-overlay", "click", overlayClick);
+        });
+
+        function ResetSearch() {
+            //$('#searchDiv').html(searchHtml);
+            $('#searchDiv :input').each(function () {
+                if (!$(this).attr('disabled')) {//Orhan: Disabled alanların clear edilmemesi için.(Örn: Bayi)
+                    if ($(this).is(':checkbox'))
+                        $(this).removeAttr('checked');
+                    else
+                        $(this).val('');
+                }
+
+            });
+            $(".k-datepicker", '#searchDiv').width(200).css("padding", "0");
+        }
+
+
+
+        function overlayClick() {
+            var wnd = $("div.k-overlay + div.k-window:visible div").eq(2);
+            var kwnd = wnd.data("kendoWindow");
+            if (kwnd) {
+                kwnd.close();
+                wnd.html('');
+            }
+        }
+
+        function DeleteConfirm(deleteFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: "@MessageResource.Gloabl_Display_DeleteConfirmTitle",
+                resizable: false,
+                modal: true
+            });
+
+            kendoWindow.data("kendoWindow")
+                .content($("#delete-confirmation").html())
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (deleteFunction)
+                            deleteFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+        function AddConfirm(addFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: "@MessageResource.Global_Display_AddConfirmTitle",
+                resizable: false,
+                modal: true
+            });
+
+            kendoWindow.data("kendoWindow")
+                .content($("#add-confirmation").html())
+                .center().open();
+
+            kendoWindow
+                .find(".add-confirm,.add-cancel")
+                .click(function () {
+                    if ($(this).hasClass("add-confirm")) {
+                        confirm = true;
+                        if (addFunction)
+                            addFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+        function ChangeStatusConfirm(changeStatusFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: "@MessageResource.Global_Display_ChangeStatusConfirmTitle",
+                resizable: false,
+                modal: true
+            });
+
+            kendoWindow.data("kendoWindow")
+                .content($("#changeStatus-confirmation").html())
+                .center().open();
+
+            kendoWindow
+                .find(".changeStatus-confirm,.changeStatus-cancel")
+                .click(function () {
+                    if ($(this).hasClass("changeStatus-confirm")) {
+                        confirm = true;
+                        if (changeStatusFunction)
+                            changeStatusFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+
+        function resetChooseLoader() {
+            var openedLoader = $("img[src='/ODMSDEV/Images/ajax-loader.gif']");
+
+            if (openedLoader.length > 0) {
+                openedLoader.attr('src', '@Url.Content("~/Images/choose.ico")');
+            }
+        }
+
+        //Custom Confirm Message write in popup
+        function CustomConfirm(customFunction, title, content, textYes, textNo) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: title,
+                resizable: false,
+                modal: true,
+                close: resetChooseLoader
+            });
+
+            var string = '<p class="delete-message">' + content + '</p>' +
+                '<p style="text-align:right">' +
+                '<button class="delete-confirm k-button">' + textYes + '</button>' +
+                '<button class="delete-cancel k-button">' + textNo + '</button></p>';
+
+            kendoWindow.data("kendoWindow")
+                .content(string)
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (customFunction)
+                            customFunction();
+                    }
+                    else {
+                        resetChooseLoader();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+
+       
+
+
+    </script>
+    <div class="lockedwrapper">
+        <div class="locked">
+            @* <div style="width: 100px; margin: 0 auto;">
+                    <span style="color:white">Lütfen Bekleyin</span><br/>
+                    <img class='waitImg' style="width:20px; height:20px;padding-left: 30px;" src='@Url.Content("~/Images/ajax-loader.gif")'/>
+                </div>*@
+            <div class="conteneur_78390">
+                <div class="decalage_pers_78390">
+                    <div class="cercle_rouge_78390"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript">
+
+        function AddColumnHeaderTooltip() {
+            $('th').each(function () {
+                var title = $(this).attr("data-title"); //$(this).attr('href', 'http://www.somesitename.com/filter' + this.href);
+                $(this).attr("title", title);
+            });
+        }
+
+        $(document).ready(function () {
+            $("#showSearch").unbind("click").off("click");
+            $("#showSearch").click(function () { $("#searchDiv").slideToggle() });
+            AddColumnHeaderTooltip();
+
+        });
+
+        function DisableComboUserEdit(e) {
+            if (this.value() && this.selectedIndex == -1) {
+                var dt = this.dataSource._data[0];
+                this.text('');
+            }
+        }
+        @*var resources = @Html.Raw(CommonUtility.GetJsResources(System.Threading.Thread.CurrentThread.CurrentCulture.Name));*@
+
+    </script>
+
+
+    @* Kendo'nun çoklu seçim component'i listeli olarak çalışıyor. Aynı görüntüde başka bir component kullandım listesiz olarak kullanılıyor.
+        Kullanım: tagInput class'ına sahip bir input eklenir. <input type="text" class="tagInput" name="" value="" />
+    *@
+    <link href="~/Content/others/css/bootstrap-tagsinput.css" rel="stylesheet" />
+    <script src="~/Content/others/js/bootstrap-tagsinput.js"></script>
+
+    <style>
+        .tagInputsCss {
+            color: #fff;
+            border-color: #357ebd;
+            background-color: #428bca;
+            margin: 1px 0 1px 1px;
+            padding: .1em .15em .1em .4em;
+            line-height: 1.5em;
+            float: left;
+            font-size: 12.5px;
+            font-weight: bold;
+            border-radius: 4%;
+        }
+    </style>
+
+    <script>
+        $(document).ready(tagInput);
+
+        function tagInput() {
+            $('.tagInput').tagsinput({
+                tagClass: 'tagInputsCss'
+            });
+
+            setTimeout(setTagInput(), 150);
+        }
+
+        function setTagInput(){
+            $('.tagInput').prev().find("input").attr("tagInput", "1");
+        }
+
+    </script>
+
+</body>
+</html>

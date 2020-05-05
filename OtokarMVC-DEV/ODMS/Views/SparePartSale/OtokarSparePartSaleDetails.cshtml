@@ -1,0 +1,49 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SparePartSale.SparePartSaleViewModel
+<style type="text/css">
+    #popupContent
+    {
+        width: 1380px !important;
+    }
+</style>
+@{
+    ViewBag.Title = MessageResource.OtokarSparePartSale_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<script>
+    $('body').css('overflow', 'hidden');
+</script>
+<link href="~/Style/Content.css" rel="stylesheet" />
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+<div class="shortTxtDiv">@Model.CustomerName </div>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerTypeId)</div>
+<div class="shortTxtDiv">@Model.CustomerType
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.BillingAddressId)</div>
+<div class="shortTxtDiv">
+    @Model.BillingAddress
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.ShippingAddressId)</div>
+@Model.ShippingAddress
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceDate)</div>
+<div class="shortTxtDiv">@Model.InvoiceDate </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceSerialNo)</div>
+<div class="shortTxtDiv">@Model.InvoiceSerialNo</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceNo)</div>
+<div class="shortTxtDiv">@Model.InvoiceNo </div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.StockTypeName)</div>
+<div class="shortTxtDiv">@Model.StockTypeName </div>
+<div class="clearDiv">&nbsp;</div>
+

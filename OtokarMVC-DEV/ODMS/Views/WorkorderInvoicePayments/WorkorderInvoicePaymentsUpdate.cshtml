@@ -1,0 +1,139 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.PaymentType
+@model ODMSModel.WorkorderInvoicePayments.WorkorderInvoicePaymentsDetailModel
+@{
+    ViewBag.Title = MessageResource.WorkorderInvoicePayments_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@{
+    var paymentTypeList = (List<PaymentTypeListModel>)ViewBag.PaymentTypeList;
+    foreach (var paymentType in paymentTypeList)
+    {
+        @Html.Hidden("PaymentType" + paymentType.Id, paymentType.Id, new { paymentType.BankRequired, paymentType.InstalmentRequired, paymentType.TransmitNoRequired })
+    }
+}
+
+@using (Html.BeginForm("WorkorderInvoicePaymentsUpdate", "WorkorderInvoicePayments", FormMethod.Post))
+{
+    <div id="tagPaymentTypeListDiv" class="labelDiv" style="width: 120px">@Html.Label(@MessageResource.WorkorderInvoicePayments_Display_PaymentTypeList)</div>
+    <div id="cmbPaymentTypeListDiv" class="shortTxtDiv" style="width: 250px">
+        @(Html.Kendo().ComboBoxFor(d => d.PaymentTypeId)
+                  .Placeholder(@MessageResource.WorkorderInvoicePayments_Display_SelectPaymentType)
+                  .Events(e => e.Change("PaymentTypeSelectionChanged"))
+                  .BindTo(ViewBag.PaymentTypeList)
+                  .DataTextField("PaymentTypeName")
+                  .DataValueField("Id")
+                  .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+              )
+    </div>
+    <br />
+    <div id="tagBankListDiv" class="labelDiv" style="position: absolute; width: 120px; margin-top: 15px">@Html.Label(@MessageResource.WorkorderInvoicePayments_Display_BankList)</div>
+    <div id="cmbBankListDiv" class="shortTxtDiv" style="width: 250px; margin-top: 10px;">
+        @(Html.Kendo().ComboBoxFor(d => d.BankId)
+              .Placeholder(@MessageResource.WorkorderInvoicePayments_Display_SelectBank)
+              .BindTo(ViewBag.BankList)
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+              )
+    </div>
+    <br />
+    
+    <div id="tagInstalmentNumberDiv" class="labelDiv" style="width: 120px; margin-top: 10px">@Html.LabelFor(d => d.InstalmentNumber)</div>
+    <div id="txtInstalmentNumberDiv" class="shortTxtDiv" style="width: 205px; margin-top: 10px">@Html.TextBoxFor(d => d.InstalmentNumber)</div>
+    
+    <div id="tagPayAmountDiv" class="labelDiv" style="width: 120px; margin-top: 10px">@Html.LabelFor(d => d.PayAmount)</div>
+    <div id="txtPayAmountDiv" class="shortTxtDiv" style="width: 205px; margin-top: 10px">@Html.TextBoxFor(d => d.PayAmount)</div>
+
+    <div id="tagTransmitNumberDiv" class="labelDiv" style="width: 120px; margin-top: 10px;">@Html.LabelFor(d => d.TransmitNumber)</div>
+    <div id="txtTransmitNumberDiv" class="shortTxtDiv" style="margin-top: 10px; width: 100px">@Html.TextBoxFor(d => d.TransmitNumber)</div>
+    
+    @Html.HiddenFor(d => d.WorkorderInvoiceId)
+    @Html.HiddenFor(d => d.WorkorderId)
+
+    @Html.HiddenFor(d => d.BankRequired)
+    @Html.HiddenFor(d => d.InstalmentNumberRequired)
+    @Html.HiddenFor(d => d.TransmitNumberRequired)
+    
+    @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.WorkorderInvoicePayments.WorkorderInvoicePaymentsUpdate, "WorkorderInvoicePaymentsUpdate")
+}
+
+<script>
+    $(function () {
+        adjustPage();
+        adjustControlPositions();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 370);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 320);
+        $("#popupContentWrapper").css("width", 380);
+    }
+
+    function adjustControlPositions() {
+        $("#Update").css("position", "absolute");
+        $("#Update").css("margin-top", "140px");
+        $("#Update").css("margin-left", "-370px");
+        $("#Update").css("width", "75px");
+        
+        var bankRequired = $("#BankRequired").val();
+        var instalmentRequired = $("#InstalmentNumberRequired").val();
+        var transmitNoRequired = $("#TransmitNumberRequired").val();
+
+        SetInputAvailability(bankRequired, instalmentRequired, transmitNoRequired);
+
+        $(".shortTxtDiv span[data-valmsg-for='InstalmentNumber']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='InstalmentNumber']").css("margin-top", "5px");
+        $(".shortTxtDiv span[data-valmsg-for='InstalmentNumber']").css("margin-left", "5px");
+
+        $(".shortTxtDiv span[data-valmsg-for='TransmitNumber']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='TransmitNumber']").css("margin-top", "-18px");
+        $(".shortTxtDiv span[data-valmsg-for='TransmitNumber']").css("margin-left", "210px");
+
+        $(".shortTxtDiv span[data-valmsg-for='PayAmount']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='PayAmount']").css("margin-top", "5px");
+        $(".shortTxtDiv span[data-valmsg-for='PayAmount']").css("margin-left", "5px");
+    }
+    
+    function PaymentTypeSelectionChanged() {
+        var selectedItemId = $("#PaymentTypeId").val();
+        var hiddenDataId = "PaymentType" + selectedItemId;
+        var data = $("#" + hiddenDataId);
+
+        var bankRequired = data.attr("BankRequired");
+        var instalmentRequired = data.attr("InstalmentRequired");
+        var transmitNoRequired = data.attr("TransmitNoRequired");
+        
+        $("#BankRequired").val(bankRequired);
+        $("#InstalmentNumberRequired").val(instalmentRequired);
+        $("#TransmitNumberRequired").val(transmitNoRequired);
+
+        SetInputAvailability(bankRequired, instalmentRequired, transmitNoRequired);
+    }
+    
+    function SetInputAvailability(bankRequired, instalmentRequired, transmitNoRequired) {
+        if (bankRequired == "False") {
+            $("#BankId").data("kendoComboBox").text('');
+            $("#BankId").data("kendoComboBox").enable(false);
+        } else {
+            $("#BankId").data("kendoComboBox").enable(true);
+        }
+
+        if (instalmentRequired == "False") {
+            $("#InstalmentNumber").val('');
+            $("#InstalmentNumber").attr("disabled", true);
+        } else {
+            $("#InstalmentNumber").removeAttr("disabled");
+        }
+
+        if (transmitNoRequired == "False") {
+            $("#TransmitNumber").val('');
+            $("#TransmitNumber").attr("disabled", true);
+        } else {
+            $("#TransmitNumber").removeAttr("disabled");
+        }
+    }
+</script>

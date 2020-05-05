@@ -1,0 +1,70 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.CampaignRequest
+
+@model List<ODMSModel.WorkOrderCard.CampaignDetail.PartModel>
+@{
+    var campaignRequest = ViewBag.CampaignRequest as CampaignRequestViewModel;
+}
+<style type="text/css">
+    .row {
+        padding-bottom: 6px;
+    }
+</style>
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        @MessageResource.CampaignRequest_PageTitle_Details
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-2 bold">@MessageResource.CampaignRequest_Display_CampaignName</div> 
+            <div class="col-md-8">@campaignRequest.CampaignName</div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 bold">@MessageResource.CampaignRequestApprove_Display_CampaignCode</div> 
+            <div class="col-md-3">@campaignRequest.CampaignCode</div>
+            <div class="col-md-2 bold">@MessageResource.Global_Display_Quantity</div> 
+            <div class="col-md-1">@campaignRequest.Quantity</div>
+        </div>
+        <div class="row">
+            <div class="col-md-2 bold">@MessageResource.CampaignRequest_Display_RequestNote</div> 
+            <div class="col-md-7">@campaignRequest.RequestNote</div>
+        </div>
+        <table class="table table-bordered table-striped" style="overflow-y: auto; max-height: 380px;">
+            <thead>
+                <tr>
+                    <th>
+                        @MessageResource.ClaimSupplierPart_Display_PartCode
+                    </th>
+                    <th>
+                        @MessageResource.ClaimSupplierPart_Display_PartName
+                    </th>
+                    <th>
+                        @MessageResource.PurchaseOrder_Display_IdSupplier
+                    </th>
+                    <th>
+                        @MessageResource.Global_Display_Quantity
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.PartCode</td>
+                        <td>@item.PartName</td>
+                        <td>@item.Supplier</td>
+                        <td>@item.Quantity</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+    <div class="panel-footer">
+         <div class="row">
+            <div class="col-md-2 bold">@MessageResource.CampaignRequest_Display_RequestStatus</div> 
+            <div class="col-md-6">@campaignRequest.RequestStatusName</div>
+        </div>
+    </div>
+</div>

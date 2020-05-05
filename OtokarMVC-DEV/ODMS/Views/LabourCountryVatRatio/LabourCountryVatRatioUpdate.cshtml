@@ -1,0 +1,59 @@
+﻿@{
+    ViewBag.Title = MessageResource.LabourCountryVatRatio_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style type="text/css">
+    #popupContentWrapper{ min-height: 360px !important;}
+    #popupContent{ width: 480px !important;}
+</style>
+@using ODMSCommon.Resources
+@model ODMSModel.LabourCountryVatRatio.LabourCountryVatRatioViewModel
+@using (Html.BeginForm("LabourCountryVatRatioUpdate", "LabourCountryVatRatio", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(c=>c.LabourId)
+    @Html.HiddenFor(c=>c.CountryId)
+    @Html.HiddenFor(c=>c.LabourName)
+    @Html.HiddenFor(c=>c.CountryName)
+      <div class="labelDiv"><label>@MessageResource.LabourDuration_Display_Labour</label></div>
+    <div class="shortTxtDiv">
+    @Model.LabourName
+              
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CountryId)</div>
+<div class="shortTxtDiv">@Model.CountryName </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.VatRatio).BindTo(ViewBag.VatRatioList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.VatRatio)
+</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv"><label>@MessageResource.User_Display_IsActive</label></div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(c=>c.IsActive)
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+    
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.LabourCountryVatRatio.LabourCountryVatRatioUpdate, "LabourCountryVatRatioUpdate")        
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function GetMainGroupId() {
+        return {            
+            mainCategoryId: $("#mainCategoryId").val()
+        };
+    }
+    function GetSubGroupId() {
+        return {
+            subCategoryId: $("#subCategoryId").val()
+        };
+    }
+</script>

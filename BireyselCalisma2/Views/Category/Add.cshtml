@@ -1,0 +1,21 @@
+﻿@model BireyselCalisma2.Models.DB.Kategori
+
+@{
+    ViewBag.Title = "Add";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Kategori Ekleme Formu</h2>
+
+@using (Html.BeginForm())
+{
+    <table class="table table-bordered">
+        <tr>
+            <td> <input class="form-control" type="text" name="categoryType" value="" required placeholder="Kategori Adı" />  </td>
+            @Html.ValidationMessageFor(c => c.categoryType) @*databasedeki ismi çeker*@
+        </tr>
+        <tr>
+            <td> <input class="btn btn-success" type="submit" name="btn" value="Kaydet" />   </td>
+        </tr>
+    </table>
+}

@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+<style>
+#popupContent {
+width: 1400px;
+padding-top: 10px;
+padding-left: 10px;
+margin: 0;
+background-color: #EDF1F4 !important;
+}
+ </style>
+
+@model ODMSModel.Appointment.AppointmentViewModel
+    @using (Html.BeginForm("AppointmentUpdate", "Appointment", FormMethod.Post))
+    {
+        Html.RenderPartial("_AppointmentEdit", Model);
+        <input type="hidden" name="AppointmentId" id="AppointmentId" value="@Model.AppointmentId"/>
+        @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Appointment.AppointmentUpdate, "AppointmentUpdate")        
+    }
+<style>
+    body
+    {
+        background-color:#EDF1F4 !important;
+        height:2000px;
+        overflow:hidden;
+        width:2000px;
+    }
+
+</style>

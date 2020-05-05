@@ -1,0 +1,148 @@
+﻿@using ODMSModel.Common
+@model ODMSModel.Maintenance.MaintenanceViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Maintenance_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("MaintenanceUpdate", "Maintenance", FormMethod.Post, new { id = "frmMaint" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.MaintTypeName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.MaintTypeId).Events(ev => ev.Change(@"function(e){HideMonth();}")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.MTSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.MaintTypeId)</div> 
+    <div id="divMonth">
+        <div class="labelDiv">@Html.LabelFor(v => v.MaintMonth)</div>
+        @Html.Kendo().NumericTextBoxFor(v => v.MaintMonth).Min(0).Max(99999).Format("#").Decimals(0).HtmlAttributes(new { type = "text" })
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleTypeId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VTSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.VehicleTypeId)</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EngineType)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.EngineType).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(ds => ds.Read(read => read.Action("ListVehicleEngineTypes", "Maintenance").Data("GetParameters")).ServerFiltering(true)).DataValueField("Value").DataTextField("Text").AutoBind(false).CascadeFrom("VehicleTypeId")
+        @Html.ValidationMessageFor(d => d.EngineType)
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.MaintName)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = true }); }@Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)</div>
+    
+
+    <div class="labelDiv">@Html.LabelFor(v => v.MaintKM)</div>
+    @Html.Kendo().NumericTextBoxFor(v => v.MaintKM).Min(0).Max(99999999).Format("# km").Decimals(0).HtmlAttributes(new { type = "text" })
+    @Html.ValidationMessageFor(d => d.MaintKM)
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MainCategoryId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.MainCategoryId).BindTo(ViewBag.MainCategoryList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.MainCategoryId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(c => c.CategoryId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.CategoryId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListCategories", "Maintenance")
+                                 .Data("GetMainCategoryId")
+                                 .Type(HttpVerbs.Post)
+                                 )
+                                 .ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("MainCategoryId") @Html.ValidationMessageFor(v => v.CategoryId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.SubCategoryId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SubCategoryId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListSubCategories", "Maintenance")
+                                 .Data("GetCategoryId")
+                                 .Type(HttpVerbs.Post))
+                                 .ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("CategoryId") @Html.ValidationMessageFor(v => v.SubCategoryId)
+    </div>
+
+
+    <div class="labelDiv">@Html.LabelFor(c => c.FailureCodeId)</div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBox().Name("FailureCodeId").DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.FailureCodeList as List<ComboBoxModel>)
+                                      .AutoBind(true).TemplateId("ComboBoxWithToolTip")
+                                      .Events(c => c.Open("MakeItemsToolTip"))
+                                        )
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc) @Html.ValidationMessageFor(v => v.AdminDesc)</div>
+
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(d => d.MaintId)
+                  
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Maintenance.MaintenanceUpdate, "MaintenanceUpdate")
+}
+
+
+<script id="ComboBoxWithToolTip" type="text/x-kendo-template">
+    <table style="width:100%">
+        <tr>
+            <td class='combotooltip' data-toggle='tool-tip' title='#=Description#'> #=Text# </td>
+        </tr>
+    </table>
+</script>
+
+<script>
+    function GetParameters() {
+        return {
+            vehicleTypeId: $("#VehicleTypeId").val()
+        };
+    }
+    function MakeItemsToolTip(e) {
+        $(".combotooltip").each(function (i, e) {
+            $(e).tooltip({ placement: "right", html: true });
+        });
+    }
+
+    function GetMainCategoryId() {
+        return {
+            id: $('#MainCategoryId').val()
+        };
+    }
+    function GetCategoryId() {
+        return {
+            id: $('#CategoryId').val()
+        };
+    }
+
+    $("#frmMaint").on('submit', function () {
+        if (!$("#MaintMonth").val())
+            $("#MaintMonth").val(0);
+        if (!$("#MaintKM").val())
+            $("#MaintKM").val(0);
+    });
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 380);
+
+        if ($("#MaintTypeId").val() == 2) {
+            $("#divMonth").hide();
+        } else {
+            $("#divMonth").show();
+        }
+    });
+    function HideMonth(e) {
+        if ($("#MaintTypeId").val() == 2) {
+            $("#divMonth").hide();
+        } else {
+            $("#divMonth").show();
+        }
+    }
+</script>
+
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContentWrapper").css("min-height", 450);
+        $("#popupContentWrapper").css("height", 450);
+    }
+
+</script>

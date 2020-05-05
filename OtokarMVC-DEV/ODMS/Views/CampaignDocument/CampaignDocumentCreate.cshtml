@@ -1,0 +1,34 @@
+﻿@model ODMSModel.CampaignDocument.CampaignDocumentViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignDocument_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CampaignDocumentCreate", "CampaignDocument", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.DocName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().Upload().Name("attachments").Messages(x=>x.Select(ODMSCommon.Resources.MessageResource.Global_Display_SelectFile))</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.LanguageCode)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.LanguageCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.LanguageList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.LanguageCode)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DocumentDesc)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.DocumentDesc) @Html.ValidationMessageFor(c => c.DocumentDesc)</div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.CampaignCode)
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.CampaignDocument.CampaignDocumentCreate, "CampaignDocumentCreate")        
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+

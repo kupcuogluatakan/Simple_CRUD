@@ -1,0 +1,22 @@
+﻿@model ODMSModel.Role.RoleIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Role_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+
+@using (Html.BeginForm("RoleUpdate", "Role", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.RoleTypeName)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = true }); }@Html.ValidationMessageFor(v => v.MultiLanguageContentAsText, null, new { @class = "mlRequired" })  </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc) @Html.ValidationMessageFor(v => v.AdminDesc) </div>
+    @Html.HiddenFor(v => v.RoleId)
+    <div class="clearDiv">&nbsp;</div>
+
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Role.RoleTypeUpdate, "RoleUpdate")
+}
+

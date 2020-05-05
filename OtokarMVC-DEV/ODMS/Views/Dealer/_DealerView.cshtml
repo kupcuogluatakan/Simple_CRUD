@@ -1,0 +1,139 @@
+﻿@model ODMSModel.Dealer.DealerViewModel
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@Html.AntiForgeryToken()
+<div class="labelDiv">@Html.LabelFor(v => v.SSID)</div>
+<div class="shortTxtDiv">@Model.SSID &nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.BranchSSID)</div>
+<div class="shortTxtDiv">@Model.BranchSSID  &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.DealerRegionId)</div>
+<div class="shortTxtDiv">@Model.RegionName &nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.PurchaseOrderGroupName)</div>
+<div class="shortTxtDiv">@Model.PurchaseOrderGroupName &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsSaleDealer)</div>
+<div class="shortTxtDiv"><label style="width:200px">@Html.CheckBoxFor(v => v.IsSaleDealer, new { disabled = "disabled" })</label>  </div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.ShortName)</div>
+<div class="shortTxtDiv">@Model.ShortName &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.Name)</div>
+<div class="shortTxtDiv">@Model.Name &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Address1)</div>
+<div class="shortTxtDiv">@Model.Address1 &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.Address2)</div>
+<div class="shortTxtDiv">@Model.Address2 &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Country)</div>
+<div class="shortTxtDiv">@Model.CountryName &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.City)</div>
+<div class="shortTxtDiv">@Model.CityName &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Town)</div>
+<div class="shortTxtDiv">@Model.TownName &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.Phone)</div>
+<div class="shortTxtDiv">@Model.Phone &nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.MobilePhone)</div>
+<div class="shortTxtDiv">@Model.MobilePhone  &nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Fax)</div>
+<div class="shortTxtDiv">@Model.Fax  &nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.ContactNameSurname)</div>
+<div class="shortTxtDiv">@Model.ContactNameSurname &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.ContactEmail)</div>
+<div class="shortTxtDiv">@Model.ContactEmail &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.TaxNo)</div>
+<div class="shortTxtDiv">@Model.TaxNo &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.TaxOffice)</div>
+<div class="shortTxtDiv">@Model.TaxOffice &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerGroupLookVal)</div>
+<div class="shortTxtDiv">@Model.CustomerGroup &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.DealerClassCode)</div>
+<div class="shortTxtDiv">@Model.DealerClassName &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.WorkshopPlanType)</div>
+<div class="shortTxtDiv">
+    @Model.WorkshopPlanType.GetStringValue() &nbsp;
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.CurrencyCode)</div>
+<div class="shortTxtDiv">
+    @Model.CurrencyName &nbsp;
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.HasTs12047Certificate)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(v => v.HasTs12047Certificate, new { disabled = "disabled" })  </div>
+<div class="labelDiv">@Html.LabelFor(c => c.Ts12047CertificateDate)</div>
+
+<div class="shortTxtDiv">
+    @if (Model.Ts12047CertificateDate.HasValue)
+    {<text>@Model.Ts12047CertificateDate.Value.ToString("d")</text>} &nbsp;
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.HasServiceResponsibilityInsurance)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(v => v.HasServiceResponsibilityInsurance, new { disabled = "disabled" })  </div>
+<div class="labelDiv">@Html.LabelFor(c => c.SaleChannelName)</div>
+<div class="shortTxtDiv">
+    @Model.SaleChannelName &nbsp;
+</div>
+
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.ClaimRatio)</div>
+<div class="shortTxtDiv">@Model.ClaimRatio </div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive, new { disabled = "disabled" })  </div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.AutoMrp)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(v => v.AutoMrp, new { disabled = "disabled" })  </div>
+<div class="labelDiv">@Html.LabelFor(v => v.LastMrpDate)</div>
+<div class="shortTxtDiv">@Model.LastMrpDate &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.AcceptOrderProposal)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(v => v.AcceptOrderProposal, new { disabled = "disabled" })  </div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="shortTxtDiv">
+    <div id="us4" style="width: 900px; height: 400px;"></div>
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<script type="text/javascript" src='https://maps.google.com/maps/api/js?key=AIzaSyD-cmnXHeFtHz-owih5NxYHV66k1kG7vNQ&sensor=false&libraries=places'></script>
+<script src="@Url.Content("~/Scripts/locationpicker.jquery.js")"></script>
+<script type="text/javascript">
+        $(document).ready(function () {
+            $('#us4').locationpicker({
+                location: {
+                    latitude: @Model.Latitude.ToString().Replace(",","."),
+                    longitude: @Model.Longitude.ToString().Replace(",", ".")
+                },
+                radius: 0,
+                
+            });
+        });
+</script>

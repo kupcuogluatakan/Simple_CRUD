@@ -1,0 +1,78 @@
+﻿@{
+    ViewBag.Title = "ChangePriceList";
+    Layout = null;
+}
+@using ODMSCommon.Resources
+@model ODMSModel.ProposalCard.ProposalChangePriceListModel
+<style>
+    .m10 {
+        margin: 10px;
+    }
+</style>
+<div id="warning-wrap" class="alert alert-warning" style="display:none">
+    <strong>
+        
+    </strong>
+</div>
+<div id="wrap" class="m10">
+    @Html.HiddenFor(c=>c.Type)
+    @Html.HiddenFor(c=>c.ProposalId)
+    @Html.HiddenFor(c=>c.ProposalDetailId)
+    @Html.HiddenFor(c=>c.ItemId)
+    <div class="labelDiv">
+        @MessageResource.WorkOrderCard_Display_PriceListDate
+    </div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo()
+              .DatePickerFor(c=>c.PriceListDate)
+              .Format("dd/MM/yyyy")
+              .ParseFormats(new[]{"dd.MM.yyyy"})
+              .Min(Model.ProposalDate)
+              .Max(DateTime.Now)
+              .Value(DateTime.Now)
+              .HtmlAttributes(new { type = "text" }).HtmlAttributes(new { type = "text" })
+              )
+    </div>
+    <div class="clearfix"></div>
+    @ODMSHelpers.Button("Save", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.ProposalCard.ProposalCardUpdate, "ChangePriceList","SavePriceList()")     
+</div>
+<script type="text/javascript">
+    function SavePriceList() {
+        //empty control
+        if ($('#PriceListDate').val() == '') {
+            HandleResult({ Result: false, Message: '@MessageResource.Global_Display_SelectDate' });
+            return;
+        }
+
+        //************//
+
+        var data = GetData();
+        $.post(
+            "@Url.Action("ChangePriceList")",
+            data,
+            function(json) {
+                HandleResult(json);
+            }, "JSON");
+
+    }
+    function GetData() {
+        return {
+            Type: $('#Type').val(),
+            ProposalId: $('#ProposalId').val(),
+            ItemId: $('#ItemId').val(),
+            ProposalDetailId: $('#ProposalDetailId').val(),
+            PriceListDate: $('#PriceListDate').val(),
+        };
+    }
+    function HandleResult(json) {
+        if (json.Result == false) {
+            $("#warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+            $("#warning-wrap  strong").html(json.Message);
+        } else {
+            $("#warning-wrap").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+            $("#warning-wrap  strong").html(json.Message);
+        }
+        $("#warning-wrap").fadeIn();
+        setTimeout(function () { $("#warning-wrap").fadeOut(1000); }, 3000);
+    }
+</script>

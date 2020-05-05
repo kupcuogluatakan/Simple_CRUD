@@ -1,0 +1,138 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.MaintenancePart.MaintenancePartViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+ 
+
+
+@using (Html.BeginForm("MaintenancePartCreate", "MaintenancePart", FormMethod.Post, new { id = "frm_MaintenancePart" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">
+        @{
+              Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });
+        }
+        @Html.ValidationMessageFor(c => c.PartId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsAlternateAllow)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsAlternateAllow)</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsDifBrandAllow)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsDifBrandAllow)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsMust)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsMust)</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.Quantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" })
+        @Html.ValidationMessageFor(v => v.Quantity)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(d => d.MaintId)
+}
+
+@ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.MaintenancePart.MaintenancePartsCreate, "MaintenancePartCreate")
+
+<script>
+
+
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 355);
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+        $("#Create").click(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            var parameters = {
+                PartId: null,
+                PartName: $("#txtPartId").val(), "__RequestVerificationToken": token
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("IsPartChanged", "MaintenancePart")",
+                data: parameters,
+                traditional: true,
+                success: function (result) {
+                    if (result == true) {
+                        AddConfirm(function () {                            
+                            $("#frm_MaintenancePart").submit();
+                        });
+                    }
+                    else {
+                        $("#frm_MaintenancePart").submit();
+                    }
+                },
+                dataType: "json"
+            });
+        });
+
+    });
+
+
+
+    function AddConfirm(addFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_AddConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#add-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".add-confirm,.add-cancel")
+            .click(function () {
+                if ($(this).hasClass("add-confirm")) {
+                    confirm = true;
+                    if (addFunction)
+                        addFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+</script>
+
+<script id="add-confirmation" type="text/x-kendo-template">
+        <p class="add-message">@MessageResource.Maintenance_Confirm_InsertionPartMessage</p>
+        <p style="text-align:right">
+        <button class="add-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="add-cancel k-button">@MessageResource.Global_Display_No</button></p>
+</script>
+
+
+<script>
+    $(function () {
+        adjustPage();        
+    });
+
+    function adjustPage() {       
+        $("#popupContentWrapper").css("min-height", 350);       
+    }
+   
+</script>

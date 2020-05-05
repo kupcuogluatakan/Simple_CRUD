@@ -1,0 +1,311 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Campaign.CampaignListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Campaign_PageTitle_Index");
+}
+
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CampaignCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CampaignCode)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CampaignName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CampaignName)</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IndicatorCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.IndicatorCode)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.ModelKod)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.ModelKod).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.ModelKodList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsMustName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsMust).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").SelectedIndex(0).BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Campaign.CampaignDetails)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickCampaign createNewCampaign", CommonUtility.GetResourceValue("Campaign_PageTitle_Create"), CommonValues.PermissionCodes.Campaign.CampaignCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#CampaignGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+
+</div>
+<script type="text/javascript">
+    function onActivate(e) {
+        alert($(e.item).find("> .k-link").text());
+        //kendoConsole.log("Activated: " + $(e.item).find("> .k-link").text());
+    }
+
+    function loadTabs(campaignCodeParam) {
+        $('#divDetails').hide();
+
+        if (campaignCodeParam != '' && campaignCodeParam != null) {
+
+            var tabStrip = $('#CampaignDetails').kendoTabStrip().data("kendoTabStrip");
+
+            var partTab = tabStrip.contentElements[0];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CampaignPartIndex", "CampaignPart")",
+                data: { campaignCode: campaignCodeParam },
+                contentType: 'application/json; charset=utf-8',
+                success: function(result) {
+                    $(partTab).html(result);
+                    $('#CampaignCode').val(null);
+                    $('#divDetails').show();
+                },
+                error: function(request, status, err) {
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            var labourTab = tabStrip.contentElements[1];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CampaignLabourIndex", "CampaignLabour")",
+                data: { campaignCode: campaignCodeParam },
+                contentType: 'application/json; charset=utf-8',
+                success: function(result) {
+                    $(labourTab).html(result);
+                    $('#CampaignCode').val(null);
+                    $('#divDetails').show();
+                },
+                error: function(request, status, err) {
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            var vehicleTab = tabStrip.contentElements[2];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CampaignVehicleIndex", "CampaignVehicle")",
+                data: { campaignCode: campaignCodeParam },
+                contentType: 'application/json; charset=utf-8',
+                success: function(result) {
+                    $(vehicleTab).html(result);
+                    $('#CampaignCode').val(null);
+                    $('#divDetails').show();
+                },
+                error: function(request, status, err) {
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            var documentTab = tabStrip.contentElements[3];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CampaignDocumentIndex", "CampaignDocument")",
+                data: { campaignCode: campaignCodeParam },
+                contentType: 'application/json; charset=utf-8',
+                success: function(result) {
+                    $(documentTab).html(result);
+                    $('#CampaignCode').val(null);
+                    $('#divDetails').show();
+                },
+                error: function(request, status, err) {
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            var dismantleTab = tabStrip.contentElements[4];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CampaignDismantlePartIndex", "CampaignDismantlePart")",
+                data: { campaignCode: campaignCodeParam },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $(dismantleTab).html(result);
+                    $('#CampaignCode').val(null);
+                    $('#divDetails').show();
+                },
+                error: function (request, status, err) {
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            tabStrip.select(tabStrip.tabGroup.children("li").eq(0));
+        }
+    }
+
+    function Search() {
+        $('#divDetails').hide();
+        return {
+            ModelKod: $('#ModelKod').val(),
+            IsActive: $('#IsActive').val(),
+            IsMust: $('#IsMust').val(),
+            CampaignCode: $('#CampaignCode').val(),
+            CampaignName: $('#CampaignName').val(),
+            AdminDesc: $('#AdminDesc').val(),
+            MainFailureCode: $('#MainFailureCode').val(),
+            IndicatorCode : $("#IndicatorCode").val(),
+            StartDate: $("#StartDate").val(),
+            EndDate: $("#EndDate").val()
+        };
+    }
+
+    $(document).ready(function () {
+        $('#divDetails').hide();
+
+        loadTabs('@Model.CampaignCode');
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#CampaignGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClickCampaign", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("CampaignDetails", "Campaign", new { campaignCode = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("CampaignUpdate", "Campaign", new { campaignCode = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNewCampaign")) {
+                link = "@Url.Action("CampaignCreate", "Campaign")";
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+    });
+
+    function DeleteCampaign(cId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteCampaign", "Campaign")",
+                data: { campaignCode: cId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0) {
+                        SetErrorMessage(result.Message);
+                    } else {
+                        $('#CampaignCode').val('');
+                        var grid = $('#CampaignGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                        $('#divDetails').hide();
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.Campaign.CampaignListModel>()
+          .Name("CampaignGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.CampaignCode).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(\"#=CampaignCode#\")' id='#=CampaignCode#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Campaign.CampaignDetails));
+                  columns.Bound(p => p.CampaignCode).ClientTemplate("<center><a class='details modalClickCampaign' id='#=CampaignCode#' frameTitle='" + @CommonUtility.GetResourceValue("Campaign_PageTitle_Details") + "' href='/Campaign/CampaignDetails/#=CampaignCode#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Campaign.CampaignDetails));
+                  columns.Bound(p => p.CampaignCode).ClientTemplate("<center><a class='edit modalClickCampaign' id='#=CampaignCode#' frameTitle='" + @CommonUtility.GetResourceValue("Campaign_PageTitle_Update") + "' href='/Campaign/CampaignUpdate/#=CampaignCode#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Campaign.CampaignUpdate));
+                  columns.Bound(o => o.CampaignCode).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("Campaign_PageTitle_Delete") + "' onclick='DeleteCampaign(\"#=CampaignCode#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Campaign.CampaignDelete));
+                  columns.Bound(p => p.CampaignCode).Width(80).Sortable(true);
+                  columns.Bound(p => p.CampaignName).Width(250).Sortable(true);
+                  columns.Bound(p => p.IndicatorCode).Width(60).Sortable(true);
+                  columns.Bound(p => p.ModelKod).Width(60).Sortable(true);
+                  columns.Bound(p => p.IsValidAbroadName).Width(40).Sortable(true);
+                  columns.Bound(p => p.IsMustName).Width(45).Sortable(true);
+                  columns.Bound(p => p.IsActiveName).Width(40).Sortable(true);
+                  columns.Bound(p => p.StartDate).Format("{0:dd/MM/yyyy}").Width(80).Sortable(true);
+                  columns.Bound(p => p.EndDate).Format("{0:dd/MM/yyyy}").Width(80).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCampaign", "Campaign", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.CampaignCode).DefaultValue(-1)))
+
+    )
+</div>
+<div id="divDetails">
+    @(Html.Kendo().TabStrip()
+          .Name("CampaignDetails")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.CampaignPart_PageTitle_Index).LoadContentFrom(Url.Action("CampaignPartIndex", "CampaignPart")).Selected(true))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.CampaignLabour_PageTitle_Index).LoadContentFrom(Url.Action("CampaignLabourIndex", "CampaignLabour")))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.CampaignVehicle_PageTitle_Index).LoadContentFrom(Url.Action("CampaignVehicleIndex", "CampaignVehicle")))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.CampaignDocument_PageTitle_Index).LoadContentFrom(Url.Action("CampaignDocumentIndex", "CampaignDocument")))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.CampaignDismantlePart_PageTitle_Index).LoadContentFrom(Url.Action("CampaignDismantlePartIndex", "CampaignDismantlePart"))))
+</div>
+<div id="TabContent" style="padding-left: 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>

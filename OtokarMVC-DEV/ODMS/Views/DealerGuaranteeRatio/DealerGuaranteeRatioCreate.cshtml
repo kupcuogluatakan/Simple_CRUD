@@ -1,0 +1,86 @@
+﻿@model ODMSModel.DealerGuaranteeRatio.DealerGuaranteeRatioIndexViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.DealerGuaranteeRatio_PageTitle_Create;
+}
+
+ 
+<script src="~/Scripts/odms.objectsearch.js"></script>
+
+<script type="text/javascript">
+    function GetGuaranteeRatio(e) {
+
+        var IdDealer = $('#IdDealer').val();
+        var culture = "@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()";     
+
+        $.ajax({
+            type: "GET",
+            data: { idDealer: IdDealer },
+            url: "@Url.Action("GetGuaranteeRatio", "DealerGuaranteeRatio")",
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    if (culture == "tr-TR")
+                        result = result.toString().replace(".", ",");
+        
+                    $('#GuaranteeRatio').data('kendoNumericTextBox').value(result);
+
+                },
+                error: function (request, status, err) {
+                    //////console.log(arguments);
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+    }
+    
+</script>
+
+@using (Html.BeginForm("DealerGuaranteeRatioCreate", "DealerGuaranteeRatio", FormMethod.Post))
+{
+           
+    <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").Events(e=>e.Change("GetGuaranteeRatio")).DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.IdDealer)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.GuaranteeRatio)</div>
+        <div style="width: 300px; float: left">@Html.Kendo().NumericTextBoxFor(c => c.GuaranteeRatio).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", style = "width:204px" })
+        @Html.ValidationMessageFor(v => v.GuaranteeRatio)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v=>v.IdDealer)
+    <br />
+    <div class="clearDiv">&nbsp;</div>
+  
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.DealerGuaranteeRatio.DealerGuaranteeRatioCreate, "DealerGuaranteeRatioCreate")          
+
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        var model = '@(Model.IdDealer==null)';
+        if (model=='True') {
+            $("#IdDealer").data("kendoComboBox").value(null);
+        }
+
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+
+</script>
+
+

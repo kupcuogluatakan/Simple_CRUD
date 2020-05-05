@@ -1,0 +1,133 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.TechnicianOperationControl
+@model TechnicianOperationViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("TechnicianOperationControl_PageTitle_Index");
+}
+@Html.AntiForgeryToken()
+<br />
+<div id="modelWindowTechConfirmDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindowTechConfirm")
+     .Draggable()
+    .Resizable()
+    .Width(450)
+    .Height(250)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+    }"))
+    )
+</div>
+<script>
+
+    $(document).ready(function () {
+        var processType = $("#ProcessType").val();
+
+        if (processType.toString().trim() == "CheckIn") {
+            $("#CheckIn").show();
+            $("#CheckOut").hide();
+        } else {
+            $("#CheckOut").show();
+            $("#CheckIn").hide();
+        }
+
+        $("#CheckIn").click(function () {
+            ClickEvent();
+        });
+
+        $("#CheckOut").click(function () {
+            ClickEvent();
+        });
+    });
+    function OpenTCIdentityConfirmPopupTech() {
+        $('#modelWindowTechConfirm').html('');
+
+        var linkTech;
+        var frameTitle = '@MessageResource.TCIdentityConfirm_PageTitle_Index';
+
+        linkTech = "@Url.Action("UserTCIdentityConfirm", "User", new { userId = -1, index = 1 })";
+        linkTech = linkTech.replace("-1", '@Session[CommonValues.TechnicionCookieKey]');
+        $("#modelWindowTechConfirm_wnd_title").html(frameTitle);
+
+        var windowWidgetTech = $("#modelWindowTechConfirm").data("kendoWindow");
+        var closeOrigin = windowWidgetTech.close;
+
+        windowWidgetTech.refresh({
+            url: linkTech
+        }).center();
+        windowWidgetTech.center();
+        windowWidgetTech.open();
+    }
+    function SetTCIdentityConfirmationResultTech(isConfirmed) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        var processType = $("#ProcessType").val().toString().trim() == "CheckIn" ? 0 : 1;
+        var paramaters = {
+            ProcessType: processType, "__RequestVerificationToken": token
+        };
+        
+        $("#modelWindowTechConfirm").data("kendoWindow").close();
+        if (isConfirmed) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("TechnicianOperationControlCreate", "TechnicianOperationControl")",
+            data: paramaters,
+            traditional: true,
+            success: function () {
+                var grid = $('#TechnicianOperationControlGrid').data('kendoGrid');
+                grid.dataSource.read();
+                if (processType == 0) {
+                    $("#CheckIn").hide();
+                    $("#CheckOut").show();
+                    $("#ProcessType").val('CheckOut');
+                } else {
+                    $("#CheckOut").hide();
+                    $("#CheckIn").show();
+                    $("#ProcessType").val('CheckIn');
+                }
+            },
+            error: function () {
+            },
+            dataType: "json"
+           });
+        } else {
+            SetErrorMessage('@MessageResource.TechnicianOperationControl_Warning_TCIdentityControl');
+        }
+    }
+    function ClickEvent() {
+        OpenTCIdentityConfirmPopupTech();
+    }
+
+</script>
+
+@Html.HiddenFor(p => p.ProcessType)
+@Html.HiddenFor(p => p.CheckInDate)
+@ODMSHelpers.Button("CheckIn", CommonUtility.GetResourceValue("Global_Display_CheckIn"), string.Empty, "TechnicianOperationControlCreate")
+@ODMSHelpers.Button("CheckOut", CommonUtility.GetResourceValue("Global_Display_CheckOut"), string.Empty, "TechnicianOperationControlCreate")
+
+<div class="kendoGridDiv" id="grd">
+
+    @(Html.Kendo().Grid<TechnicianOperationViewModel>()
+          .Name("TechnicianOperationControlGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.CheckInDate).Width(50).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true);
+              columns.Bound(p => p.CheckOutDate).Width(50).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true);
+              columns.Bound(p => p.CreateDate).Width(50).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("GetData", "TechnicianOperationControl", Model))
+              .Model(model => model.Field(o => o.UserId).DefaultValue(-1)))
+
+          )
+
+</div>

@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="bireyselcalisma2Model.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Kategori">
+          <Key>
+            <PropertyRef Name="CategoryID" />
+          </Key>
+          <Property Name="CategoryID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="categoryType" Type="nvarchar" MaxLength="100" />
+        </EntityType>
+        <EntityType Name="Kullanıcı">
+          <Key>
+            <PropertyRef Name="kullanıcıId" />
+          </Key>
+          <Property Name="kullanıcıId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="kAdı" Type="nvarchar" MaxLength="50" />
+          <Property Name="ksifre" Type="nvarchar" MaxLength="50" />
+          <Property Name="adı" Type="nvarchar" MaxLength="50" />
+          <Property Name="soyadı" Type="nvarchar" MaxLength="50" />
+          <Property Name="adres" Type="nvarchar(max)" />
+          <Property Name="telefon" Type="nvarchar" MaxLength="10" />
+        </EntityType>
+        <EntityType Name="Makale">
+          <Key>
+            <PropertyRef Name="MakaleId" />
+          </Key>
+          <Property Name="MakaleId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MTitle" Type="nvarchar" MaxLength="100" />
+          <Property Name="MDetail" Type="nvarchar(max)" />
+          <Property Name="CategoryID" Type="int" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
+        <EntityType Name="Urun">
+          <Key>
+            <PropertyRef Name="urunId" />
+          </Key>
+          <Property Name="urunId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="urunDetay" Type="nvarchar" MaxLength="50" />
+          <Property Name="CategoryID" Type="int" />
+        </EntityType>
+        <Association Name="FK_Makale_Kategori">
+          <End Role="Kategori" Type="Self.Kategori" Multiplicity="0..1" />
+          <End Role="Makale" Type="Self.Makale" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Kategori">
+              <PropertyRef Name="CategoryID" />
+            </Principal>
+            <Dependent Role="Makale">
+              <PropertyRef Name="CategoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Urun_Kategori">
+          <End Role="Kategori" Type="Self.Kategori" Multiplicity="0..1" />
+          <End Role="Urun" Type="Self.Urun" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Kategori">
+              <PropertyRef Name="CategoryID" />
+            </Principal>
+            <Dependent Role="Urun">
+              <PropertyRef Name="CategoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Urun_Urun">
+          <End Role="Urun" Type="Self.Urun" Multiplicity="1" />
+          <End Role="Urun1" Type="Self.Urun" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Urun">
+              <PropertyRef Name="urunId" />
+            </Principal>
+            <Dependent Role="Urun1">
+              <PropertyRef Name="urunId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="bireyselcalisma2ModelStoreContainer">
+          <EntitySet Name="Kategori" EntityType="Self.Kategori" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Kullanıcı" EntityType="Self.Kullanıcı" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Makale" EntityType="Self.Makale" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Urun" EntityType="Self.Urun" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Makale_Kategori" Association="Self.FK_Makale_Kategori">
+            <End Role="Kategori" EntitySet="Kategori" />
+            <End Role="Makale" EntitySet="Makale" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Urun_Kategori" Association="Self.FK_Urun_Kategori">
+            <End Role="Kategori" EntitySet="Kategori" />
+            <End Role="Urun" EntitySet="Urun" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Urun_Urun" Association="Self.FK_Urun_Urun">
+            <End Role="Urun" EntitySet="Urun" />
+            <End Role="Urun1" EntitySet="Urun" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="bireyselcalisma2Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Makale">
+          <Key>
+            <PropertyRef Name="MakaleId" />
+          </Key>
+          <Property Name="MakaleId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MTitle" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="MDetail" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CategoryID" Type="Int32" />
+          <NavigationProperty Name="Kategori" Relationship="bireyselcalisma2Model.FK_Makale_Kategori" FromRole="Makale" ToRole="Kategori" />
+        </EntityType>
+        <EntityContainer Name="bireyselcalisma2Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Makale" EntityType="Self.Makale" />
+          <EntitySet Name="Kategori" EntityType="bireyselcalisma2Model.Kategori" />
+          <EntitySet Name="Kullanıcı" EntityType="bireyselcalisma2Model.Kullanıcı" />
+          <AssociationSet Name="FK_Makale_Kategori" Association="bireyselcalisma2Model.FK_Makale_Kategori">
+            <End Role="Kategori" EntitySet="Kategori" />
+            <End Role="Makale" EntitySet="Makale" />
+          </AssociationSet>
+          <EntitySet Name="sysdiagrams" EntityType="bireyselcalisma2Model.sysdiagrams" />
+          <EntitySet Name="Urun" EntityType="bireyselcalisma2Model.Urun" />
+          <AssociationSet Name="FK_Urun_Kategori" Association="bireyselcalisma2Model.FK_Urun_Kategori">
+            <End Role="Kategori" EntitySet="Kategori" />
+            <End Role="Urun" EntitySet="Urun" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Urun_Urun" Association="bireyselcalisma2Model.FK_Urun_Urun">
+            <End Role="Urun" EntitySet="Urun" />
+            <End Role="Urun1" EntitySet="Urun" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="Kategori">
+          <Key>
+            <PropertyRef Name="CategoryID" />
+          </Key>
+          <Property Name="CategoryID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="categoryType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Makale" Relationship="bireyselcalisma2Model.FK_Makale_Kategori" FromRole="Kategori" ToRole="Makale" />
+          <NavigationProperty Name="Urun" Relationship="bireyselcalisma2Model.FK_Urun_Kategori" FromRole="Kategori" ToRole="Urun" />
+        </EntityType>
+        <EntityType Name="Kullanıcı">
+          <Key>
+            <PropertyRef Name="kullanıcıId" />
+          </Key>
+          <Property Name="kullanıcıId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="kAdı" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ksifre" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="adı" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="soyadı" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="adres" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="telefon" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_Makale_Kategori">
+          <End Type="bireyselcalisma2Model.Kategori" Role="Kategori" Multiplicity="0..1" />
+          <End Type="bireyselcalisma2Model.Makale" Role="Makale" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Kategori">
+              <PropertyRef Name="CategoryID" />
+            </Principal>
+            <Dependent Role="Makale">
+              <PropertyRef Name="CategoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="Urun">
+          <Key>
+            <PropertyRef Name="urunId" />
+          </Key>
+          <Property Name="urunId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="urunDetay" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CategoryID" Type="Int32" />
+          <NavigationProperty Name="Kategori" Relationship="bireyselcalisma2Model.FK_Urun_Kategori" FromRole="Urun" ToRole="Kategori" />
+          <NavigationProperty Name="Urun1" Relationship="bireyselcalisma2Model.FK_Urun_Urun" FromRole="Urun" ToRole="Urun1" />
+          <NavigationProperty Name="Urun2" Relationship="bireyselcalisma2Model.FK_Urun_Urun" FromRole="Urun1" ToRole="Urun" />
+        </EntityType>
+        <Association Name="FK_Urun_Kategori">
+          <End Type="bireyselcalisma2Model.Kategori" Role="Kategori" Multiplicity="0..1" />
+          <End Type="bireyselcalisma2Model.Urun" Role="Urun" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Kategori">
+              <PropertyRef Name="CategoryID" />
+            </Principal>
+            <Dependent Role="Urun">
+              <PropertyRef Name="CategoryID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Urun_Urun">
+          <End Type="bireyselcalisma2Model.Urun" Role="Urun" Multiplicity="1" />
+          <End Type="bireyselcalisma2Model.Urun" Role="Urun1" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Urun">
+              <PropertyRef Name="urunId" />
+            </Principal>
+            <Dependent Role="Urun1">
+              <PropertyRef Name="urunId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="bireyselcalisma2ModelStoreContainer" CdmEntityContainer="bireyselcalisma2Entities">
+          <EntitySetMapping Name="Makale">
+            <EntityTypeMapping TypeName="bireyselcalisma2Model.Makale">
+              <MappingFragment StoreEntitySet="Makale">
+                <ScalarProperty Name="CategoryID" ColumnName="CategoryID" />
+                <ScalarProperty Name="MakaleId" ColumnName="MakaleId" />
+                <ScalarProperty Name="MTitle" ColumnName="MTitle" />
+                <ScalarProperty Name="MDetail" ColumnName="MDetail" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Kategori">
+            <EntityTypeMapping TypeName="bireyselcalisma2Model.Kategori">
+              <MappingFragment StoreEntitySet="Kategori">
+                <ScalarProperty Name="categoryType" ColumnName="categoryType" />
+                <ScalarProperty Name="CategoryID" ColumnName="CategoryID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Kullanıcı">
+            <EntityTypeMapping TypeName="bireyselcalisma2Model.Kullanıcı">
+              <MappingFragment StoreEntitySet="Kullanıcı">
+                <ScalarProperty Name="telefon" ColumnName="telefon" />
+                <ScalarProperty Name="adres" ColumnName="adres" />
+                <ScalarProperty Name="soyadı" ColumnName="soyadı" />
+                <ScalarProperty Name="adı" ColumnName="adı" />
+                <ScalarProperty Name="ksifre" ColumnName="ksifre" />
+                <ScalarProperty Name="kAdı" ColumnName="kAdı" />
+                <ScalarProperty Name="kullanıcıId" ColumnName="kullanıcıId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="bireyselcalisma2Model.sysdiagrams">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="definition" ColumnName="definition" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Urun">
+            <EntityTypeMapping TypeName="bireyselcalisma2Model.Urun">
+              <MappingFragment StoreEntitySet="Urun">
+                <ScalarProperty Name="CategoryID" ColumnName="CategoryID" />
+                <ScalarProperty Name="urunDetay" ColumnName="urunDetay" />
+                <ScalarProperty Name="urunId" ColumnName="urunId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

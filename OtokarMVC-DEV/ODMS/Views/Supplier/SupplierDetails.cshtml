@@ -1,0 +1,96 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Supplier
+@model SupplierViewModel
+@{
+    ViewBag.Title = MessageResource.Supplier_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@*<div class="labelDiv">@Html.LabelFor(v => v.Ssid)</div>
+<div class="shortTxtDiv">@Model.Ssid &nbsp; </div>*@
+<div class="labelDiv">@Html.LabelFor(v => v.DealerId)</div>
+<div class="shortTxtDiv">@Model.DealerName &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.SupplierName)</div>
+<div class="shortTxtDiv">@Model.SupplierName &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(c => c.TaxOffice)</div>
+<div class="shortTxtDiv">@Model.TaxOffice &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.TaxNo)</div>
+<div class="shortTxtDiv">@Model.TaxNo &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(c => c.Url)</div>
+<div class="shortTxtDiv"><a target="_blank" href="http://@Model.Url">@Model.Url</a> &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.ContactPerson)</div>
+<div class="shortTxtDiv">@Model.ContactPerson &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.Email)  </div>
+<div class="shortTxtDiv">
+    <a href="mailto:@Model.Email">@Model.Email</a>
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Phone)</div>
+<div class="shortTxtDiv">@Model.Phone &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(c => c.Fax)</div>
+<div class="shortTxtDiv">@Model.Fax &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+
+<div class="labelDiv">@Html.LabelFor(c => c.MobilePhone)</div>
+<div class="shortTxtDiv">@Model.MobilePhone &nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.ChamberOfCommerce)</div>
+<div class="shortTxtDiv">@Model.ChamberOfCommerce &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(c => c.TradeRegistryNo)</div>
+<div class="shortTxtDiv">@Model.TradeRegistryNo &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+
+
+<div class="labelDiv">@Html.LabelFor(c => c.CountryId)</div>
+<div class="shortTxtDiv">@Model.CountryName
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.CityId)</div>
+<div class="shortTxtDiv">@Model.CityName
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.TownId)</div>
+<div class="shortTxtDiv">@Model.TownName</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ZipCode)</div>
+<div class="shortTxtDiv">@Model.ZipCode</div>
+<div class="clearDiv">&nbsp;</div>
+
+
+<div class="labelDiv">@Html.LabelFor(c => c.Address)</div>
+<div class="shortTxtDiv">@Model.Address</div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+<div class="shortTxtDiv">@Model.IsActiveString </div>
+<div class="clearDiv">&nbsp;</div>
+<script type="text/javascript">
+    function GetCountryId() {
+        return {
+            id: $('#CountryId').val()
+        };
+    }
+    function GetCityId() {
+        return {
+            id: $('#CityId').val()
+        };
+    }
+    $(document).ready(function() {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+</script>
+

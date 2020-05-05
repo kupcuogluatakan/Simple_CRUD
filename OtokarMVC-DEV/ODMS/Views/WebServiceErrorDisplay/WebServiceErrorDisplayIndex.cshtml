@@ -1,0 +1,107 @@
+﻿@model ODMSModel.WebServiceErrorDisplay.WebServiceErrorDisplayViewModel
+@using ODMSCommon.Resources
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.WebServiceErrorDisplay_PageTitle_Index;
+}
+
+<script src="~/Scripts/custom.js"></script>
+
+<script>
+    function OpenPrintBarcodeWindow(id, type) {
+        $('#test').kwnd('@Url.Action("WebServiceErrorDisplayDetail", "WebServiceErrorDisplay")' + '/?id=' + id + '&type=' + type, "@Html.Raw(CommonUtility.GetResourceValue("WebServiceErrorDisplay_PageTitle_Index"))",
+                     {
+                         iframe: true,
+                         width: 600,
+                         height: 400,
+                         onClose: function () {
+                             $("#test").html('');
+                         }
+                     });
+        $('#test').removeClass("hide");
+        OpenWindow($('#test'));
+    }
+
+    $(document).ready(function () {
+
+        $("#ServiceLogId").val('');
+
+        $("#showSearch").html('@MessageResource.Global_Display_Hide_Search_Criteria');
+        $("#showSearch").addClass("searchVisible");
+        $("#searchDiv").show("slow");
+    });
+
+    $("body").delegate("#showSearch", "click", function (e) {
+        var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+        if (!IsVisible) {
+            $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+            $(this).addClass("searchVisible");
+            $("#searchDiv").show("slow");
+        }
+        else {
+            $(this).html('@MessageResource.Global_Display_Search_Criteria');
+            $(this).removeClass("searchVisible");
+            $("#searchDiv").hide("slow");
+        }
+    });
+</script>
+
+<div id="test" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+
+
+@using (Html.BeginForm("WebServiceErrorDisplayIndex", "WebServiceErrorDisplay", FormMethod.Post))
+{
+    <div id="showSearch">@ODMSCommon.Resources.MessageResource.Global_Display_Search_Criteria</div>
+    <div id="searchDiv">
+        <div id="searchFields">
+            <div class="labelDiv">@Html.LabelFor(v => v.ServiceLogId)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ServiceLogId)</div>
+        </div>
+    </div>
+
+    @ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", null)
+}
+
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.ServiceLogId)</div>
+<div class="shortTxtDiv">@Html.ValueFor(m => m.ServiceLogId)</div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.ServiceName)</div>
+<div class="shortTxtDiv">@Html.ValueFor(m => m.ServiceName)</div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.IsManuelCall)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(m => m.IsManuelCall)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.CallStartDate)</div>
+<div class="shortTxtDiv">@Html.ValueFor(m => m.CallStartDate)</div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.CallFinishDate)</div>
+<div class="shortTxtDiv">@Html.ValueFor(m => m.CallFinishDate)</div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.ManuelCallUser)</div>
+<div class="shortTxtDiv">@Html.ValueFor(m => m.ManuelCallUser)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+@{
+    int logId = Model != null && Model.ServiceLogId.HasValue ? Model.ServiceLogId.Value : 0;
+}
+
+<div class="labelDiv">@Html.LabelFor(m => m.Response)</div>
+<div class="shortTxtDiv"><a href="#" onclick="OpenPrintBarcodeWindow(@logId,@Convert.ToInt32(ODMSModel.WebServiceErrorDisplay.XmlErrorType.Response))">@ODMSCommon.Resources.MessageResource.WebServiceError_Display_Response</a></div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.RequestParams)</div>
+<div class="shortTxtDiv"><a href="#" onclick="OpenPrintBarcodeWindow(@logId,@Convert.ToInt32(ODMSModel.WebServiceErrorDisplay.XmlErrorType.RequestParams))">@ODMSCommon.Resources.MessageResource.WebServiceError_Display_RequestParams</a></div>
+
+<div class="labelDiv">@Html.LabelFor(m => m.ErrorContentXml)</div>
+<div class="shortTxtDiv"><a href="#" onclick="OpenPrintBarcodeWindow(@logId,@Convert.ToInt32(ODMSModel.WebServiceErrorDisplay.XmlErrorType.ErrorContentXml))">@ODMSCommon.Resources.MessageResource.WebServiceError_Display_ErrorContentXml</a></div>
+
+
+
+
+

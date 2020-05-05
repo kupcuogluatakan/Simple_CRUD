@@ -1,0 +1,405 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.DeliveryListPart
+
+@model DeliveryListPartListModel
+@{
+    ViewBag.Title = @MessageResource.WorkOrderPicking_PageTitle_Index;
+}
+
+<style>
+    .bgColor
+    {
+        background-color: #CCFFCC;
+    }
+</style>
+@Html.AntiForgeryToken()
+<script id="complete-confirmation" type="text/x-kendo-template">
+    <p class="complete-message">@Html.Raw(MessageResource.Global_Display_CompleteConfirmQuestion)</p>
+    <p style="text-align:right">
+        <button class="complete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="complete-cancel k-button">@MessageResource.Global_Display_No</button>
+    </p>
+</script>
+<script id="complete-confirmation2" type="text/x-kendo-template">
+    <p class="complete-message2">@Html.Raw(MessageResource.DeliveryList_Warning_Complete)</p>
+    <p style="text-align:right">
+        <button class="complete-confirm2 k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="complete-cancel2 k-button">@MessageResource.Global_Display_No</button>
+    </p>
+</script>
+<script id="complete-confirmation3" type="text/x-kendo-template">
+    <p class="complete-message3">@Html.Raw(MessageResource.DeliveryList_Warning_CompleteWithZero)</p>
+    <p style="text-align:right">
+        <button class="complete-confirm3 k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="complete-cancel3 k-button">@MessageResource.Global_Display_No</button>
+    </p>
+</script>
+<div class="clearDiv">&nbsp;</div>
+
+
+<script src="~/Scripts/UI_Scripts/Barcode.js"></script>
+<script>    
+    var barcode = new Barcode();
+    barcode.Initiliaze("gridDeliveryListPart");
+
+    $("#Barcode").keypress(function (e) {
+        if (e.which == 13) {
+            var list = new Array();
+            var barcode = $("#Barcode").val().split(';')[0];
+            var grid = $("#gridDeliveryListPart").data("kendoGrid");
+            var minQnty = 500000;
+            var gridItem = null;
+            var qnty = 0;
+            var data = grid.dataSource.data();
+            $.each(data, function(i, row) {
+                //$('tr[data-uid="' + row.uid + '"]').css("background-color", "#ffffff");
+                if (row.Barcode == barcode) {
+                    if (row.ReceiveQnty<=minQnty) {
+                        minQnty = row.ReceiveQnty;
+                        gridItem = row;
+                    }
+                }
+            });
+            if (gridItem.uid) {
+                if (gridItem.ReceiveQnty > gridItem.ShipQnty) {
+                    $('tr[data-uid="' + gridItem.uid + '"]').css("background-color", "#daa520");
+                    //SetErrorMessage(row.PartName+" adlı parçanın adet miktarı dolmuştur.");
+                } 
+                else if (gridItem.ReceiveQnt ==gridItem.ShipQnty)
+                    $('tr[data-uid="' + gridItem.uid + '"]').css("background-color", "#7cfc00");
+                
+                qnty = gridItem.ReceiveQnty;
+                if (gridItem.PackageQnty==0) 
+                    gridItem.ReceiveQnty = qnty + 1;
+                else
+                    gridItem.ReceiveQnty = qnty+gridItem.PackageQnty;
+
+                grid.refresh();
+                //Change color that we add sub row
+                $('tr[data-uid="' + gridItem.uid + '"]').toggle("highlight");
+                $('tr[data-uid="' + gridItem.uid + '"]').toggle("highlight");
+            }
+            $("#Barcode").val("");
+
+        }
+    });
+
+    function onNumChange() {
+
+        var uId = this.element.parent().closest('tr').attr('data-uid');
+        var grid = $("#gridDeliveryListPart").data("kendoGrid");
+        var data = grid.dataSource.data();
+        $.each(data, function(i, row) {
+            if (row.uid == uId) {
+                    
+                if (row.ReceiveQnty > row.ShipQnty) {
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#daa520");
+                } 
+                else if (row.ReceiveQnty == row.ShipQnty)
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#7cfc00");       
+                else if (row.ReceiveQnty < row.ShipQnty)
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#f08080"); 
+                    
+            }
+            
+        });
+       
+    }
+</script>
+
+<script>
+    function CompleteConfirm(completeFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.DeliveryListPart_Display_CompleteConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#complete-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".complete-confirm, .complete-cancel")
+            .click(function() {
+                if ($(this).hasClass("complete-confirm")) {
+                    confirm = true;
+                    if (completeFunction)
+                        completeFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+    function CompleteConfirm2(completeFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.DeliveryListPart_Display_CompleteConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#complete-confirmation2").html())
+            .center().open();
+
+        kendoWindow
+            .find(".complete-confirm2, .complete-cancel2")
+            .click(function() {
+                if ($(this).hasClass("complete-confirm2")) {
+                    confirm = true;
+                    if (completeFunction)
+                        completeFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+    function CompleteConfirm3(completeFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.DeliveryListPart_Display_CompleteConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#complete-confirmation3").html())
+            .center().open();
+
+        kendoWindow
+            .find(".complete-confirm3, .complete-cancel3")
+            .click(function() {
+                if ($(this).hasClass("complete-confirm3")) {
+                    confirm = true;
+                    if (completeFunction)
+                        completeFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+</script>
+
+@if (Model.Status == 0 || Model.Status == 1 || Model.Status == -1)
+{
+    @ODMSHelpers.LinkButton("btnSave", CommonUtility.GetResourceValue("Global_Display_Save"), "Create", "modalClickAppDetailMaint createNewAppDetailMaint", CommonUtility.GetResourceValue("AppointmentDetailsMaint_PageTitle_Create"), null)
+    @ODMSHelpers.LinkButton("btnComplete", CommonUtility.GetResourceValue("Global_Display_Complete"), "Create", "clssComplete", null, null)
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Barcode)</div>
+    <div class="shortTxtDiv" style="width: 214px">
+        @Html.TextBoxFor(x => x.Barcode)
+        <p class="message">@MessageResource.Global_Message_Barcode_Not_Found</p>
+    </div>
+
+    <br />
+    <br />
+}
+
+<div class="clearDiv">&nbsp;</div>
+
+<script>
+    function CompleteDelivery() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CompleteDeliveryListPart", "DeliveryListPart")",
+                data: { deliveryId: @Model.DeliveryId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#gridDeliveryListPart').data().kendoGrid;
+                        grid.dataSource.read();
+                        $('#divDetails').hide();
+                        //Refresh main grid if success
+                        var gridMaster = $('#DeliveryListGrid').data('kendoGrid');
+                        gridMaster.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+    }
+
+    function SearchDeliveryListPart() {
+        return {
+            DeliveryId: @Model.DeliveryId
+            };
+    }
+    function CompleteDeliveryWithWarning() {
+        var grid = $('#gridDeliveryListPart').data().kendoGrid;
+        var dataSource = grid.dataSource;
+        var count = dataSource.total();
+        CompleteConfirm(function() {
+            var notEqualCount = 0;
+            for (var i = 0; i < count; i++) {
+                var item = dataSource.data()[i];
+                var shipQuant = item.ShipQnty;
+                var rcvQuant = item.ReceiveQnty;
+                if (shipQuant != rcvQuant) {
+                    notEqualCount++;
+                }
+            }
+            if (notEqualCount != 0) {
+                CompleteConfirm2(function() {
+                    CompleteDelivery();
+                });
+            } else {
+                CompleteDelivery();
+            }
+        });
+    }
+    //Complete Delivery Order
+    
+    /*TFS NO : 27681 OYA 22.12.2014
+     stok giriş ekranında kalemlerden 1 tanesi bile 0 girildiyse veya kalemlerden 1 tanesi eksik veya fazla girildiyse aşağıda ki uyarı verilmeli.
+     " İrsaliye bilgileri ile stok giriş yapılan adetler farklıdır. Eksik/Fazla olarak işlemi tamamlamak istediğinize emin misiniz?"
+     * Detay parça yok ise de uyarı verilecek.
+    */
+    $("#btnComplete").click(function() {
+        var grid = $('#gridDeliveryListPart').data().kendoGrid;
+        var dataSource = grid.dataSource;
+        var count = dataSource.total();
+        if (count > 0) {
+            var zeroCount = 0;
+            for (var i = 0; i < count; i++) {
+                var item = dataSource.data()[i];
+                var rcvQuant = item.ReceiveQnty;
+                if (rcvQuant == 0) {
+                    zeroCount++;
+                }
+            }
+            if (zeroCount > 0) {
+                CompleteConfirm3(function() {
+                    CompleteDeliveryWithWarning();
+                });
+            }
+            else {
+                CompleteDeliveryWithWarning();
+            }
+        } else {
+            SetErrorMessage('@MessageResource.DeliveryList_Warning_NoDetail');
+        }
+    });
+//Save all result row to db
+$("#btnSave").click(function() {
+    var pushedData = [];
+    var grid = $("#gridDeliveryListPart").data("kendoGrid");
+    var data = grid.dataSource.data();
+    $.each(data, function(i, row) {
+
+        //Push data to json array
+        pushedData.push({
+            DeliverySeqNo: row.DeliverySeqNo,
+            ReceiveQnty: row.ReceiveQnty,
+            ShipQnty: row.ShipQnty,
+            Barcode: row.Barcode
+        });
+    });
+    $.ajax({
+        type: "POST",
+        url: "@Url.Action("SaveDeliveryListPart", "DeliveryListPart")",
+            data: JSON.stringify(pushedData),
+            traditional: true,
+            success: function(result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    //Refresh main grid if success
+                    var grid = $('#DeliveryListGrid').data('kendoGrid');
+                    grid.dataSource.read();
+                    var grid2 = $('#gridDeliveryListPart').data('kendoGrid');
+                    grid2.dataSource.read();
+                    SetSuccessMessage(result.Message);
+
+                }
+            },
+            dataType: "json"
+        });
+    });
+    function onDataBound() {
+        var grid = $("#gridDeliveryListPart").data("kendoGrid");
+        var data = grid.dataSource.data();
+        $.each(data, function (i, row) {
+            if (parseInt(row.ReceiveQnty) == parseInt(row.ShipQnty)) {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#7cfc00");
+            }
+           
+            if (parseInt(row.ReceiveQnty) > parseInt(row.ShipQnty)) {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#daa520");
+            } 
+            if  (parseInt(row.ReceiveQnty) < parseInt(row.ShipQnty)){
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#f08080");
+            }
+                
+        });
+    }
+    function OnDatabound(aQty) {
+        var culture = "@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()";
+        if (culture == "tr-TR") aQty = aQty.toString().replace(".", ",");
+        return aQty;
+    }
+    function onEdit(e) {
+        var data = e.model;
+        if (data.SAPOfferNo != "") {
+            this.closeCell();
+        }
+        e.preventDefault();
+    }
+    function DisplayPoNumber(poNumber) {
+        if (poNumber) {
+            return "<center><a target='_blank' href='" + "@Url.Action("PurchaseOrderIndex", "PurchaseOrder")" + "/?poNumber=" + poNumber + "'>" + poNumber + "</a></center>";
+        } else {
+            return "";
+        }
+    }
+</script>
+
+<div class="kendoGridDiv" id="gridDet">
+    @(Html.Kendo().Grid<DeliveryListPartListModel>()
+          .Name("gridDeliveryListPart")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.PoNumber).ClientTemplate("#=DisplayPoNumber(PoNumber)#").Width(400).Sortable(true);
+              columns.Bound(b => b.DeliverySeqNo).Width(200).Visible(false);
+              columns.Bound(b => b.StockType).Width(200).Sortable(false);
+              columns.Bound(b => b.PartName).Width(400).Sortable(false);
+              columns.Bound(b => b.PartCode).Width(400).Sortable(false);
+              columns.Bound(b => b.ShipQnty).Width(200).Sortable(false);
+              columns.Bound(b => b.Barcode).Width(200).Sortable(false);
+              //columns.Bound(b => b.SAPOfferNo).Width(200).Sortable(false);
+              columns.Bound(b => b.ReceiveQnty).ClientTemplate("#= OnDatabound(ReceiveQnty)#").EditorTemplateName("DecimalNumericTextbox").Format("{0:N2}").Width(100).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(b => b.InvoicePrice).Width(200).Sortable(false);
+          })
+          .Editable(e => e.Mode(GridEditMode.InCell))
+          .Events(e => e.DataBound("onDataBound"))
+          .Events(e => e.Edit("onEdit"))
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .ServerOperation(true)
+              .Read(read => read.Action("ListDeliveryListPart", "DeliveryListPart", Model).Data("SearchDeliveryListPart"))
+              .Model(m =>
+              {
+                  m.Id(p => p.DeliverySeqNo);
+                  m.Field(p => p.Id).Editable(true);
+                  m.Field(p => p.PartCode).Editable(false);
+                  m.Field(p => p.PoNumber).Editable(false);
+                  m.Field(p => p.StockType).Editable(false);
+                  m.Field(p => p.PartName).Editable(false);
+                  m.Field(p => p.ShipQnty).Editable(false);
+                  m.Field(p => p.Barcode).Editable(false);
+                  m.Field(p => p.DeliverySeqNo).Editable(false);
+                  m.Field(p => p.InvoicePrice).Editable(false);
+              }))
+          )
+
+</div>

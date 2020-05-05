@@ -1,0 +1,22 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SystemAdministration.SystemAdministrationLoginModel
+@{
+    ViewBag.Title = MessageResource.SystemAdministration_Display_Login;
+    ViewBag.WrapperCssClass = "wrapper";
+}
+@section header
+{
+    <div class="logo"><img src="@Url.Content("~/Content/Images/otokar-logo.jpg")"></div>
+}
+@using (Html.BeginForm("Index", "Login", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.LabelFor(c => c.UserName)
+    @Html.TextBoxFor(c => c.UserName, new {@class = "text margin-bottom-5"})
+    @Html.LabelFor(c => c.Password)
+    @Html.PasswordFor(c => c.Password, new {@class = "text margin-bottom-5"})
+ 
+    <label for="RememberMe">@Html.CheckBoxFor(c => c.RememberMe, new { @class = "margin-bottom-5" })@MessageResource.SystemAdministration_Display_Rememberme</label>
+    <button type="submit" class="btn primary margin-bottom-5"> @MessageResource.SystemAdministration_Display_Login </button>
+    <p>@Html.ValidationSummary()</p>
+}

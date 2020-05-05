@@ -1,0 +1,129 @@
+﻿
+@{
+    ViewBag.Title = MessageResource.Terminal_StockMovement_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+}
+@using ODMSBusiness.Terminal.Common
+@using ODMSBusiness.Terminal.StockMovement.Dtos
+@using ODMSTerminal.Infrastructure.Utility
+@model ODMSTerminal.Models.WarehouseSearchModel
+
+@section header{
+    @Html.Partial("_subheader")
+}
+@using (Html.BeginForm("Save", "StockMovement", FormMethod.Post))
+{
+    <div class="margin-3 pageContent">
+        <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+            <tbody>
+
+                <tr>
+                    <td class="bold stay-line">
+                        @MessageResource.CycleCountResultReport_Display_WareHouseName:
+                    </td>
+                    <td>
+                        @Model.WarehouseCode
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+
+                <tr>
+                    <td class="bold stay-line">@MessageResource.CycleCountResultReport_Display_RackName:</td>
+                    <td width="60%">
+                        @Model.RackCode
+                    </td>
+                    <td>&nbsp;</td>
+
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.PurchaseOrderReport_Display_PartName:</td>
+                    <td width="60%">
+                        @Model.PartCode
+                    </td>
+                    <td>&nbsp;</td>
+
+                </tr>
+                <tr>
+                    <td class="bold stay-line">
+                        @MessageResource.Terminal_StockMovement_Quantity:
+                    </td>
+                    <td>
+                        @Model.Quantity
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">
+                        @MessageResource.Terminal_StockMovement_Unit:
+                    </td>
+                    <td>
+                        @Model.Unit
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_StockMovement_TargetWarehouse:</td>
+                    <td width="60%">
+
+                        @Html.TextBoxFor(c => c.TargetWarehouseCode, new { @class = "text", onblur = "StockMovement.SearchTargetWareHouse()" })
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_StockMovement_TargetRack:</td>
+                    <td width="60%">
+
+                        @Html.TextBoxFor(c => c.TargetRackCode, new { @class = "text", onblur = "StockMovement.SearchTargetRack()" })
+                    </td>
+                    <td>&nbsp;</td>
+
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_StockMovement_StockType:</td>
+                    <td width="60%">
+                        @Html.DropDownListFor(c => c.StockTypeId, new SelectList(ViewBag.StockTypes as EnumerableResponse<SelectListItem>, "Value", "Text"))
+                    </td>
+                    <td>&nbsp;</td>
+
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_StockMovement_TransferQuantity:</td>
+                    <td width="60%">
+                        @Html.TextBoxFor(c => c.TargetQuantity, new { @class = "text" })
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_StockMovement_Description:</td>
+                    <td width="60%">
+                        @Html.TextAreaFor(c => c.Description, new { @class = "text" })
+                    </td>
+                    <td>&nbsp;</td>
+
+                </tr>
+                <tr>
+                    <td colspan="1">
+                        &nbsp;
+                    </td>
+                    <td colspan="2" class="text-right"><input id="btnSearch" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Save"></td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    @Html.HiddenFor(c => c.WarehouseId)
+    @Html.HiddenFor(c => c.RackId)
+    @Html.HiddenFor(c => c.PartId)
+    @Html.HiddenFor(c => c.TargetWarehouseId)
+    @Html.HiddenFor(c => c.TargetRackId)
+    @Html.HiddenFor(c => c.Quantity)
+}
+@section scripts
+{
+    <script src="~/Scripts/views/stockmovement/index.js"></script>
+    <script>
+        StockMovement.PageInit();
+        KS.Common.Focus("#TargetWarehouseCode");
+    </script>
+}

@@ -1,0 +1,138 @@
+﻿@using ODMSCommon.Resources
+@{
+    Layout = "";
+} 
+<style>
+    a:focus {
+        -moz-outline: none;
+        outline: none;
+        outline-offset: -2px;
+       
+    }
+</style>
+<div class="k-loading k-loading-image hide"></div>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#notes" onclick="activeTab=1;" data-toggle="tab">@MessageResource.WorkOrderCard_Display_VehicleNotes</a></li>
+    <li class=""><a href="#write-note" data-toggle="tab" onclick="activeTab=2;">@MessageResource.Global_Display_Add</a></li>
+</ul>
+<div id="tabWrap" class="tab-content" style="background-color: white; padding:10px;border-right: 1px solid #dddddd;border-left: 1px solid #dddddd;border-bottom: 1px solid #dddddd">
+    <div class="tab-pane active" id="notes">
+    </div>
+    <div class="tab-pane" id="write-note">
+        <div class="labelDiv">
+            @MessageResource.VehicleNote_Display_Note
+        </div>
+        <div class="shortTxtDiv">
+            @Html.TextArea("Note","",new {@class="text-box" , style="resize: none; width:250px; height:100px",data_max_length="500"}) 
+        </div>
+        <div id="warning-wrap" class="alert alert-warning" style=" margin-left:6px;display:none; width:240px; float:left">
+            <a class="close"  onclick="$('.alert').fadeOut();">&times;</a> 
+            <strong></strong>
+        </div>
+        <div class="clearDiv"></div>
+        <div><label class=" label label-success" id="charsLeft">500</label></div>
+        <div style="margin-top:6px;" id="buttons">
+            <button class="btn btn-default" onclick="SaveNote()">
+                <i class="glyphicon glyphicon-save"></i> @MessageResource.Global_Display_Save
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.k-loading').removeClass("hide");
+        updateCountdown();
+        $('#Note').focus(updateCountdown);
+        $('#Note').blur(updateCountdown);
+        $('#Note').change(updateCountdown);
+        $('#Note').keyup(updateCountdown);
+        GetVehicleNote(0);
+    });
+    function GetVehicleNote(id) {
+        $('.k-loading').removeClass("hide");
+        var request = $.ajax({
+            url: '@Url.Action("GetVehicleNote", "Proposal_Card")',
+            type: "POST",
+            data: { id: id, ProposalId: @ViewBag.ProposalId },
+            dataType: "html"
+        });
+        request.success(function(html) {
+            $('#notes').html(html);
+            $('.k-loading').addClass("hide");
+        });
+
+
+    }
+
+    function updateCountdown() {
+        var remaining = 500 - $('#Note').val().length;
+        if (remaining <= 0) {
+            $("#Note").val($("#Note").val().substring(0, 500));
+        }
+        if (remaining > 250) {
+            $('#charsLeft').removeClass("label-info").removeClass("label-danger").addClass("label-success");
+        } else if (remaining > 100)
+            $('#charsLeft').removeClass("label-success").removeClass("label-danger").addClass("label-info");
+        else {
+            $('#charsLeft').removeClass("label-success").removeClass("label-info").addClass("label-danger");
+        }
+        remaining = 500 - $('#Note').val().length;
+        $('#charsLeft').text(remaining);
+    }
+
+    function SaveNote() {
+        var note = $("#Note").val();
+        if (note.length > 0) {
+            $('.k-loading').removeClass("hide");
+
+            var request = $.ajax({
+                url: '@Url.Action("SaveVehicleNote", "Proposal_Card")',
+                type: "POST",
+                data: { ProposalId: @ViewBag.ProposalId, note: $("#Note").val() },
+                dataType: "json"
+            });
+            request.success(function(json) {
+                $('.k-loading').addClass("hide");
+                if (json.Result == false) {
+                    FixWarningWrapBug();
+                    $("#warning-wrap").addClass("alert-danger");
+                    $("#warning-wrap strong").html(json.Message);
+                } else {
+                    FixWarningWrapBug();
+                    $("#warning-wrap").addClass("alert-success");
+                    $("#warning-wrap strong").html(json.Message);
+                   
+                    $('.glyphicon-save').removeClass("glyphicon-save").addClass("glyphicon-saved");
+                    $("#buttons button").addClass("disabled");
+                    $("#Note").attr("disabled", "disabled");
+                    
+                }
+                $("#warning-wrap").slideDown();
+            });
+            @*request.fail(function() {
+                $('.k-loading').addClass("hide");
+                $("#warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+                $("#warning-wrap  strong").html("@MessageResource.Err_Generic_Unexpected");
+                $("#warning-wrap").slideDown();
+            });*@
+        } else {
+            FixWarningWrapBug();
+            $("#warning-wrap").addClass("alert-warning");
+            $("#warning-wrap strong").html("@MessageResource.WorkOrderCard_Display_ProvideVehicleNote");
+            $("#warning-wrap").slideDown();
+        }
+    }
+
+    function FixWarningWrapBug() {
+        var warningWrap = $("#warning-wrap");
+        if (warningWrap.hasClass("alert-success")) {
+            warningWrap.removeClass("alert-success");
+        }
+        if (warningWrap.hasClass("alert-danger")) {
+            warningWrap.removeClass("alert-danger");
+        }
+        if (warningWrap.hasClass("alert-warning")) {
+            warningWrap.removeClass("alert-warning");
+        }
+    }
+</script>

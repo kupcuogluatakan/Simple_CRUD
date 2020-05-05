@@ -1,0 +1,101 @@
+﻿@using ODMSCommon.Resources
+@model ODMS.Model.ExportModel
+<a class="k-button btnExcelExport">
+    @if (string.IsNullOrEmpty(Model.ButtonText))
+    {
+        <img src="@Url.Content("~/Images/excel.gif")" class="excel-exp" style="height: 14px; vertical-align: text-top;">
+        @MessageResource.Global_Display_ExportToExcel
+    }
+    else
+    {
+        <img src="@Url.Content("~/Images/excel.gif")" class="excel-exp" style="height: 14px; vertical-align: text-top;">
+        @Model.ButtonText
+    }
+</a>
+
+<script type="text/javascript">
+    var getExcelExportStatusTimer;
+    var getExcelExportStatusTimerCount = 1;
+    $(document).ready(function () {
+        $(".btnExcelExport").click(function (evt) {
+            if ($(this).is('[disabled=disabled]'))
+                return;
+
+            //alert("btnExcelExport CLİCK");
+
+            //if (typeof onDataBinding === 'function') {
+            //    //$("#gridObj").data('kendoGrid').dataSource.read();
+            //    //$('#gridObj').data('kendoGrid').refresh();
+            //    onDataBinding(evt);
+            //    //if (evt.cancelable)
+            //    //{
+            //    //    alert(evt.cancelable);
+            //    //}
+            //    alert("geçti");
+            //}
+
+            $(this).attr("disabled", "disabled");
+            $(this).html("<div style='float:left;'>@MessageResource.Excel_Export_Please_Wait</div> <div style='float:left; margin-left:5px;' class='loader'></div>");
+            ClearMessages();
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AddExcelRequest", "Reports")",
+                data: GetParameters(),
+                dataType: "json",
+                success: function (result) {
+                    requestId = result.RequestId;
+                    getExcelExportStatusTimer = setInterval(GetExcelExportStatus, 10000);
+                },
+                global: false,
+            });
+
+            return false;
+        });
+
+    });
+
+    var requestId = 0;
+    function GetExcelExportStatus() {
+
+        //alert("GetExcelExportStatus");
+
+        if (requestId == 0)
+            return;
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("GetExcelStatus", "Reports")",
+            data: "requestId=" + requestId,
+            dataType: "json",
+            global: false,
+            success: function (result) {
+
+                if (result.Complete) {
+                    $(".btnExcelExport").html("<img src='@Url.Content("~/Images/excel.gif")' class='excel-exp' style='height:14px; vertical-align:text-top;'> @MessageResource.Global_Display_ExportToExcel");
+                    $(".btnExcelExport").removeAttr("disabled");
+                    requestId = 0;
+                    clearInterval(getExcelExportStatusTimer);
+                    getExcelExportStatusTimerCount = 1;
+
+                    if (!result.Success)
+                        SetErrorMessage(result.Message);
+                    else {
+                        document.location = "@ODMS.Model.ExportModel.ExcelDownloadPath/content/excel/" + result.File;
+                    }
+                }
+                else if (getExcelExportStatusTimerCount == 50) {
+                    $(".btnExcelExport").html("<img src='@Url.Content("~/Images/excel.gif")' class='excel-exp' style='height:14px; vertical-align:text-top;'> @MessageResource.Global_Display_ExportToExcel");
+                    $(".btnExcelExport").removeAttr("disabled");
+                    SetErrorMessage("İstek zaman aşımına uğradı.Lütfen daha sonra tekrar deneyiniz.");
+                    clearInterval(getExcelExportStatusTimer);
+                    requestId = 0;
+                    getExcelExportStatusTimerCount = 1;
+                }
+
+                getExcelExportStatusTimerCount++;
+            }
+        });
+    }
+
+</script>

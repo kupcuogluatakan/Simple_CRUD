@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignPart_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.CampaignPart.CampaignPartViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.PartTypeDesc)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartCode) - @Html.DisplayFor(v => v.PartTypeDesc)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Quantity)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SupplyTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.SupplyTypeName)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+<br />
+
+
+
+

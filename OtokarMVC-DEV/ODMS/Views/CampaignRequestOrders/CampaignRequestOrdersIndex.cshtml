@@ -1,0 +1,170 @@
+﻿
+@using ODMSModel.CampaignRequestOrders
+@model ODMSModel.CampaignRequestOrders.CampaignRequestOrdersModel
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.CampaignRequestOrders_PageTitle_Index;
+}
+  <!-- Content.css zaten bundles/odms/css/commons icerisinde var. tekrar link vermeye gerek yok -->
+@Html.AntiForgeryToken()
+@*<div id="showSearch">Arama Notu:</div>
+ <div class="shortTxtDiv">@Html.TextBoxFor(m => m.Note) @Html.ValidationMessageFor(m => m.Note) </div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.AllowWorkShop)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.AllowWorkShop) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerRole)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.DealerRole) </div>
+    </div>
+</div>*@
+@*@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "",CommonValues.PermissionCodes.VehicleNotes.VehicleNotesIndex)*@
+@*@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("VehicleNote_PageTitle_Create"),CommonValues.PermissionCodes.VehicleNotes.VehicleNotesIndex)*@
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+@section Scripts
+{
+    <script>
+        function Search() {
+            //return {
+
+            //    AllowWorkshop: $("#AllowWorkShop").is(":checked"),
+            //    DealerRole: $("#DealerRole").is(":checked")
+            //};
+            return {
+             @*   DealerID : @Html.Raw(Model.DealerId),
+                VehicleID : @Html.Raw(Model.VehicleId)*@
+                };
+        }
+        $(document).ready(function () {
+
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+            //$("body").delegate("#showSearch", "click", function (e) {
+            //    var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            //    if (!IsVisible) {
+            //        $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+            //        $(this).addClass("searchVisible");
+            //        $("#searchDiv").show("slow");
+            //    }
+            //    else {
+            //        $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+            //        $(this).removeClass("searchVisible");
+            //        $("#searchDiv").hide("slow");
+            //    }
+            //});
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("index") == true) {
+                    link = "@Url.Action("CampaignRequestOrdersIndex", "CampaignRequestOrders", new { id = -1 })";
+                    link = link.replace(-1, clickedId);
+                 
+            }
+            @*else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("VehicleNotesUpdate", "VehicleNotes", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+              
+            }*@
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("CampaignRequestOrdersIndex", "CampaignRequestOrders", new { id = Model.CampaignRId })";
+                //, new { Did = Model.DealerId, Vid = Model.VehicleId}
+                
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+        });
+        function DeleteCampaignRequestOrders(croId) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteCampaignRequestOrders","CampaignRequestOrders")',
+                    data: { id: croId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+}
+<div class="kendoGridDiv" id="grd">
+ @(Html.Kendo().Grid<CampaignRequestOrdersListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  //columns.Bound(p => p.VehicleNotesId).ClientTemplate("<center><a class='details modalClick' id='#=VehicleNotesId#' frameTitle='" + @CommonUtility.GetResourceValue("Role_PageTitle_Details") + "' href='/Role/RoleDetails/#=VehicleNotesId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false);
+                  //columns.Bound(p => p.VehicleNotesId).ClientTemplate("<center><a class='edit modalClick' id='#=VehicleNotesId#' frameTitle='" + @CommonUtility.GetResourceValue("VehicleNotes_PageTitle_Update") + "' href='" + Url.Action("VehicleNotes/VehicleNotesUpdate") + "/#=VehicleNotesId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false);
+                  //columns.Bound(p => p.VehicleNotesId).ClientTemplate("<center><a class='edit modalClick' id='#=RoleId#' frameTitle='" + @CommonUtility.GetResourceValue("Role_PageTitle_Update") + "' href='/Role/RoleUpdate/#=RoleId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false);
+                  columns.Bound(o => o.CampaignRId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("CampaignRequestOrders_PageTitle_Delete") + "' onclick='DeleteCampaignRequestOrders(#=CampaignRId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignRequestOrders.CampaignRequestOrdersDelete));
+                  columns.Bound(p => p.CampaignRId).Width(100).Sortable(true);
+                  columns.Bound(p => p.ModelName).Width(100).Sortable(true);
+                  columns.Bound(p => p.CampaignName).Width(100).Sortable(true);
+                  columns.Bound(p => p.CampaignCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.Quantity).Width(100).Sortable(true);
+                  columns.Bound(p => p.RequestNote).Width(100).Sortable(true);
+                  columns.Bound(p => p.StatusString).Width(100).Sortable(true);
+                  columns.Bound(p => p.RequestDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(CommonValues.GridPageSize.Short)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCampaignRequestOrders", "CampaignRequestOrders").Data("Search"))
+                                        
+                                        )
+
+          )
+</div>

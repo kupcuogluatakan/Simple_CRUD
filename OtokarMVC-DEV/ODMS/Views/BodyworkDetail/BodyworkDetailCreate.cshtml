@@ -1,0 +1,42 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.BodyworkDetail.BodyworkDetailViewModel
+@{
+    ViewBag.Title = MessageResource.BodyworkDetail_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("BodyworkDetailCreate", "BodyworkDetail", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="labelDiv">@Html.LabelFor(v => v.BodyworkCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.BodyworkCode) @Html.ValidationMessageFor(v => v.BodyworkCode)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.BodyworkDetailName)</div>
+    <div class="shortTxtDiv">
+        <div style="float: left; width: 70%">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = "", IsEnabled = true }); }</div>
+        <div style="float:left;width:20%;margin-top:50px">@Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)    </div> 
+    </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Descripion)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.Descripion) @Html.ValidationMessageFor(v => v.Descripion)</div> 
+
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), ODMSCommon.CommonValues.PermissionCodes.BodyworkDetail.BodyworkDetailCreate, "LabourCreate")        
+}
+<script>
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 480);
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+    });
+
+</script>

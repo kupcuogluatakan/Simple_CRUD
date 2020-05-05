@@ -1,0 +1,214 @@
+﻿@model WorkHourViewModel
+@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.WorkHour
+
+ 
+@{
+    ViewBag.Title = MessageResource.WorkHour_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e=>e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.DealerId).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0) </div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.MeetingInterval)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.MeetingInterval).Format("{0:#}").Spinners(false).Decimals(0).HtmlAttributes(new{ type = "text", maxlength =2,style="width:204px"})</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.StatusOfWork)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.StatusOfWork).BindTo(ViewBag.StatusOfWorkList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.Priority)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.Priority).Format("{0:#}").Spinners(false).Decimals(0).HtmlAttributes(new{type = "text", maxlength =2,style="width:204px height:20px"})</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActiveSearch).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.WorkHour.WorkHourIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("WorkHour_PageTitle_Create"), CommonValues.PermissionCodes.WorkHour.WorkHourCreate)
+
+@*grid start*@
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<WorkHourListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.WorkHourId).ClientTemplate("<center><a class='details modalClick' id='#=WorkHourId#' frameTitle='" + CommonUtility.GetResourceValue("WorkHour_PageTitle_Details") + "' href='/WorkHour/WorkHourDetails/#=WorkHourId#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkHour.WorkHourDetails));
+              columns.Bound(p => p.WorkHourId).ClientTemplate("<center><a class='edit modalClick' id='#=WorkHourId#' frameTitle='" + CommonUtility.GetResourceValue("WorkHour_PageTitle_Update") + "' href='/WorkHour/WorkHourUpdate/#=WorkHourId#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkHour.WorkHourUpdate));
+              columns.Bound(o => o.WorkHourId).ClientTemplate("<center><a href='javascript:void(0);' id='#=WorkHourId#' frameTitle='" + CommonUtility.GetResourceValue("WorkHour_PageTitle_Delete") + "' onclick='DeleteWorkHour(#=WorkHourId#)' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkHour.WorkHourDelete));
+              columns.Bound(p => p.ValidityStartDate).Format("{0:dd/MM/yyyy}").Width(80).Sortable(true);
+              columns.Bound(p => p.ValidityEndDate).Format("{0:dd/MM/yyyy}").Width(80).Sortable(true);
+              columns.Bound(p => p.WorkStartHour).Width(80).Sortable(true);
+              columns.Bound(p => p.WorkEndHour).Width(80).Sortable(true);
+              columns.Bound(p => p.AppointmentPeriod).Width(100).Sortable(true);
+              columns.Bound(p => p.WorkStatusString).Width(80).Sortable(true);
+              columns.Bound(p => p.Priority).Width(60).Sortable(true);
+              columns.Bound(p => p.IsActiveString).Width(60).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListWorkHour", "WorkHour", Model).Data("WorkHourSearch"))
+                                        .Model(model => model.Field(o => o.WorkHourId).DefaultValue(-1)))
+
+          )
+</div>
+@*grid end*@
+
+@*modelWindow start*@
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(600) 
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+@*modelWindow end*@
+
+
+@*scripts start*@
+@section Scripts{
+    <script type="text/javascript">
+
+        function OpenStartDate() {
+            var dateStart = $("#StartDate").data("kendoDatePicker");
+            var dateEnd = $("#EndDate").data("kendoDatePicker");
+            if ($("#EndDate").val()) {
+                dateStart.max(dateEnd.value());
+            } else {
+                dateStart.max(new Date(3000, 0, 1));
+            }
+        }
+
+        function OpenEndDate() {
+            var dateStart = $("#StartDate").data("kendoDatePicker");
+            var dateEnd = $("#EndDate").data("kendoDatePicker");
+            if ($("#StartDate").val()) {
+                dateEnd.min(dateStart.value());
+            } else {
+                dateEnd.min(new Date(1900, 0, 1));
+            }
+        }
+
+        function WorkHourSearch() {
+            return {
+                DealerId: $('#DealerId').val(),
+                StartDate: $('#StartDate').val(),
+                EndDate: $('#EndDate').val(),
+                MeetingInterval: $('#MeetingInterval').val(),
+                Priority: $('#Priority').val(),
+                StatusOfWork: $('#StatusOfWork').val(),
+                IsActive: $('#IsActiveSearch').val()
+            }; 
+        }
+
+        $(document).ready(init);
+
+        
+
+        
+        function init() {
+            
+            
+
+            $("body").delegate("#btnSearch", "click", function(e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+            $("body").delegate("#showSearch", "click", function(e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function(e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("WorkHourDetails", "WorkHour", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("WorkHourUpdate", "WorkHour", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("WorkHourCreate", "WorkHour")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+               
+            });
+        }
+
+        function DeleteWorkHour(id) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("DeleteWorkHour","WorkHour")",
+                    data: { id: id, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+}
+@*scripts end*@

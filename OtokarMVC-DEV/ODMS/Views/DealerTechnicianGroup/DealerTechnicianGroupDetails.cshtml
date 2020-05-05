@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.Title = MessageResource.DealerTechnicianGroup_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using ODMSCommon.Resources
+@model ODMSModel.DealerTechnicianGroup.DealerTechnicianGroupViewModel
+<div class="labelDiv">@Html.LabelFor(b => b.DealerName)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.DealerName)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.WorkshopTypeName)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.WorkshopTypeName)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.VehicleModelKod)&nbsp;</div>
+ <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModelKodList).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Enable(false)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.TechnicianGroupName)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.TechnicianGroupName)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.Description)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.Description)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.IsActiveName)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActiveName)&nbsp;</div>
+<br />

@@ -1,0 +1,113 @@
+﻿@using ODMSCommon.Resources
+@{
+    Layout = null;
+}
+@model String
+<div class="panel panel-primary" id="write-note">
+    <div class="panel-heading">
+        @MessageResource.WorkOrderCard_Display_TechnicalDescription
+    </div>
+    <div class="panel-body">
+        <div class="labelDiv">
+         @MessageResource.WorkOrderCard_Display_TechnicalDescription
+        </div>
+        <div class="shortTxtDiv">
+            @Html.TextArea("Note2",Model,new {@class="text-box" , style="resize: none; width:250px; height:100px",data_max_length="1000"}) 
+        </div>
+        <div id="warning-wrap2" class="alert alert-warning" style=" margin-left:6px;display:none; width:240px; float:left">
+            <a class="close"  onclick="$('.alert').fadeOut();">&times;</a> 
+            <strong></strong>
+        </div>
+        <div class="clearDiv"></div>
+        <div><label class=" label label-success" id="charsLeft2">1000</label></div>
+        <div style="margin-top:6px;" id="buttons">
+            <button class="btn btn-default" onclick="SaveNote()">
+                <i class="glyphicon glyphicon-save"></i> @MessageResource.Global_Display_Save
+            </button>
+        </div>
+        
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.k-loading').removeClass("hide");
+        updateCountdown();
+        $('#Note2').focus(updateCountdown);
+        $('#Note2').blur(updateCountdown);
+        $('#Note2').change(updateCountdown);
+        $('#Note2').keyup(updateCountdown);
+    });
+
+    function updateCountdown() {
+        var remaining = 1000 - $('#Note2').val().length;
+        if (remaining <= 0) {
+            $("#Note2").val($("#Note2").val().substring(0, 1000));
+        }
+        if (remaining > 500) {
+            $('#charsLeft2').removeClass("label-info").removeClass("label-danger").addClass("label-success");
+        } else if (remaining > 100)
+            $('#charsLeft2').removeClass("label-success").removeClass("label-danger").addClass("label-info");
+        else {
+            $('#charsLeft2').removeClass("label-success").removeClass("label-info").addClass("label-danger");
+        }
+        remaining = 1000 - $('#Note2').val().length;
+        $('#charsLeft2').text(remaining);
+    }
+
+    function SaveNote() {
+        var note = $("#Note2").val();
+        if (note.length > 0) {
+            $('.k-loading').removeClass("hide");
+
+            var request = $.ajax({
+                url: '@Url.Action("AddTechnicalDetail", "WorkOrderCard")',
+                type: "POST",
+                data: { workOrderDetailId: @ViewBag.DetailId, note: $("#Note2").val() },
+                dataType: "JSON"
+            });
+            request.success(function(json) {
+                $('.k-loading').addClass("hide");
+                if (json.Result == false) {
+                    FixWarningWrapBug();
+                    $("#warning-wrap2").addClass("alert-danger");
+                    $("#warning-wrap2 strong").html(json.Message);
+                } else {
+                    FixWarningWrapBug();
+                    $("#warning-wrap2").addClass("alert-success");
+                    $("#warning-wrap2 strong").html(json.Message);
+                   
+                    $('.glyphicon-save').removeClass("glyphicon-save").addClass("glyphicon-saved");
+                    $("#buttons button").addClass("disabled");
+                    $("#Note2").attr("disabled", "disabled");
+                    
+                }
+                $("#warning-wrap2").slideDown();
+            });
+            @*request.fail(function() {
+                $('.k-loading').addClass("hide");
+                $("#warning-wrap2").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+                $("#warning-wrap2  strong").html("@MessageResource.Err_Generic_Unexpected");
+                $("#warning-wrap2").slideDown();
+            });*@
+        } else {
+            FixWarningWrapBug();
+            $("#warning-wrap2").addClass("alert-warning");
+            $("#warning-wrap2 strong").html("@MessageResource.WorkOrderCard_Validation_WriteTechinalDescription");
+            $("#warning-wrap2").slideDown();
+        }
+    }
+
+    function FixWarningWrapBug() {
+        var warningWrap = $("#warning-wrap2");
+        if (warningWrap.hasClass("alert-success")) {
+            warningWrap.removeClass("alert-success");
+        }
+        if (warningWrap.hasClass("alert-danger")) {
+            warningWrap.removeClass("alert-danger");
+        }
+        if (warningWrap.hasClass("alert-warning")) {
+            warningWrap.removeClass("alert-warning");
+        }
+    }
+</script>
+

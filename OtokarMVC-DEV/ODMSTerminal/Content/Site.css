@@ -1,0 +1,126 @@
+﻿*{padding:0px;margin:0px;}
+
+body,html{
+	position:relative;
+	overflow-x:hidden;
+	overflow-y:auto;
+}
+
+body{
+	background-color:#2c3e50;
+	font-size:12px;
+	font-family:Arial;
+	width:240px;
+	height:230px;
+	color:white;
+}
+
+a,img{border:0;}
+
+label{display:inline-block}
+
+.logo{background-color:#3498db;width:100%;text-align:center;display:table;}
+
+.wrapper{width:90%;padding:5% 3.5%;display:table;}
+.wrapper-light{width:96%;padding:2% 1.5%;display:table;}
+.wrapper-colored{width:96%;margin:3px 1.5%;display:table;height: expression( this.scrollHeight < 239 ? "238px" : "auto" );}
+
+.white-background{background-color:white;}
+
+input.text,textarea.text,select{width:98%;border:1px solid black;font-size:12px;padding:2%;}
+
+.col-6{
+	display: inline-block;
+	zoom: 1;
+	*display: inline;
+	width:48%;
+	margin:1%;
+}
+
+.bold{font-weight:700;}
+.stay-line{white-space:nowrap;}
+
+.btn{color:white; width:102.5%;border:0; padding:2%; font-size:12px;text-align:center;}
+.btn.disabled{filter: alpha(opacity=50);}
+.btn-xs{width:100%;padding:1.5%; font-size:11px;}
+
+.success{background-color:#2ecc71}
+.primary{background-color:#3498db}
+.danger{background-color:#e74c3c}
+.warning{background-color:#f39c12}
+.transparent{background-color:#fff;color:black;}
+
+.pagingLink {
+    color:#3498db;
+    padding: 3px;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+body.success,body.primary,body.danger,body.warning{color:#9b9fa2}
+
+div.pageContent{
+	border-top:1px solid #bdc3c7;
+	padding-top:10px;
+	min-height:270px;
+}
+
+.datatable{position:relative;font-size:9px;border:1px solid #8c8f91;}
+.datatable td{border-right:1px solid #bdc3c7;padding:3px;}
+.datatable th{border-right:1px solid #8c8f91;padding:3px;}
+.datatable th{background-color:#bdc3c7;color:white}
+.datatable td{border-top:1px solid #bdc3c7}
+.datatable tr:active,.datatable tr:hover{background-color:#ecf0f1}
+.datatable th.last-child,.datatable td.last-child{border-right:0}
+
+.datatable .odd{background-color:#ecf0f1}
+.datatable .even {background-color:white}
+
+.readonly,.readonly input,.readonly .btn{font-size:9px;}
+
+.text-muted{color:#bdc3c7}
+.text-primary{color:#3498db}
+.text-warning{color:#f39c12}
+.text-success{color:#2ecc71}
+.text-danger{color:#e74c3c}
+.text-left{ text-align: left;}
+.text-right{ text-align: right;}
+.text-center{ text-align: center;}
+.text-justify{ text-align: justify;}
+
+
+.margin-top-2{margin-top:2px}
+.margin-top-3{margin-top:3px}
+.margin-bottom-5{margin-bottom:5px}
+
+.text-align-center{text-align:center;}
+
+.margin-3{margin:3px}
+.messageDiv {
+    background-color: white;
+    margin: 6px;
+    padding: 3px;
+}
+a.btn {
+    width: 97%;
+    display: inline-block;
+    text-decoration: none;
+}
+.hide {
+  display: none !important;
+}
+.spinner {
+    background: #000000 url('images/loading.gif') no-repeat center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    filter: alpha(opacity=40);
+    opacity: .4;
+}
+
+/*IE7 hacks*/
+.wrapper-colored {
+    
+}

@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = MessageResource.Proposal_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+    #popupContent {
+        width: 1380px !important;
+        overflow: hidden;
+    }
+</style>
+
+@model ODMSModel.ProposalCard.ProposalCardModel
+@using ODMSCommon.Resources
+@{ Html.RenderPartial("_ProposalDisplay", Model); }
+@* İş Emri Diğer Bilgileri *@
+<div class="panel panel-default ">
+    <div class="panel-heading">
+
+        <a class="k-link">
+            <strong style="font-size: 16px;">
+                @MessageResource.GuaranteeRequestApprove_Category_Other
+            </strong>
+        </a>
+    </div>
+    <div class="panel-body " id="collapseCustomer">
+        <table class="table table-bordered table-zipped">
+            <tbody>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Appointment_Display_AppointmentType :</th>
+                    <td class="col-md-3">@Model.AppointmentType</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Appointment_Display_AppointmentDate :</th>
+                    <td class="col-md-3">@(Model.AppointmentDate.GetValueOrDefault() == new DateTime(1900, 1, 1, 0, 0, 0) ? Html.Raw("-") : Html.Raw(Model.AppointmentDate) )</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Proposal_Display_ResponsibleConsultant :</th>
+                    <td class="col-md-3">@Model.Customer.Staff</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+@if (Model.ProposalId > 0)
+{
+    <a class="k-button" onclick=" ClosePopupAndGotoUrl(this); " data-href="@Url.Action("ProposalCardIndex", "Proposal_Card",routeValues:new {id= Model.ProposalId,seq= Model.ProposalSeq})">@MessageResource.Proposal_Goto_Proposal <img class="arrow-btn" style="width: 22px;" src="@Url.Content("~/Images/select.png")"></a>
+    <script type="text/javascript">
+        function ClosePopupAndGotoUrl(obj) {
+            var $obj = $(obj);
+            var url = $obj.data("href");
+            if (url) {
+                parent.document.location = url;
+            }
+        }
+    </script>
+}

@@ -1,0 +1,115 @@
+﻿@model List<ODMSModel.Integration.IntegrationListModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = CommonUtility.GetResourceValue("Integration_PageTitle_Index");
+}
+<style>
+    .panel-green {
+        border-color: #476476 !important;
+    }
+
+    .panel-green > .panel-heading {
+        color: white  !important;
+        background-color: #53b33b !important;
+        border-color: #53b33b !important;
+    }
+
+    .panel-red {
+        border-color: #ff3a0d !important;
+    }
+
+    .panel-red > .panel-heading {
+        color: white  !important;
+        background-color: #ff3a0d !important;
+        border-color: #ff3a0d !important;
+    }
+</style>
+
+<div class="row" style="padding-left:20px;">
+    @foreach (var item in Model)
+    {
+        if (item.LastSuccessDate < item.LastCallDate)
+        {
+            <div class="col-lg-2 col-md-6" title="@item.ServiceDescription">
+                <div class="panel panel-red">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-warning fa-5x" style="color:white;"></i>
+                            </div>
+                            <div class="col-xs-10 text-right">
+
+                                <div style="font-size: 15px; font-weight:bold;">
+                                    @if (item.ServiceDescription.Length > 23)
+                                    {
+                                        <div>@item.ServiceDescription.Substring(0, 22) ...</div>
+                                    }
+                                    else
+                                    {
+                                        <div>@item.ServiceDescription</div>
+                                    }
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm text-right">ÇT @((item.LastCallDate.HasValue) ? item.LastCallDate.Value.ToString("dd.MM.yyyy HH:MM") : "")</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm text-right">BÇT @((item.LastSuccessDate.HasValue) ? item.LastSuccessDate.Value.ToString("dd.MM.yyyy HH:MM") : "")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Detail","Integration",new { id = item.ServiceId })">
+                        <div class="panel-footer">
+                            <span class="pull-left">@CommonUtility.GetResourceValue("Integration_Detail")</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-lg-2 col-md-6" title="@item.ServiceDescription">
+                <div class="panel panel-green">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-check fa-5x"  style="color:white;"></i>
+                            </div>
+                            <div class="col-xs-10 text-right">
+                                
+                                <div style="font-size: 15px; font-weight:bold;">
+                                    @if (item.ServiceDescription.Length > 23)
+                                    {
+                                        <div>@item.ServiceDescription.Substring(0, 22) ...</div>
+                                    }
+                                    else
+                                    {
+                                        <div>@item.ServiceDescription</div>
+                                    }
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm text-right">ÇT @((item.LastCallDate.HasValue) ? item.LastCallDate.Value.ToString("dd.MM.yyyy HH:MM") : "")</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm text-right">BÇT @((item.LastSuccessDate.HasValue) ? item.LastSuccessDate.Value.ToString("dd.MM.yyyy HH:MM") : "")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Detail","Integration",new { id = item.ServiceId })">
+                        <div class="panel-footer">
+                            <span class="pull-left">@CommonUtility.GetResourceValue("Integration_Detail")</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        }
+    }
+
+   
+</div>

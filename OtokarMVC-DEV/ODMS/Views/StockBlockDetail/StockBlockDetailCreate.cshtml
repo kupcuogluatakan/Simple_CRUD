@@ -1,0 +1,137 @@
+﻿@using ODMSCommon.Security
+@model ODMSModel.StockBlockDetail.StockBlockDetailViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.StockBlockDetail_PageTitle_Create;
+}
+
+<script type="text/javascript">
+    function GetIdPart() {
+        return {
+            id: $('#IdPart').val()
+        };
+    }
+
+    function GetIdPartIdDealer() {
+        return {            
+            id: $('#IdPart').val(),
+            idDealer: '@UserManager.UserInfo.GetUserDealerId()'
+        };
+    }
+
+    function ChangeSparePart(e) {
+
+        $('#IdStockType').data("kendoComboBox").text('');
+        $('#IdStockType').data("kendoComboBox").value('');
+        $("#UnBlockQty").data('kendoNumericTextBox').value(null);
+    }
+
+    function BindAutoComplate(e) {
+        var dataItem = this.dataItem(e.item.index());
+        $("#IdPart").val(dataItem.Value);
+    }
+
+    function ChangeBlockQty(e) {
+        if (parseFloat($("#UnBlockQty").val().toString()) < parseFloat($("#BlockQty").val().toString())) {
+
+            alert("Blokaj Degeri: " + $("#UnBlockQty").val() + "'den fazla olamaz!");
+            $("#BlockQty").data('kendoNumericTextBox').value($("#UnBlockQty").val());
+        }
+    }
+
+    function GetBlockQuantity(e) {
+        var IdPart = $('#IdPart').val();
+        var IdStockType = $('#IdStockType').val();
+        var IdDealer = '@UserManager.UserInfo.GetUserDealerId()';
+
+        $.ajax({
+            type: "GET",
+            data: { idPart: IdPart, idStockType: IdStockType, idDealer: IdDealer },
+            url: "@Url.Action("GetBlockQuantity", "StockBlockDetail")",
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+
+                $('#UnBlockQty').data('kendoNumericTextBox').value(JSON.parse(result).BlockQty);
+
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+
+</script>
+
+@using (Html.BeginForm("StockBlockDetailCreate", "StockBlockDetail", FormMethod.Post, new { id = "stockBlockDetailForm" }))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.IdPart)</div>
+   <div class="shortTxtDiv"> 
+       @{
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "IdPart", CallBackFunction = "ChangeSparePart", Title1 = "", Title2 = "", DefaultText = Model.PartName, DefaultValue = Model.IdPart });@Html.ValidationMessageFor(v => v.IdPart)
+        }
+        </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IdStockType)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IdStockType).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListStockTypes", "StockBlock").Data("GetIdPartIdDealer"))
+                            .ServerFiltering(true)).AutoBind(true).CascadeFrom("IdPart").Events(e => e.Change("GetBlockQuantity"))
+        
+        @Html.ValidationMessageFor(v => v.IdStockType)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UnBlockQty)</div>
+    <div class="">@Html.Kendo().NumericTextBoxFor(v => v.UnBlockQty).Spinners(false).HtmlAttributes(new { type = "text" })
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.BlockQty)</div>
+    <div class="">@Html.Kendo().NumericTextBoxFor(v => v.BlockQty).Min(0).Events(e => e.Change("ChangeBlockQty")).HtmlAttributes(new { type = "text" })
+        @Html.ValidationMessageFor(v => v.BlockQty)
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+ 
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.StockBlock.StockBlockCreate)
+    
+    @Html.HiddenFor(m => m.IdStockBlock)
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        if ($('#IdPart').val() == '') {
+            $('#IdStockType').data("kendoComboBox").value(null);
+        }
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+    //NumericTextBox 
+    $('#UnBlockQty').prop('readonly', true);
+
+    var numeric = $("#UnBlockQty").kendoNumericTextBox({
+        //min: 0,
+        //max: 100,
+    }).data("kendoNumericTextBox");
+
+    numeric.wrapper
+           .find(".k-numeric-wrap")
+           .addClass("expand-padding")
+           .find(".k-select").hide();
+
+</script>
+
+

@@ -1,0 +1,37 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.StockCardChangePart
+
+@model StockCardChangePartListModel
+@{
+    ViewBag.Title = @MessageResource.StockCardChangePart_PageTitle_Index;
+}
+
+<div class="kendoGridDiv" id="StockCardChangePart">
+    @(Html.Kendo().Grid<StockCardChangePartListModel>()
+          .Name("gridChangePart")
+          .Columns(columns =>
+              {
+                  columns.Bound(b => b.FirstPartCode).Width(200).Sortable(true);
+                  columns.Bound(b => b.LastPartCode ).Width(200).Sortable(true);
+              })
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListStockCardChangePart", "StockCardChangePart", Model).Data("Search"))
+                                        .Model(model => model.Field(b => b.PartId).DefaultValue(-1)))
+          )
+
+</div>
+
+@section Scripts
+{
+    <script>
+        function Search() {
+            return {
+                partId : @Model.PartId
+            };
+        }
+    </script>
+}

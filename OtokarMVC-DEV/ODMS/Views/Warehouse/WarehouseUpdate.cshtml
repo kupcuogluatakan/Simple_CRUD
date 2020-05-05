@@ -1,0 +1,66 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.Warehouse.WarehouseDetailModel
+@{
+    ViewBag.Title = MessageResource.Warehouse_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("WarehouseUpdate", "Warehouse", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.Label(MessageResource.CustomerDiscount_Display_IdDealer)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.DealerId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(w => w.Code)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(b => b.Code)
+        @Html.ValidationMessageFor(v => v.Code)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(w => w.IsActiveString)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(w => w.IsActive)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    @Html.HiddenFor(v => v.DealerId)
+    @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.Warehouse.WarehouseUpdate, "WarehouseUpdate")
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var result = "@UserManager.UserInfo.GetUserDealerId()";
+
+        if (result != "0") {
+            $("#DealerId").data("kendoComboBox").enable(false);
+        }
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+
+
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 480);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 250);
+        $("#popupContentWrapper").css("width", 500);
+    }
+</script>

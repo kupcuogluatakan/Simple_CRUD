@@ -1,0 +1,149 @@
+﻿@model ODMSModel.MaintenanceAppointment.MaintenanceAppointmentViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("MaintenanceAppointment_PageTitle_Index");
+}
+@using ODMSCommon.Resources
+
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.VehiclePlate)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VehiclePlate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" }) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleVin)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VehicleVin, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" }) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelCode)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleModelCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleModelList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.MaintenanceAppointment.MaintenanceAppointmentIndex)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(1400)
+    .Height(600)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    function Search() {
+        return {
+            Plate: $('#VehiclePlate').val(),
+            VehicleTypeId: $('#VehicleType').val(),
+            VehicleModelKod: $('#VehicleModelCode').val(),
+            VinNo: $('#VehicleVin').val()
+        };
+    }
+
+    $(document).ready(function () {
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            if ($('#VehicleModelCode').data('kendoComboBox').value() == '' && $('#VehiclePlate').val() == '' && $('#VehicleVin').val() == '') {
+                SetErrorMessage('@CommonUtility.GetResourceValue("MaintenanceAppointment_WarningPlateModelCodeNotEntered")');
+            }
+            else {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+                $("#ajaxSuccess").hide("slow");
+                $("#ajaxError").hide("slow");
+                $("#ajaxWarning").hide("slow");
+            }
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var idList = clickedId.split('$');
+            var maintenanceId = idList[0];
+            var vehicleId = idList[1];
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("MaintenanceAppointmentCreate", "MaintenanceAppointment", new { maintenanceId = -1, vehicleId = -2 })";
+                link = link.replace("-1", maintenanceId);
+                link = link.replace("-2", vehicleId);
+            }
+            else if ($(this).hasClass("details"))
+            {
+                link = "@Url.Action("MaintenanceDetails", "Maintenance", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    });
+    function onRowDataBound(isVisible, maintenanceId, vehicleId) {
+        if (isVisible) {
+            return "<center><a class='modalClick createNew' id=" + maintenanceId + "$" + vehicleId + " frameTitle=" + '@CommonUtility.GetResourceValue("MaintenanceAppointment_PageTitle_Create")' + " href='/MaintenanceAppointment/MaintenanceAppointmentCreate/" + maintenanceId + "$" + vehicleId + "'>" + '@CommonUtility.GetResourceValue("MaintenanceAppointment_Display_NewAppointment")' + "</a></center>";
+        }
+        else {
+            return "";
+        }
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.MaintenanceAppointment.MaintenanceAppointmentListModel>()
+          .Name("grid")
+          .Events(events => events.DataBound("onRowDataBound"))
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.MaintenanceId)
+                     .Title(CommonUtility.GetResourceValue("MaintenanceAppointment_Display_NewAppointment")).Width(70).Sortable(false).ClientTemplate("#= onRowDataBound(IsVisible, MaintenanceId, VehicleId)#").Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenanceAppointment.MaintenanceAppointmentCreate));
+              columns.Bound(p => p.MaintenanceId).Width(100).Sortable(true).ClientTemplate("<center><a class='details modalClick' id='#=MaintenanceId#' frameTitle='" + @CommonUtility.GetResourceValue("Maintenance_PageTitle_Details") + "' href='/Maintenance/MaintenanceDetails/#=MaintenanceId#'>#=MaintenanceId#</a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Maintenance.MaintenanceDetails));
+              columns.Bound(p => p.VehicleModelKod).Width(150).Sortable(true);
+              columns.Bound(p => p.VehicleTypeName).Width(100).Sortable(true);
+              columns.Bound(p => p.VinNo).Width(100).Sortable(true);
+              columns.Bound(p => p.Plate).Width(100).Sortable(true);
+              columns.Bound(p => p.MaintKM).Width(100).Sortable(true);
+              columns.Bound(p => p.MaintMonth).Width(100).Sortable(true);
+              columns.Bound(p => p.AdminDesc).Width(100).Sortable(true);
+              columns.Bound(p => p.Price).Width(100).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListMaintenanceAppointment", "MaintenanceAppointment", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.MaintenanceId).DefaultValue(-1)))
+
+    )
+</div>

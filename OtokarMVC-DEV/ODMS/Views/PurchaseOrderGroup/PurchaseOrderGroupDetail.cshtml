@@ -1,0 +1,30 @@
+﻿@model ODMSModel.PurchaseOrderGroup.PurchaseOrderGroupViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PurchaseOrderGroup_PageTitle_Detail");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+<div class="labelDiv">@Html.LabelFor(v => v.GroupName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.GroupName)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActive)</div>
+
+
+<script>
+
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 450);
+        $("#popupContentWrapper").css("height", 300);
+        $("#popupContentWrapper").css("width", 460);
+    }
+</script>
+

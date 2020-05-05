@@ -1,0 +1,70 @@
+﻿@model ODMSModel.StockCardPriceListModel.StockCardPriceListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("StockCardPriceList_PageTitle_Index");
+}
+@*@Scripts.Render("~/Scripts/Json2.js")*@
+@*<script src="~/Scripts/Json2.js"></script>*@
+
+<div class="kendoGridDiv" id="grd">
+
+    <div class="labelDiv">@Html.LabelFor(v => v.PriceList)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.PriceList).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.PriceList as List<SelectListItem>).HtmlAttributes(new { @style = "width:80%;" })
+        @Html.ValidationMessageFor(v => v.PriceList)
+    </div>
+    <br />
+    <br />
+    <div class="labelDiv">@Html.LabelFor(v => v.CompanyPrice)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.CompanyPrice)
+        @Html.ValidationMessageFor(v => v.CompanyPrice)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.CostPrice)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.CostPrice)
+        @Html.ValidationMessageFor(v => v.CostPrice)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.ListPrice)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.ListPrice)
+        @Html.ValidationMessageFor(v => v.ListPrice)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+</div>
+<script>
+
+    function GetAllPrice() {
+        $.ajax({
+            url: "@Url.Action("GetAllPrice", "StockCardPricePartial")",
+            type: 'POST',
+            dataType: 'json',
+            data: { priceId: $("#PriceList").val() },
+            traditional: true,
+            success: function (result) {
+                $("#CompanyPrice").val(result.CompanyPrice);
+                $("#CostPrice").val(result.CostPrice);
+                $("#ListPrice").val(result.ListPrice);
+            },
+            error: function () {
+                alert("Connection Failed. Please Try Again");
+            }
+        });
+    }
+    $(document).ready(function () {
+
+        $("#CompanyPrice").attr('disabled', 'disabled');
+        $("#CostPrice").attr('disabled', 'disabled');
+        $("#ListPrice").attr('disabled', 'disabled');
+
+        GetAllPrice();
+
+        $("#PriceList").change(function () {
+            GetAllPrice();
+        });
+
+    });
+
+</script>

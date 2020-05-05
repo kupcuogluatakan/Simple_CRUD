@@ -1,0 +1,221 @@
+﻿@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    ViewBag.Title = MessageResource.SparePartSaleDetail_PageTitle_AddPart;
+}
+<style>
+.k-numerictextbox {
+    width: 90px;
+}
+#popupContent {
+    width: 98%;
+}
+.special input[type=text] {
+        width: 250px !important;
+    }
+</style>
+@using ODMSCommon.Resources
+@using ODMSModel.SparePartSaleOrderDetail
+@model ODMSModel.SparePartSale.SparePartSaleViewModel
+<div id="bodyContainer">
+<div  id="grd">
+@(Html.Kendo().Grid<ODMSModel.SparePartSaleOrder.SparePartSaleOrderListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(c => c.SoNumber).Sortable(true);
+                  columns.Bound(c => c.SaleDate).Format("{0:dd/MM/yyyy hh:mm}").Sortable(true);
+                  columns.Bound(c => c.StatusName).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .ClientDetailTemplateId("template")
+          .Events(events => events.DataBound("dataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(CommonValues.GridPageSize.Short)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListSparePartSaleOrder", "SparePartSaleDetail").Data("SparePartSaleOrderSearch"))
+                                        .Model(model => model.Field(o => o.SoNumber).DefaultValue(-1)))
+          )
+</div>
+</div>
+
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().Grid<SparePartSaleOrderDetailListModel>()
+          .Name("grid_#=SoNumber#")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.IsSelected).Width(50).HtmlAttributes(new { style = "text-align:center;" }).ClientTemplate("<input type='checkbox' onchange='selectChange(this);' class='cbSelect' name='IsSelected' /> ");
+              //columns.Bound(p => p.SparePartSaleOrderDetailId).Width(100).Sortable(true);
+              columns.Bound(p => p.SparePartCode).Width(100).Sortable(true);
+              columns.Bound(p => p.SparePartName).Width(150).Sortable(true);
+              columns.Bound(p => p.OpenQuantity).Width(100).Sortable(false);
+              columns.Bound(p => p.ConfirmPrice).Width(100).Sortable(false);
+              columns.Bound(p => p.StockQuantity).Width(100).Sortable(true);
+              columns.Bound(p => p.OrderedQuantity).Width(100).Sortable(false);
+              columns.Bound(p => p.StatusName).Width(100).Sortable(true);
+          })
+          .DataSource(dataSource => dataSource
+              .Ajax()
+                      .Model(model =>
+                                                {
+                                                    model.Id(p => p.SparePartSaleOrderDetailId);
+                                                    model.Field(p => p.IsSelected).Editable(false);
+                                                    model.Field(p => p.SparePartCode).Editable(false);
+                                                    model.Field(p => p.SparePartName).Editable(false);
+                                                    model.Field(p => p.OpenQuantity).Editable(false);
+                                                    model.Field(p => p.ConfirmPrice).Editable(false);
+                                                    model.Field(p => p.StockQuantity).Editable(false);
+                                                    model.Field(p => p.OrderedQuantity).Editable(true);
+                                                    model.Field(p => p.StatusName).Editable(false);
+                                                })
+              .PageSize(10)
+                      .Read(read => read.Action("ListSparePartSaleOrderDetail", "SparePartSaleDetail", new { SoNumber = "#=SoNumber#", IsOriginalPart = @Model.IsPartOriginal }))
+                  )
+                  .Editable(editable => editable.Mode(GridEditMode.InCell))
+          .Pageable()
+          .Sortable()
+          .ToClientTemplate())
+
+
+</script>
+<div class="btn-group" style="height: 40px;">
+    <button class="btn btn-info btnAddPart" onclick=" AddParts(this) ">
+        <i class="fa fa-check"></i> &nbsp;
+        @MessageResource.SparePartSaleDetail_Display_AddPart
+    </button>
+</div>
+    <script id="campaign-request-delete-confirm-modal" type="text/x-kendo-template">
+     <p class="delete-message">@MessageResource.SparePartSaleDetail_Warning_AddPartConfirm</p>
+        <p style="text-align:right">
+            <button class="delete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="delete-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+</script>
+<script type="text/javascript">
+
+    function selectChange(obj) {
+        alert('geldi');
+
+        var parentGridSoNumber;
+        var parentGrid = $("#grid").data("kendoGrid");
+        var data = parentGrid.dataSource.data();
+        $.each(data, function(i, row) {
+            alert(row);
+            parentGridSoNumber = row.SoNumber;
+            alert(parentGridSoNumber);
+            var subGrid = $("#grid_" + parentGridSoNumber).data('kendoGrid');
+            if (subGrid.dataSource.total() > 0) {
+                var selectedRow = $(obj).closest("tr");
+                var item = subGrid.dataItem(selectedRow);
+                alert(item);
+                if (parentGridSoNumber == item.SoNumber) {
+                    var subData = subGrid.dataSource.data();
+                    $.each(subData, function(ii, subRow) {
+                        alert(subRow.SparePartSaleOrderDetailId);
+                        alert(item.SparePartSaleOrderDetailId);
+                        if (subRow.SparePartSaleOrderDetailId == item.SparePartSaleOrderDetailId) {
+                            item.IsSelected = $(obj).prop("checked");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    function AddParts(obj) {
+        $(".btnAddPart").addClass("disabled");
+
+        var items = [];
+        var parentGridSoNumber;
+        var parentGrid = $("#grid").data("kendoGrid");
+        var data = parentGrid.dataSource.data();
+        $.each(data, function(i, row) {
+            parentGridSoNumber = row.SoNumber;
+            alert(parentGridSoNumber);
+            var subGrid = $("#grid_" + parentGridSoNumber).data('kendoGrid');
+            if (subGrid.dataSource.total() > 0) {
+                var subData = subGrid.dataSource.data();
+                $.each(subData, function(ii, subRow) {
+                    alert(subRow);
+                    alert(subRow.OrderedQuantity);
+                    alert(subRow.IsSelected);
+                    if (subRow.IsSelected == true) {
+                        if (!subRow.OrderedQuantity || subRow.OrderedQuantity == 0) {
+                            SetErrorMessage('Sipariş miktar doldurulmalıdır.');
+                            $(".btnAddPart").removeClass("disabled");
+                            return;
+                        }
+                        alert(subRow.SparePartSaleOrderDetailId);
+                        alert('@Model.SparePartSaleId');
+                        items.push({
+                            SparePartSaleOrderDetailId: subRow.SparePartSaleOrderDetailId,
+                            OrderedQuantity: subRow.OrderedQuantity,
+                            SparePartSaleId: '@Model.SparePartSaleId'
+                        });
+                    }
+                });
+            }
+        });
+
+        $.ajax('@Url.Action("AddParts", "SparePartSaleDetail")',
+        {
+            traditional: true,
+            cache: false,
+            success: function(json) {
+                if (json.errorNo == 1)
+                    SetErrorMessage(json.errorMessage);
+                else {
+                    $(".btnAddPart").removeClass("disabled");
+                    SetSuccessMessage("@MessageResource.Global_Display_Success");
+                }
+            },
+            error: function (xhr) {
+                SetErrorMessage(xhr.responseText);
+            },
+            data: JSON.stringify(items),
+            dataType: "json",
+            method: "post"
+        });
+    }
+
+    function SparePartSaleOrderSearch() {
+        return {
+            SparePartSaleId: '@Model.SparePartSaleId',
+            IsPartOriginal : '@Model.IsPartOriginal'
+        };
+    }
+    
+    function ConfirmOrderedQuantity(obj,val) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_Warning",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#campaign-request-delete-confirm-modal").html())
+            .center().open();
+
+        kendoWindow
+            .find(".delete-confirm, .delete-cancel")
+            .click(function () {
+                if ($(this).hasClass("delete-cancel")) {
+                    var ntb = $(obj).data("kendoNumericTextBox");
+                    ntb.value(val);
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+
+
+    function dataBound() {
+        this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+
+</script>
+

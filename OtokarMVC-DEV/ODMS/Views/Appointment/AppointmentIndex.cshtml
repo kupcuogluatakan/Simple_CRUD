@@ -1,0 +1,244 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Appointment
+@model ODMSModel.Appointment.AppointmentIndexViewModel
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Index;
+}
+<div id="showSearch">@ODMSCommon.Resources.MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.AppointmentTypeId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.AppointmentTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.AppointmentTypeList as List<SelectListItem>).Placeholder(ODMSCommon.Resources.MessageResource.Global_Display_Choose)@Html.ValidationMessageFor(v => v.AppointmentTypeId)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.ContactName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ContactName)</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.AppointmentDateStart)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.AppointmentDateStart).Events(e=>e.Open("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.AppointmentDateEnd)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.AppointmentDateEnd).Events(e=>e.Open("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="clearDiv">&nbsp;</div>
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.VehiclePlate)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VehiclePlate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.StatusId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.AppointmentStatusList as List<SelectListItem>).Placeholder(MessageResource.Global_Display_Choose)</div>
+
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Appointment.AppointmentDetails)
+@ODMSHelpers.Button("ScheduleRedirect", CommonUtility.GetResourceValue("Appointment_Display_Browse_Schedule"), CommonValues.PermissionCodes.Appointment.AppointmentIndex, "ScheduleIndex","",false)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Create, CommonValues.PermissionCodes.Appointment.AppointmentCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("Customer")
+          .Draggable()
+          .Width(1350)
+          .Height(300)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.read();
+    }"))
+          )
+</div>
+
+    <script>
+        $("#ScheduleRedirect").click(function () {
+            window.open(
+              '@Url.Action("ScheduleIndex","Scheduler")',
+          '_blank' // <- This is what makes it open in a new window.
+        );
+            });
+        function OpenStartDate() {
+            var dateStart = $("#AppointmentDateStart").data("kendoDatePicker");
+            var dateEnd = $("#AppointmentDateEnd").data("kendoDatePicker");
+            
+            if ($("#AppointmentDateEnd").val()) {
+                dateStart.max(dateEnd.value());
+            } else {
+
+                dateStart.max(new Date(3000, 0, 1));
+            }
+        }
+
+        function OpenEndDate() {
+            var dateStart = $("#AppointmentDateStart").data("kendoDatePicker");
+            var dateEnd = $("#AppointmentDateEnd").data("kendoDatePicker");
+           
+            if ($("#AppointmentDateStart").val()) {
+                dateEnd.min(dateStart.value());
+            } else {
+                dateEnd.min(new Date(1900, 0, 1));
+            }
+        }
+
+        function Search() {
+            return {
+                AppointmentTypeId: $("#AppointmentTypeId").val(),
+                ContactName: $("#ContactName").val(),
+                VehiclePlate: $("#VehiclePlate").val(),
+                AppointmentDateStart: $("#AppointmentDateStart").val(),
+                AppointmentDateEnd: $("#AppointmentDateEnd").val(),
+                StatusId: $("#StatusId").val()
+            };
+        }
+
+        function Redirect(appointmentId) {
+            //alert("sayfa tasarlandığında url girilip redirection kodu uncomment edilmeli, appointmentId = " + appointmentId);            
+            window.location.href = '@Url.Action("AppointmentDetailsIndex", "AppointmentDetails")' + "/" + appointmentId;
+        }
+        $("#AppointmentDateEnd").keypress(function (evt) {
+            var keycode = evt.charCode || evt.keyCode;
+            if (keycode == 9) { //allow Tab through
+                return true;
+            } else {
+                return false;
+            }
+        });
+        $("#AppointmentDateStart").keypress(function (evt) {
+            var keycode = evt.charCode || evt.keyCode;
+            if (keycode == 9) { //allow Tab through
+                return true;
+            } else {
+                return false;
+            }
+        });
+        $(document).ready(function () {
+            $('input[data-role=datepicker]').attr("readonly", "readonly");
+            //$('#AppointmentDateEnd').prop("readonly", true);
+            //$('#AppointmentDateStart').prop("readonly", true);
+
+            $("#btnSearch").on("click", function(e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+            });
+
+            $("body").delegate("#showSearch", "click", function(e) {
+                var isVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!isVisible) {
+                    $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+
+            $("body").delegate(".modalClick", "click", function(e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                var width = 1300;
+                var height = 550;
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("AppointmentDetails", "Appointment", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("AppointmentUpdate", "Appointment", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("delete")) {
+                    link = "@Url.Action("AppointmentDelete", "Appointment", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("AppointmentCreate", "Appointment")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                windowWidget.wrapper.css({
+                    width: width,
+                    height: height
+                });
+                var closeOrigin = windowWidget.close;
+                windowWidget.wrapper.addClass("appointmentWindow");
+
+                windoww = $("#modelWindow").data("kendoWindow");
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+            });
+
+        });
+        function AppointmentCancel(aId) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            CustomConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("AppointmentCancel", "Appointment")",
+                data: { appointmentId: aId},
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage('@MessageResource.Global_Display_Success');
+                    }
+                },
+                dataType: "json"
+            });
+        }, "@MessageResource.SparePartSale_Display_Cancel", "@MessageResource.SparePartSale_Display_CancelConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+
+    }
+    </script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<AppointmentListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.AppointmentId).ClientTemplate("<center><a class='details modalClick' id='#=AppointmentId#' frameTitle='" + ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Details + "' href='/Appointment/AppointmentDetails/#=AppointmentId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(ODMSCommon.Resources.MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Appointment.AppointmentDetails));
+                  columns.Bound(o => o.AppointmentId).ClientTemplate("#if(AppointmentStatus == 1){#<center><a href='javascript:void(0);' frameTitle='" 
+                      + CommonUtility.GetResourceValue("SparePartSale_PageTitle_Cancel")
+                      + "' onclick='AppointmentCancel(#=AppointmentId#);'><img class='iconLink' src='" + Url.Content("~/Images/passive.png") + "'/></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Cancel")).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Appointment.AppointmentUpdate));
+                  columns.Bound(p => p.AppointmentId).ClientTemplate("#if(AppointmentStatus == 1){#" + 
+                      "<center><a class='edit modalClick' id='#=AppointmentId#' frameTitle='" + MessageResource.Appointment_PageTitle_Update + "' href='/Appointment/AppointmentUpdate/#=AppointmentId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>"+
+                      "#}else{#" +
+                      "" +
+                      "#}#").Title(MessageResource.Global_Display_Update).Width(80).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Appointment.AppointmentUpdate));
+                  columns.Bound(p => p.AppointmentId).ClientTemplate("#if(AppointmentStatus == 1){#" + 
+                      "<center><a class= 'loadTab' onclick='Redirect(#=AppointmentId#)' id='#=AppointmentId#'><img class=iconLink src='" + Url.Content("~/Images/choose.ico") + "'/></a></center>"+
+                      "#}else{#" +
+                      "" +
+                      "#}#").Title(MessageResource.Appointment_Display_AddSymptom).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Appointment.AppointmentDetails));
+                  columns.Bound(p => p.CustomerFullName).Sortable(true);
+                  columns.Bound(p => p.AppStatus).Sortable(true);
+                  columns.Bound(p => p.VehiclePlate).Sortable(true);
+                  columns.Bound(p => p.VehicleType).Sortable(true);
+                  columns.Bound(p => p.AppointmentTypeName).Sortable(true);
+                  columns.Bound(p => p.AppointmentDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+                  columns.Bound(p => p.AppointmentTime).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListAppointment", "Appointment", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.AppointmentId).DefaultValue(-1)))
+
+          )
+</div>

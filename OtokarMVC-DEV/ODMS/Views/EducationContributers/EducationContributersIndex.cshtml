@@ -1,0 +1,63 @@
+﻿@using ODMSModel.EducationContributers
+@model EducationContributersViewModel
+@{
+    ViewBag.Title =  CommonUtility.GetResourceValue("EducationContributors_PageTitle_Index");
+}
+ 
+@Html.AntiForgeryToken()
+<script>
+    function GetEducationCode() {
+        return { EducationCode: '@Model.EducationCode' };
+        }
+    function DeleteEduCont(eduCode, rowId, tcNo) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("EducationContributersDelete", "EducationContributers")",
+                data: { eduCode: eduCode, rowId: rowId, tcNo: tcNo, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#EducationContributersGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<br />
+@Html.ExportExcelButton(new ExcelExportDto("EducationContributers", "ListEducationContributers", "GetEducationCode", "sdfsdf").Build<EducationContributersListModel, object>(c => c.EducationCode, c => c.FullName, c => c.TcIdentity, c => c.DealerName, c => c.WorkingCompany, c=>c.EducationDate, c=>c.Grade))
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<EducationContributersListModel>()
+          .Name("EducationContributersGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.EducationCode).ClientTemplate("<center><a onclick='DeleteEduCont(\"#=EducationCode#\",#=RowNumber#,\"#=TcIdentity#\")' href='javascript:void(0);'  id='#=EducationCode#' idrow='#=RowNumber#' frameTitle='" + @CommonUtility.GetResourceValue("EducationDates_PageTitle_Delete") + "' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.EducationContributers.EducationContributersDelete));
+                  columns.Bound(p => p.EducationCode).Width(80).Sortable(true);
+                  columns.Bound(p => p.FullName).Width(100).Sortable(true);
+                  columns.Bound(p => p.TcIdentity).Width(150).Sortable(true);
+                  columns.Bound(p => p.DealerName).Width(50).Sortable(true);
+                  columns.Bound(p => p.WorkingCompany).Width(100).Sortable(true);
+                  columns.Bound(p => p.EducationDate).Width(100).Sortable(true).Format("{0:dd/MM/yyyy}");
+                  columns.Bound(p => p.Grade).Width(100).Sortable(true);     
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListEducationContributers", "EducationContributers", Model))
+                                        .Model(model => model.Field(o => o.EducationCode).DefaultValue(-1)))
+
+          )
+</div>

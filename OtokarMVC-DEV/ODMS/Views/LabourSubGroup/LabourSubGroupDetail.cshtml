@@ -1,0 +1,48 @@
+﻿@model ODMSModel.LabourSubGroup.LabourSubGroupViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("LabourSubGroup_PageTitle_Detail");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<div class="labelDiv">@Html.LabelFor(v => v.SubGroupId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SubGroupId)</div>
+
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.LabourSubGroupName)</div>
+<div class="shortTxtDiv">
+    <div style="float: left; width: 70%">
+        @{
+            Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model == null ? string.Empty : Model.MultiLanguageContentAsText, IsEnabled = true });
+        }
+    </div>
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.Description)</div>
+<div class="shortTxtDiv">
+    @Html.DisplayFor(v => v.Description)
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActive)</div>
+
+
+<script>
+
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 450);
+        $("#popupContentWrapper").css("height", 400);
+        $("#popupContentWrapper").css("width", 550);
+    }
+</script>
+

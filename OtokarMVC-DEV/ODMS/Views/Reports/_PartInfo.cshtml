@@ -1,0 +1,92 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+@using Kendo.Mvc.UI
+@using System.Web.Mvc.Html
+@model  PartExchangeFilterRequest
+
+@{
+    Layout = "~/views/shared/popup_layout.cshtml";
+}
+<style>
+    #popupContent {
+        width: auto !important;
+        margin-right: 10px;
+    }
+</style>
+
+
+<div id="searchFields1" style="display:none">
+    @*<label for="PartId">Parça Id</label>*@
+    <input type="hidden" name="PartId" id="PartId" value="@Model.PartId" />
+</div>
+
+@Html.ExportExcelButton(new ExcelExportDto("Reports", "ListPartInfo", "GetSearchParameters", "sdfsdf", filterId: "searchFields1", reportName: MessageResource.PartExchangeReport_Display_PartInfo).Build<PartInfoModel, object>(
+    p => p.DealerRegionName,
+    p => p.DealerName,
+    p => p.VehicleModel,
+    p => p.VehicleType,
+    p => p.VinNo,
+    p => p.EngineNo,
+    p => p.Customer,
+    p => p.WorkOrderId,
+    p => p.WorkOrderDate,
+    p => p.VehicleKilometer,
+    p => p.PartCode,
+    p => p.PartName,
+    p => p.TotalQuantity,
+    p => p.TotalPrice,
+    p => p.Currency))
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PartInfoModel>()
+          .Name("PartInfoGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DealerRegionName).Sortable(true).Width(100).Title(MessageResource.PartExchangeReport_Display_DealerRegionName);
+              columns.Bound(p => p.DealerName).Sortable(true).Width(70).Title(MessageResource.Appointment_Display_Dealer);
+              columns.Bound(p => p.VehicleModel).Sortable(true).Width(70).Title(MessageResource.Appointment_Display_VehicleModel);
+              columns.Bound(p => p.VehicleType).Sortable(true).Width(100).Title(MessageResource.Appointment_Display_VehicleType);
+              columns.Bound(p => p.VinNo).Sortable(true).Width(100).Title(MessageResource.Vehicle_Display_VinNo);
+              columns.Bound(p => p.EngineNo).Sortable(true).Width(100).Title(MessageResource.Vehicle_Display_EngineNo);
+              columns.Bound(p => p.Customer).Sortable(true).Width(70).Title(MessageResource.Appointment_Display_Customer);
+              columns.Bound(p => p.WorkOrderId).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}/#=WorkOrderId#'>#=WorkOrderId#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard"))).Sortable(true).Width(70).Title(MessageResource.WorkOrderBatchInvoice_Display_WorkOrderId);
+              columns.Bound(p => p.WorkOrderDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(70).Title(MessageResource.VehicleHistory_Display_WorkOrderDate);
+              columns.Bound(p => p.VehicleKilometer).Sortable(true).Width(100).Title(MessageResource.VehicleHistory_Display_VehicleKM);
+              columns.Bound(p => p.PartCode).Sortable(true).Width(70).Title(MessageResource.CampaignPart_Display_PartCode);
+              columns.Bound(p => p.PartName).Sortable(true).Width(100).Title(MessageResource.ClaimDismantledPartDelivery_Display_PartName);
+              columns.Bound(p => p.TotalQuantity).Format("{0:N2}").Sortable(true).Width(100).Title(MessageResource.PartExchangeReport_Display_TotalQuantity);
+              columns.Bound(p => p.TotalPrice).Format("{0:N2}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(100).Title(MessageResource.PartExchangeReport_Display_TotalPrice);
+              columns.Bound(p => p.Currency).Sortable(true).Width(100).Title(MessageResource.PartExchangeReport_Display_Currency);
+          })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                                .Read(read => read.Action("ListPartInfo", "Reports").Data("GetSearchParameters"))
+                                        )
+
+    )
+</div>
+
+@Html.Partial("_MultipleSelectionFunc")
+
+<script>
+    
+
+    function GetSearchParameters() {
+        return{
+
+            DealerId:@Model.DealerIdList,
+            StartDate:'@Model.StartDate',
+            EndDate:'@Model.EndDate',
+            DealerRegionId:'@Model.DealerRegionIdList',
+            Currency:GetQuotedList('@Model.CurrencyCodeList'),
+            ProcessType:'@Model.ProcessTypeList',
+            Category:'@Model.GifCostCenterList',
+            PartId:@Model.PartId,
+            VehicleModel:GetQuotedList('@Model.VehicleModelList'),
+        }
+    }
+</script>

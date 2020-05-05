@@ -1,0 +1,224 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.DealerSaleSparepart.DealerSaleSparepartListModel
+
+@{
+    ViewBag.Title = MessageResource.DealerSaleSparepart_PageTitle_Index;
+}
+
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.DiscountRatio)</div>
+        <div class="shortTxtDiv" style="width: 300px;">@Html.Kendo().NumericTextBoxFor(c => c.DiscountRatio).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>
+        
+        <div class="clearDiv">&nbsp;</div>
+        
+        <div class="labelDiv">@Html.LabelFor(d => d.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartName) </div>
+        
+        
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.ListPrice)</div>
+        <div class="shortTxtDiv" style="width: 300px;">@Html.Kendo().NumericTextBoxFor(c => c.ListPrice).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.IsActiveList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        
+       
+
+    </div>
+    <br />
+</div>
+
+@Html.HiddenFor(v => v.IdDealer)
+
+@ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.DealerSaleSparepart_PageTitle_Create, CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartCreate)
+
+
+<br />
+<div id="DealerSaleSparepartModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("DealerSaleSparepartModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(661)//.Width(520)
+    .Height(350)//.Height(200)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#DealerSaleSparepartGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    function DeleteDealerSaleSparepart(obj, aId, idDealer) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteDealerSaleSparepart", "DealerSaleSparepart")",
+                data: { IdPart: aId, IdDealer: idDealer, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#DealerSaleSparepartGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+
+    $(document).ready(init);
+    function DealerSaleSparepartSearch() {
+        return {
+            PartName: $('#PartName').val(),
+            PartCode: $('#PartCode').val(),
+            DiscountRatio: $('#DiscountRatio').val(),
+            ListPrice: $('#ListPrice').val(),
+            IsActive: $('#IsActive').val() == "" ? null : ($('#IsActive').val() == "0" ? false : true)
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#DealerSaleSparepartGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#DealerSaleSparepartModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var clickedDealerId = $(this).attr("dealerId");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("DealerSaleSparepartUpdate", "DealerSaleSparepart", new { id = -1, dealerId = -1 })";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-1", clickedDealerId);
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("DealerSaleSparepartCreate", "DealerSaleSparepart")";
+                }
+                else if ($(this).hasClass("details")) {
+                    link = "@Url.Action("DealerSaleSparepartDetails", "DealerSaleSparepart", new { id = -1, dealerId = -1 })";
+                    link = link.replace("-1", clickedId);
+                    link = link.replace("-1", clickedDealerId);
+                }
+            $("#DealerSaleSparepartModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#DealerSaleSparepartModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+}
+
+</script>
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.DealerSaleSparepart.DealerSaleSparepartListModel>()
+          .Name("DealerSaleSparepartGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.IdPart).ClientTemplate("<center><a class='details modalClick' id='#=IdPart#' idDealer='#=IdDealer#' frameTitle='" + CommonUtility.GetResourceValue("DealerSaleSparepart_PageTitle_Details") + "' href='/DealerSaleSparepart/DealerSaleSparepartDetails/#=IdPart#&#=IdDealer#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartDetails));
+                  columns.Bound(p => p.IdPart).ClientTemplate("<center><a class='edit modalClick' id='#=IdPart#' dealerId='#=IdDealer#' frameTitle='" + @CommonUtility.GetResourceValue("DealerSaleSparepart_PageTitle_Update") + "' href='/DealerSaleSparepart/DealerSaleSparepartUpdate/#=IdPart#&#=IdDealer#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartUpdate));
+                  columns.Bound(o => o.IdPart).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("DealerSaleSparepart_PageTitle_Delete") + "' onclick='DeleteDealerSaleSparepart(this,#=IdPart#, #=IdDealer#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartDelete));
+
+                  columns.Bound(p => p.PartCode).Width(150).Sortable(true);
+                  columns.Bound(p => p.PartName).Width(300).Sortable(true);
+                  columns.Bound(p => p.StockQuantity).Sortable(true);
+                  columns.Bound(p => p.DiscountRatio).Sortable(true);
+                  columns.Bound(p => p.DiscountPrice).Sortable(true).HtmlAttributes(new { @style = "text-align:right" });
+                  columns.Bound(p => p.ListPrice).Sortable(true).HtmlAttributes(new { @style = "text-align:right" });
+                  columns.Bound(p => p.ShipQty).Sortable(true);
+                  columns.Bound(p => p.Unit).Sortable(true);
+                  columns.Bound(p => p.CreateDate).Sortable(true).Format("{0:dd/MM/yyyy}" + " - " + "{0:HH:mm tt}");
+                  columns.Bound(p => p.IsActiveName).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerSaleSparepart", "DealerSaleSparepart", Model).Data("DealerSaleSparepartSearch"))
+                                        .Model(model => model.Field(o => o.IdPart).DefaultValue(-1)))
+
+          )
+</div>
+
+<div class="row">
+    <br />
+    <div class="col-md-12">
+        <div class="col-md-3" style="border:2px dashed #808080">
+            <br />
+            <div id="excelVisibility">
+                <h4>@Html.Raw(MessageResource.Upload_Dealer_Sale_Spare_Part) </h4>
+                <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+                <div>
+                    <a class="k-link2" href="@Url.Action("UploadExcelSample")">
+                        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                    </a>
+                    <br /><br />
+                    @using (Html.BeginForm("UploadListFromExcel", "DealerSaleSparePart", FormMethod.Post))
+                    {
+                        @Html.Kendo().Upload().Name("uploadFile").TemplateId("fileTemplate").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+                        <div id="divExcelUpload">
+                            @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("DealerSaleSparePart_Display_UploadFromExcel"), "", "UploadExcel")
+                        </div>
+                    }
+                </div>
+            </div>
+            <br />
+        </div>
+    </div>
+    <br />
+</div>

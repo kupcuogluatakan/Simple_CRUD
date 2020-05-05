@@ -1,0 +1,263 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.DealerPurchaseOrderConfirm.DealerPurchaseOrderConfirmListModel
+
+@{
+    ViewBag.Title = MessageResource.DealerPurchaseOrderConfirm_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StatusId)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <br />
+        <br />
+    </div>
+    <br />
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerPurchaseOrderConfirm.DealerPurchaseOrderConfirmIndex)
+
+<br />
+<div id="DealerPurchaseOrderConfirmModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("DealerPurchaseOrderConfirmModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#DealerPurchaseOrderConfirmGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    function RejectDealerPurchaseOrderConfirm(obj, poNumber) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        CustomConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("RejectDealerPurchaseOrderConfirm", "DealerPurchaseOrderConfirm")",
+                data: { PoNumber: poNumber, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#DealerPurchaseOrderConfirmGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        loadTabs(poNumber);
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        }, "@MessageResource.Global_Display_Reject", "@MessageResource.Global_Display_RejectConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+    }
+    function AcceptDealerPurchaseOrderConfirm(poNo) {
+        CustomConfirm(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var grid = $('#DealerPurchaseOrderPartConfirmGrid').data().kendoGrid;
+            var dataSource = grid.dataSource;
+            var count = grid.dataSource.total();
+            var zeroCount = 0;
+
+            for (var i = 0; i < count; i++) {
+                var item = dataSource.data()[i];
+                var shipQuant = item.ShipmentQuantity;
+                if (shipQuant == 0) {
+                    zeroCount++;
+                }
+            }
+            // hepsi 0 ise
+            if (zeroCount == count && count != 0 && zeroCount != 0) {
+                SetErrorMessage('@MessageResource.DealerPurchaseOrderPartConfirm_Warning_ShipmentQuantityEmpty');
+        }
+            // hepsi 0 değilse
+        else {
+            // 0 olanlar varsa uyarı veriliyor iptale çekileceğine dair
+            if (zeroCount > 0) {
+                CustomConfirm(function() {
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("AcceptDealerPurchaseOrderConfirm", "DealerPurchaseOrderConfirm")",
+                        data: { poNumber: poNo, "__RequestVerificationToken": token },
+                        traditional: true,
+                        success: function(result) {
+                            if (result.Status == 0)
+                                SetErrorMessage(result.Message);
+                            else {
+                                var grid = $('#DealerPurchaseOrderConfirmGrid').data('kendoGrid');
+                                grid.dataSource.read();
+                                $('#divDetails').hide();
+                                SetSuccessMessage('@MessageResource.Global_Display_Success');
+                                var url = '@Url.Action("SparePartSaleIndex", "SparePartSale")' + "/?sparePartSaleId=" + result.Message;
+                                //window.location.href = url;
+                                var $link = $('<a>', {
+                                    "target": "_blank",
+                                    "href": url
+                                });
+                                emulateClick($link.get(0));
+                            }
+                        },
+                        dataType: "json"
+                    });
+                }, "@MessageResource.Global_Display_Approve", "@MessageResource.DealerPurchaseOrderPartConfirm_Display_AcceptConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("AcceptDealerPurchaseOrderConfirm", "DealerPurchaseOrderConfirm")",
+                        data: { poNumber: poNo, "__RequestVerificationToken": token },
+                        traditional: true,
+                        success: function (result) {
+                            if (result.Status == 0) {
+                                SetErrorMessage(result.Message);
+                                // hata mesajı sonrası yeniden yükleme yapması için eklendi Oya 03.04.2018
+                                loadTabs('@Model.PoNumber');
+                            }
+                            else {
+                                var grid = $('#DealerPurchaseOrderConfirmGrid').data('kendoGrid');
+                                grid.dataSource.read();
+                                $('#divDetails').hide();
+                                SetSuccessMessage('@MessageResource.Global_Display_Success');
+                                var url = '@Url.Action("SparePartSaleIndex", "SparePartSale")' + "/?sparePartSaleId=" + result.Message;
+                                //window.location.href = url;
+                                var $link = $('<a>', {
+                                    "target": "_blank",
+                                    "href": url
+                                });
+                                emulateClick($link.get(0));
+                            }
+                        },
+                    dataType: "json"
+                });
+            }
+        }
+        }, "@MessageResource.Global_Display_Approve", "@MessageResource.Global_Display_ApproveConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+
+    }
+    function emulateClick(element) {
+        var evt = element.ownerDocument.createEvent('MouseEvents');
+        evt.initMouseEvent('click', true, true, element.ownerDocument.defaultView, 1, 0, 0, 0, 0, true, false, false, true, 0, null);
+
+        if (document.createEventObject) {
+            element.fireEvent('onclick', evt);
+        } else {
+            element.dispatchEvent(evt);
+        }
+    }
+    $(document).ready(init);
+    function DealerPurchaseOrderConfirmSearch() {
+        return {
+            IdDealer: $('#IdDealer').val(),
+            StatusId: $('#StatusId').val()
+        };
+    }
+    function init() {
+        $('#divDetails').hide();
+
+        loadTabs('@Model.PoNumber');
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#DealerPurchaseOrderConfirmGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+    }
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.DealerPurchaseOrderConfirm.DealerPurchaseOrderConfirmListModel>()
+          .Name("DealerPurchaseOrderConfirmGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.PoNumber).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(\"#=PoNumber#\")' id='#=PoNumber#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerPurchaseOrderPartConfirm.DealerPurchaseOrderPartConfirmIndex));
+                  columns.Bound(p => p.PoNumber).ClientTemplate("#if(SupplierDealerConfirm == 3 && StatusId==1){#<center><a href='javascript:void(0);' frameTitle='" + MessageResource.DealerPurchaseOrderConfirm_PageTitle_Accept + "' onclick='AcceptDealerPurchaseOrderConfirm(#=PoNumber#);'><img class='iconLink' style=\"width:20px; height:20px;\" src='" + Url.Content("~/Images/choose.ico") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Confirm).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerPurchaseOrderConfirm.DealerPurchaseOrderConfirmIndex));
+                  columns.Bound(p => p.PoNumber).ClientTemplate("#if(SupplierDealerConfirm == 3 && StatusId==1){#<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("DealerPurchaseOrderConfirm_PageTitle_Reject") + "' onclick='RejectDealerPurchaseOrderConfirm(this,#=PoNumber#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Reject).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerPurchaseOrderConfirm.DealerPurchaseOrderConfirmIndex));
+                  columns.Bound(p => p.PoNumber).Sortable(true);
+                  columns.Bound(p => p.DealerName).Sortable(true);
+                  columns.Bound(p => p.StatusName).Sortable(true);
+                  columns.Bound(p => p.DesiredShipDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerPurchaseOrderConfirm", "DealerPurchaseOrderConfirm", Model).Data("DealerPurchaseOrderConfirmSearch"))
+                                        .Model(model => model.Field(o => o.PoNumber).DefaultValue(-1)))
+
+          )
+</div>
+@Html.HiddenFor(m => m.PoNumber)
+@Html.HiddenFor(m => m.IdSupplier)
+<div id="divDetails">
+    @(Html.Kendo().TabStrip()
+          .Name("DealerPurchaseOrderDetails")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.DealerPurchaseOrderPartConfirm_PageTitle_Index).LoadContentFrom(Url.Action("DealerPurchaseOrderPartConfirmIndex", "DealerPurchaseOrderPartConfirm")).Selected(true)))
+
+</div>
+<script type="text/javascript">
+    function loadTabs(poNumberParam) {
+        if (poNumberParam != '') {
+            var tabStrip = $('#DealerPurchaseOrderDetails').kendoTabStrip().data("kendoTabStrip");
+
+            var partTab = tabStrip.contentElements[0];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("DealerPurchaseOrderPartConfirmIndex", "DealerPurchaseOrderPartConfirm")",
+                data: { poNumber: poNumberParam },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $(partTab).html(result);
+                },
+                error: function (request, status, err) {
+                    //////console.log(arguments);
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+            $('#divDetails').show();
+        }
+        else {
+            $('#divDetails').hide();
+        }
+    }
+</script>

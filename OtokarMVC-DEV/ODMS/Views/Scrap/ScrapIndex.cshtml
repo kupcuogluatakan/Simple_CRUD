@@ -1,0 +1,193 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.Scrap.ScrapListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Scrap_PageTitle_Index");
+}
+ 
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.ScrapDealerName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.ScrapDealerId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+                <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e=>e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+       
+         <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>
+
+        <div class="labelDiv">@Html.LabelFor(d => d.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartName) </div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Scrap.ScrapDetails)
+@ODMSHelpers.Button("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), CommonValues.PermissionCodes.Scrap.ScrapCreate, "CreateScrap", "loadTabs(0);", false)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#ScrapGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    function Search() {
+        return {
+            ScrapDealerId: $('#ScrapDealerId').val(),
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            PartCode: $('#PartCode').val(),
+            PartName: $('#PartName').val(),
+            ScrapStockTypeId: $('#ScrapStockTypeId').val(),
+        };
+    }
+    $(document).ready(function () {
+        
+        if ("@UserManager.UserInfo.IsDealer" == "True")
+        {
+            $("#ScrapDealerId").data("kendoComboBox").enable(false);
+        }
+        if (@Model.ScrapId != 0) {
+            loadTabs(@Model.ScrapId);
+        } else {
+            $('#divDetails').hide();
+        }
+
+        $("body").delegate("#btnSearch", "click", function(e) {
+            var grid = $('#ScrapGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+        $("body").delegate("#showSearch", "click", function(e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            } else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+    });
+    function DeleteScrap(sId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteScrap", "Scrap")",
+                data: { scrapId: sId , "__RequestVerificationToken": token  },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#ScrapGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                        $('#divDetails').hide();
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.Scrap.ScrapListModel>()
+          .Name("ScrapGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.ScrapId).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(#=ScrapId#)' id='#=ScrapId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Scrap.ScrapDetails));
+                  columns.Bound(o => o.ScrapId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("Scrap_PageTitle_Delete") + "' onclick='DeleteScrap(#=ScrapId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Scrap.ScrapDelete));
+                  columns.Bound(p => p.ScrapId).Width(100).Sortable(true);
+                  columns.Bound(p => p.ScrapDealerName).Width(100).Sortable(true);
+                  columns.Bound(p => p.ScrapDate).Width(100).Sortable(true).Format("{0:dd/MM/yyyy}");
+                  columns.Bound(p => p.DocName).Width(100).Sortable(true);
+                  columns.Bound(p => p.ScrapReasonDesc).Width(100).Sortable(true);
+                  
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListScrap", "Scrap", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.ScrapId).DefaultValue(-1)))
+
+          )
+</div>
+<div id="divDetails">
+        @(Html.Kendo().TabStrip()
+          .Name("ScrapDetails")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.ScrapDetail_PageTitle_Index).LoadContentFrom(Url.Action("ScrapDetailIndex", "ScrapDetail"))))
+    
+</div>
+@Html.HiddenFor(m => m.ScrapId)
+<script type="text/javascript">
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    function loadTabs(sId) {
+        var tabStrip = $('#ScrapDetails').kendoTabStrip().data("kendoTabStrip");
+
+        var detailTab = tabStrip.contentElements[0];
+
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("ScrapDetailIndex", "ScrapDetail")",
+            data: { scrapId: sId },
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $(detailTab).html(result);
+                tabStrip.select(tabStrip.tabGroup.children("li").eq(0));
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+
+        $('#divDetails').show();
+    }
+</script>

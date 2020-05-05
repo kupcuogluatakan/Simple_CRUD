@@ -1,0 +1,45 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.PrivateMessage.PrivateMessageModel
+ @{
+     Layout = "~/Views/Shared/Popup_Layout.cshtml";
+ }
+<style>
+    #popupContentWrapper {
+        width: 600px !important;
+        height: 400px !important;
+    }
+    #popupContent {
+        width: 580px !important;
+        overflow: hidden;
+    }
+    #Reciever-autoCompleteResultsWrap {
+        width: 230px !important;
+        display: inline-block;
+    }
+
+</style>
+@using (Html.BeginForm("SendNewMessage", "PrivateMessage", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(c => c.Reciever)</div>
+    <div class="shortTxtDiv" style="float: left">@Html.TextBoxFor(c => c.Reciever)  @Html.ValidationMessageFor(c => c.Reciever) @Html.ValidationMessageFor(c => c.RecieverId)</div>
+    <div class="clearfix">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.Title)</div>
+    <div class="shortTxtDiv" style="float: left">@Html.TextBoxFor(c => c.Title, new{data_val_required="*" ,data_val="true"})  @Html.ValidationMessageFor(c => c.Title)</div>
+    <div class="clearfix">&nbsp;</div>
+    <div class="labelDiv"></div>
+    <div class="shortTxtDiv" style="float: left">@Html.CheckBoxFor(c => c.IsUrgent) @Html.LabelFor(c => c.IsUrgent)</div>
+    <div class="clearfix">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.Message)</div>
+    <div class="shortTxtDiv" style="float: left">@Html.TextAreaFor(c => c.Message)  @Html.ValidationMessageFor(c => c.Message)</div>
+    <div class="clearfix">&nbsp;</div>
+    <button class="btn btn-primary">
+        <i class="glyphicon glyphicon-pencil"></i> @MessageResource.Global_Display_Send
+    </button>
+}
+<script src="@Url.Content("~/Scripts/custom.js")"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#Reciever").odmsAutoComplete("@Url.Action("ListRecievers","PrivateMessage")", "RecieverId", {minLenght:1,loadingImage:'@Url.Content("~/Images/loading.gif")'});
+    });
+
+</script>

@@ -1,0 +1,59 @@
+﻿@model BireyselCalisma2.Models.DB.Makale
+@using BireyselCalisma2.Models.DB
+
+@{
+    ViewBag.Title = "Add";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var x = ViewBag.kategorilist;
+}
+
+<h1>Makale ekleme formu</h1>
+
+@using (Html.BeginForm())
+{
+<table class="table table-bordered">
+
+    @if (true)
+    {
+
+    }
+    <tr>
+        <td> <input class="form-control" type="text" name="MTitle" value="" required placeholder="Makale Adı" />   </td>
+        @Html.ValidationMessageFor(m => m.MTitle) @*databasedeki ismi çeker*@
+
+    </tr>
+
+    <tr>
+        <td>  <input class="form-control" type="text" name="MDetail" value="" required placeholder="Makale İçeriği" />  </td>
+    </tr>
+
+    <tr>
+        <td> <input class="btn btn-success" type="submit" name="btn" value="Kaydet" />   </td>
+    </tr>
+
+    <tr>
+        @*@Html.DropDownListFor(model => model.CategoryID, new SelectList(x, "CategoryID", "categoryType", Model.CategoryID), new { htmlAttributes = new { @class = "form-control" } })*@
+
+        @{
+            string dropdown = "<select name='CategoryID' class='form-control'>";
+
+        }
+        @foreach (var item in (List<Kategori>)ViewBag.kategorilist)
+        {
+            dropdown += "<option value='" + item.CategoryID + "'>" + item.categoryType + "</option>";
+        }
+
+        @{
+            dropdown += "</select>";
+
+
+
+        }
+
+        @Html.Raw(dropdown)
+
+
+    </tr>
+   
+</table>
+            }

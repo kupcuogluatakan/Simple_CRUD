@@ -1,0 +1,352 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.LabourDuration
+
+@model LabourDurationIndexModel
+@{
+    ViewBag.Title = @MessageResource.LabourDuration_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+        $("#btnSearch3").click(function (e) {
+            var grid = $('#LabourDurationGrid').data('kendoGrid');
+            grid.dataSource.read();
+        });
+
+        $("#showSearch2").click(function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (IsVisible == false) {
+                $(this).html("@MessageResource.Global_Display_Hide_Search_Criteria");
+                $(this).addClass("searchVisible");
+                $("#searchDiv2").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv2").hide("slow");
+            }
+        });
+
+
+
+        $('#UpdateLabourDuration').click(function () {
+            UpdateDuration();
+        });
+
+        $('#SaveLabourDuration').click(function () {
+            var grid = $('#grid').data().kendoGrid;
+            var strSelectedIds = "";
+            var ischecked = grid.tbody.find(":checked");
+            $.each(ischecked, function () {
+                if (strSelectedIds != "")
+                    strSelectedIds += "," + $(this).attr("id");
+                else
+                    strSelectedIds += $(this).attr("id");
+            });
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SaveLabourDuration", "LabourDuration")",
+                data: { sparePartsaleDetailIdList: strSelectedIds, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        ShowTabs('@Model.LabourId', false);
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+
+
+
+
+
+    });
+    function GetParameters() {
+        return {
+            VehicleModelId: $("#VehicleModelId").val(),
+            LabourId: $("#LabourId").val()
+        };
+    }
+    function Search() {
+        return {
+            LabourId: $('#LabourId').val(),
+            VehicleModelName: $("#ModelKodList").data('kendoMultiSelect').value().toString(),
+            VehicleTypeName: $("#VehicleType").data('kendoMultiSelect').value().toString(),
+            EngineType: $("#EngineType").data('kendoMultiSelect').value().toString(),
+            Duration: $('#Duration').val()
+        };
+    }
+    $(function () {
+        $("body").delegate("#btnCreateDuration", "click", function (e) {
+            $('#modelWindow').html('');
+
+            var frameTitle = $(this).attr("frameTitle");
+            var link = "@Url.Action("LabourDurationCreate", "LabourDuration", new { id = Model.LabourId})";
+
+            ShowPopup(frameTitle, link);
+        });
+    });
+
+    function ShowPopup(frameTitle, link) {
+        $("#modelWindow_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#modelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+    function LabourDurationDetails(obj, labourId, vehicleModelId, vehicleTypeId, engineType) {
+        $('#modelWindow').html('');
+
+        var frameTitle = $(obj).attr("frameTitle");
+
+        var link = "@Url.Action("LabourDurationDetails", "LabourDuration", new { LabourId = "labourId", VehicleModelId = "vehicleModelId", VehicleTypeId = "vehicleTypeId", EngineType="engineType"})";
+        link = link.replace("labourId", labourId);
+        link = link.replace("vehicleModelId", vehicleModelId);
+        link = link.replace("vehicleTypeId", vehicleTypeId);
+        link = link.replace("engineType", engineType);
+
+        ShowPopup(frameTitle, link);
+    }
+
+    function UpdateLabourDuration(obj, labourId, vehicleModelId, vehicleTypeId, engineType) {
+        $('#modelWindow').html('');
+
+        var frameTitle = $(obj).attr("frameTitle");
+        var link = "@Url.Action("LabourDurationUpdate", "LabourDuration", new { LabourId = "labourId", VehicleModelId = "vehicleModelId", VehicleTypeId = "vehicleTypeId", EngineType="engineType" })";
+        link = link.replace("labourId", labourId);
+        link = link.replace("vehicleModelId", vehicleModelId);
+        link = link.replace("vehicleTypeId", vehicleTypeId);
+        link = link.replace("engineType", engineType);
+
+        ShowPopup(frameTitle, link);
+    }
+
+    function DeleteLabourDuration(obj, labourId, vehicleModelId, vehicleTypeId, engineType) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("LabourDurationDelete")",
+                data: { LabourId: labourId, VehicleModelId: vehicleModelId, VehicleTypeId: vehicleTypeId, EngineType: engineType, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#LabourDurationGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    function selectChange(obj) {
+        debugger;
+        var grid = $('#LabourDurationGrid').data("kendoGrid");
+        var row = $(obj).closest("tr");
+        var item = grid.dataItem(row);
+        item.IsSelected = $(obj).prop("checked");
+
+    }
+    function onEdit(e) {
+        debugger;
+        var data = e.model;
+        var oldqty = data.Duration;
+        console.log(data);
+        if (data.IsSelected == false || data.IsSelected == null) {
+            this.closeCell();
+        }
+
+        e.preventDefault();
+    }
+    function onDataBound() {
+        $("a.kendotooltip").each(function (i, e) {
+            toolTipIt(e);
+        });
+    }
+    function UpdateDuration(obj) {
+        debugger;
+        var items = [];
+
+        $("#UpdateLabourDuration").addClass("disabled");
+        var grid = $('#LabourDurationGrid').data("kendoGrid");
+        var list = grid.dataSource.data();
+
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].IsSelected == true) {
+                if (!list[i].Duration || list[i].Duration == 0) {
+                    SetErrorMessage('İşçilik süresi doldurulmalıdır.');
+                    $("#SaveLabourDuration").removeClass("disabled");
+                    return;
+                }
+                items.push({ labourId: list[i].LabourId, vehicleModelId: list[i].VehicleModelId, vehicleTypeId: list[i].VehicleTypeId, engineType: list[i].EngineType, IsActive: list[i].IsActive, Duration: list[i].Duration });
+            }
+        }
+
+
+
+        $.ajax('@Url.Action("LabourDurationUpdateByDuration", "LabourDuration")',
+    {
+        traditional: true,
+        cache: false,
+        global: true,
+        success: function (json) {
+            console.log(json);
+            $("#UpdateLabourDuration").removeClass("disabled");
+            if (json.Status == 1)
+                SetSuccessMessage(json.Message);
+            else
+                SetErrorMessage(json.Message);
+            $("#UpdateLabourDuration").removeClass("disabled");
+            $("#btnSearch").trigger("click");
+        },
+        error: function (xhr) {
+            SetErrorMessage(xhr.responseText)
+        },
+        data: JSON.stringify(items),
+        dataType: "json",
+        method: "post"
+    });
+
+
+
+    }
+
+    function onChange(e) {
+        var grid = $('#LabourDurationGrid').data("kendoGrid");
+
+        var selectedItemUId = this.element.parent().closest('tr').attr('data-uid');
+        var item = grid.dataSource.getByUid(selectedItemUId);
+
+        var newValue = this.value() == 0 ? 1 : this.value();
+        if (newValue > item.OnOrderQuantity)
+            newValue = item.OnOrderQuantity;
+        this.value(newValue);
+        item.set("Duration", newValue);
+    }
+</script>
+
+<div id="showSearch2" class="showSearch btn btn-default">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv2" class="searchDiv" style="margin-top:10px;margin-bottom:10px;">
+    <div id="searchFields">
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ModelKodList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ModelKodList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EngineType)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().MultiSelectFor(c => c.EngineType).Name("EngineType").AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(ds => ds.Read(read => read.Action("ListVehicleEngineTypesSearch", "LabourDuration").Data("GetParameters")).ServerFiltering(false)).DataValueField("Value").DataTextField("Text")
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.Duration)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(x=>x.Duration)</div>
+        <div class="clearfix"></div>
+        @ODMSHelpers.LinkButton("btnSearch3", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourIndex)
+    </div>
+</div>
+
+<div class="clearfix"></div>
+@Html.HiddenFor(c => c.LabourId)
+@ODMSHelpers.LinkButton("btnCreateDuration", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.LabourDuration_PageTitle_Create, CommonValues.PermissionCodes.LabourDuration.LabourDurationCreate)
+@Html.ExportExcelButton(new ExcelExportDto("LabourDuration", "ListLabourDurations", "Search", "fhg", "DurationExcelExport").Build<LabourDurationListModel, object>(c => c.LabourCode, c => c.LabourName, c => c.VehicleModelName,c=>c.VehicleModelSSID, c => c.VehicleTypeName,c=>c.VehicleTypeSSID, c => c.EngineType,c=>c.EngineTypeID, c => c.Duration, c => c.IsActiveString))
+@ODMSHelpers.Button("SaveLabourDuration", MessageResource.ClaimDismantledParts_Display_Save, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailOrder)
+@ODMSHelpers.Button("UpdateLabourDuration", MessageResource.Update_Labor_Duration, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailOrder, "asd", "UpdateDuration")
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<LabourDurationListModel>()
+          .Name("LabourDurationGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.LabourId).ClientTemplate("<input type='checkbox' onchange='selectChange(this);' id='#= LabourId#' value='#= LabourId#'></input>").Title("").Sortable(false).Width(30);
+              columns.Bound(d => d.LabourId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.LabourDuration_PageTitle_Details + "' onclick='LabourDurationDetails(this,#=LabourId#, \"#=VehicleModelId#\", #=VehicleTypeId#,\"#=EngineType#\");'><img  class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourDuration.LabourDurationDetails));
+              columns.Bound(d => d.LabourId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.LabourDuration_PageTitle_Update + "' onclick='UpdateLabourDuration(this,#=LabourId#, \"#=VehicleModelId#\", #=VehicleTypeId#,\"#=EngineType#\");'><img  class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(MessageResource.Global_Display_Update).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourDuration.LabourDurationUpdate));
+              columns.Bound(b => b.LabourId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.LabourDuration_PageTitle_Delete + "' onclick='DeleteLabourDuration(this,#=LabourId#, \"#=VehicleModelId#\", #=VehicleTypeId#,\"#=EngineType#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourDuration.LabourDurationDelete));
+              columns.Bound(d => d.VehicleModelName).Width(200).Sortable(true);
+              columns.Bound(d => d.VehicleTypeName).Width(200).Sortable(true);
+              columns.Bound(d => d.EngineType).Width(200).Sortable(true);
+              columns.Bound(d => d.Duration).Width(200).Sortable(true).EditorTemplateName("NewDoubleRoundedNumericTextboxEditor").HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(d => d.IsActiveString).Width(200).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .Events(e => e.DataBound("onDataBound"))
+          .Events(e => e.Edit("onEdit"))
+          .Editable(editable => editable.Mode(GridEditMode.InCell))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.LabourId);
+                                            model.Field(p => p.Duration).Editable(true);
+                                            model.Field(p => p.VehicleModelName).Editable(false);
+                                            model.Field(p => p.VehicleTypeName).Editable(false);
+                                            model.Field(p => p.EngineType).Editable(false);
+                                            model.Field(p => p.IsActiveString).Editable(false);
+                                        })
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListLabourDurations", "LabourDuration", Model).Data("Search"))
+                                        )
+    )
+
+</div>
+<div id="excelVisibilityDuration">
+    <h4>@Html.Raw(MessageResource.LabourDuration_Display_UploadFromExcel) </h4>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample", "LabourDuration")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+        @using (Html.BeginForm("LabourDurationIndex", "LabourDuration", FormMethod.Post))
+        {
+            @Html.Kendo().Upload().Name("labourDurationExcelFile").TemplateId("fileTemplate").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+            <div id="divDurationExcelUpload">
+                @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("LabourDuration_Display_UploadFromExcel"), "", "UploadExcel")
+            </div>
+        }
+    </div>
+</div>
+<br />
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("LabourDuration")
+          .Draggable()
+          .Resizable()
+          .Width(550)
+          .Height(400)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+            var grid = $('#LabourDurationGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>

@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.DealerSaleChannelDiscountRatios_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@model ODMSModel.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioViewModel
+@using (Html.BeginForm("DealerSaleChannelDiscountRatioUpdate", "DealerSaleChannelDiscountRatio", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerClassName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.DealerClassCode)&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ChannelName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v=>v.ChannelCode)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SparePartClassCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.SparePartClassCode)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.TseValidDiscountRatio)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.TseValidDiscountRatio).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new{ type = "text", maxlength ="6",data_val_min="0",data_val_max="1000",style="width:200px"}) @Html.ValidationMessageFor(v => v.TseValidDiscountRatio) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.TseInvalidDiscountRatio)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.TseInvalidDiscountRatio).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new{ type = "text", maxlength ="6",data_val_min="0",data_val_max="1000",style="width:200px"}) @Html.ValidationMessageFor(v => v.TseInvalidDiscountRatio) </div>
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioUpdate, "DealerSaleChannelDiscountRatioUpdate")        
+    @Html.HiddenFor(v => v.DealerClassCode)
+    @Html.HiddenFor(v => v.ChannelCode)
+    @Html.HiddenFor(v => v.SparePartClassCode)
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

@@ -1,0 +1,174 @@
+﻿@model ODMSModel.Customer.CustomerIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Customer_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CustomerCreate", "Customer", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerTypeName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.CustomerTypeId).Events(ev => ev.Change(@"function(e){HideShow();}")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.CustomerTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(c => c.CustomerTypeId)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div id="divHeader">
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CustomerName) @Html.ValidationMessageFor(v => v.CustomerName) </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+    <div id="divTuzel">
+        <div class="labelDiv">@Html.LabelFor(v => v.TaxOffice)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TaxOffice) @Html.ValidationMessageFor(v => v.TaxOffice) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TaxNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TaxNo) @Html.ValidationMessageFor(v => v.TaxNo) </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+    <div id="divGercek">
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerLastName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CustomerLastName) @Html.ValidationMessageFor(v => v.CustomerLastName) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TcIdentityNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TcIdentityNo) @Html.ValidationMessageFor(v => v.TcIdentityNo) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PassportNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.PassportNo) @Html.ValidationMessageFor(v => v.PassportNo) </div>
+    </div>
+    <div id="divGovernmentType">
+        <div class="labelDiv">@Html.LabelFor(v => v.GovernmentTypeName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.GovernmentTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.GovernmentTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.GovernmentTypeId)</div>
+    </div>
+    <div id="divCompanyType">
+        <div class="labelDiv">@Html.LabelFor(v => v.CompanyTypeName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.CompanyTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.CompanyTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.CompanyTypeId)</div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div id="divWitholding">
+        <div class="labelDiv">@Html.LabelFor(v => v.WitholdingStatusName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.WitholdingStatus).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Events(e => e.Change("function(e){ShowHideWitholding(e);}")) @Html.ValidationMessageFor(v => v.WitholdingStatus)</div>
+    </div>
+    <div id="divWitholdingStatus">
+        <div class="labelDiv">@Html.LabelFor(v => v.WitholdingId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.WitholdingId).CascadeFrom("CountryId").AutoBind(false).DataTextField("Text").DataValueField("Value").DataSource(d => d.Read(r => r.Type(HttpVerbs.Post).Action("ListWitholding", "Customer").Data("GetCountryId")).ServerFiltering(true)).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.WitholdingId)</div>
+    </div>
+    <div id="divFooter">
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CountryName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.CountryId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.CountryList as List<SelectListItem>).Events(e => e.Change("function(e){ShowHideWitholding(e);}")).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.CountryId)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.MobileNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.MobileNo) @Html.ValidationMessageFor(v => v.MobileNo) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Customer.CustomerCreate, "CustomerCreate")
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function HideShow() {
+        // Tüzel
+        if ($('#CustomerTypeId').val() == 1) {
+            $('#divHeader').show();
+            $('#divFooter').show();
+            $('#divTuzel').show();
+            $('#divGercek').hide();
+            $("#GovernmentTypeId").data("kendoComboBox").enable(false);
+            $("#divGovernmentType").hide();
+            $("#CompanyTypeId").data("kendoComboBox").enable(true);
+            $("#divCompanyType").show();
+            $("#divWitholding").show();
+            $("#WitholdingStatus").data("kendoComboBox").enable(true);
+        }
+        // Gercek
+        if ($('#CustomerTypeId').val() == 2) {
+            $('#divHeader').show();
+            $('#divFooter').show();
+            $('#divTuzel').hide();
+            $('#divGercek').show();
+            $("#GovernmentTypeId").data("kendoComboBox").enable(false);
+            $("#divGovernmentType").hide();
+            $("#CompanyTypeId").data("kendoComboBox").enable(false);
+            $("#divCompanyType").hide();
+            $("#divWitholding").hide();
+            $("#WitholdingStatus").data("kendoComboBox").enable(false);
+        }
+        // Kamu
+        if ($('#CustomerTypeId').val() == 3) {
+            $('#divHeader').show();
+            $('#divFooter').show();
+            $('#divTuzel').show();
+            $('#divGercek').hide();
+            $("#GovernmentTypeId").data("kendoComboBox").enable(true);
+            $("#divGovernmentType").show();
+            $("#CompanyTypeId").data("kendoComboBox").enable(true);
+            $("#divCompanyType").show();
+            $("#divWitholding").show();
+            $("#WitholdingStatus").data("kendoComboBox").enable(true);
+        }
+
+        if ($('#CustomerTypeId').val() == 4) {
+            $('#divHeader').show();
+            $('#divFooter').show();
+            $('#divTuzel').show();
+            $('#divGercek').hide();
+            $("#GovernmentTypeId").data("kendoComboBox").enable(false);
+            $("#divGovernmentType").hide();
+            $("#CompanyTypeId").data("kendoComboBox").enable(true);
+            $("#divCompanyType").show();
+            $("#divWitholding").hide();
+            $("#WitholdingStatus").data("kendoComboBox").enable(false);
+        }
+
+        // TFS No : 29445 müşteri tipi değiştirildiğinde alanlar temizlenecek
+        $('#CustomerName').val('');
+        $('#TaxOffice').val('');
+        $('#TaxNo').val('');
+        $('#CustomerLastName').val('');
+        $('#TcIdentityNo').val('');
+        $('#PassportNo').val('');
+        $('#MobileNo').val('');
+        $("#GovernmentTypeId").data("kendoComboBox").text('');
+        $("#WitholdingStatus").data("kendoComboBox").text('');
+        $("#WitholdingId").data("kendoComboBox").text('');
+        $("#CountryId").data("kendoComboBox").text('');
+    }
+    function GetCountryId() {
+        return { countryId: $('#CountryId').val() };
+    }
+    function ShowHideWitholding(e) {
+        if ($('#WitholdingStatus').val() == "1") {
+            $("#divWitholdingStatus").show();
+            $("#WitholdingId").data("kendoComboBox").enable(true);
+        }
+        else {
+            $("#divWitholdingStatus").hide();
+            $("#WitholdingId").data("kendoComboBox").enable(false);
+        }
+    }
+    $(document).ready(function () {
+
+        $("#MobileNo").mask("(999) 999 99 99", { placeholder: "_" });
+
+        if ($('#CustomerName').val() == '')
+            $("#CustomerTypeId").data("kendoComboBox").text('');
+
+        $('#divHeader').hide();
+        $('#divFooter').hide();
+        $('#divTuzel').hide();
+        $('#divGercek').hide();
+        $("#GovernmentTypeId").data("kendoComboBox").enable(false);
+        $("#divGovernmentType").hide();
+        $('#divCompanyType').hide();
+        $("#divWitholding").hide();
+
+        HideShow();
+        ShowHideWitholding();
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+

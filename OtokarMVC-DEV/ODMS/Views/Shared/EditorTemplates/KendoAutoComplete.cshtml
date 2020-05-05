@@ -1,0 +1,22 @@
+﻿@model Int64?
+
+<div class="shortTxtDiv">    
+        @(Html.Kendo().AutoCompleteFor(x=>x)
+          .Name("IdPart")
+          .HtmlAttributes(new { style="width:200px"})
+          //.Filter("startswith")
+          .Placeholder(@ODMSCommon.Resources.MessageResource.Global_Display_Choose)
+          .DataSource(source => source.Read(read => read.Action("GetAutocomplate", "SparePartAssemble")).ServerFiltering(true)).Events(x=>x.Select("BindAutoComplate"))
+        .DataTextField("Text")
+        //.Value("Value")
+    )
+</div>
+
+<script type="text/javascript">
+    function BindAutoComplate(e) {
+        var dataItem = this.dataItem(e.item.index());
+        //console.log(dataItem);
+        $("#IdPart").val(dataItem.Value);
+    }
+
+</script>

@@ -1,0 +1,365 @@
+﻿@model ODMSModel.CampaignRequest.CampaignRequestViewModel
+@using ODMSCommon.Resources
+@{
+    ViewBag.Title = ViewBag.Title = ODMSCommon.Resources.MessageResource.CampaignRequest_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using (Html.BeginForm("CampaignRequestUpdate", "CampaignRequest", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+    <div class="shortTxtDiv">
+        @{
+            if (ODMSCommon.Security.UserManager.UserInfo.GetUserDealerId() == 0)
+            {
+                @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                @Html.ValidationMessageFor(v => v.IdDealer)
+            }
+            else
+            {
+                @Html.DisplayFor(v => v.DealerName)
+            }
+        }
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.CampaignName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CampaignCode)</div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.RequestNote)</div>
+    <div class="shortTxtDiv">
+        @Html.TextAreaFor(v => v.RequestNote)
+        @Html.ValidationMessageFor(v => v.RequestNote)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    @*<div class="labelDiv">@Html.LabelFor(v => v.PreferredOrderDate)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().DatePickerFor(v => v.PreferredOrderDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" })
+            @Html.ValidationMessageFor(v => v.PreferredOrderDate)
+        </div>*@
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    <div class="shortTxtDiv">
+        @*@Html.Kendo().NumericTextBoxFor(v => v.Quantity).Decimals(0).Format("{0:N}").Min(1).Max(999).Spinners(false).Enable(Model.WorkOrderId<=0).HtmlAttributes(new { type = "text", style = "width:204px" })*@
+
+
+
+        @if (Model.WorkOrderId > 0)
+        {
+            @Html.HiddenFor(p => p.Quantity)
+        }
+
+        <input id="Quantity" name="Quantity" value="@Model.Quantity" min="1" maxlength="999" style="width:200px;" disabled="@(Model.WorkOrderId>0?true:false)" onkeypress="return isNumberKey(event);" onkeydown= "return checkSelectedvin(event);" />
+        @Html.ValidationMessageFor(v => v.Quantity)
+
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.RequestStatus)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.RequestStatusName) @Html.ValidationMessageFor(v => v.RequestStatus)</div>@*@*
+        @*<div class="shortTxtDiv">@Html.LabelFor(v => v.RequestStatus) @Html.ValidationMessageFor(v => v.RequestStatus) </div>*@
+    @* <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.RequestStatus).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.RequestStatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(v => v.RequestStatus)</div>*@
+
+
+    <style>
+        .clearVinBtn, .orderVinBtn {
+            display: none;
+            width: 100px;
+        }
+
+        .vinSearches {
+            display: none;
+        }
+
+        .vinNumbers {
+            border-bottom: 1px solid #dfd6d6;
+            padding: 3px;
+            margin: 3px;
+        }
+
+            .vinNumbers label {
+                font-size: 11.9px !important;
+                line-height: 12px !important;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            .vinNumbers:hover {
+                background-color: #eeebeb;
+            }
+
+        .vinNumbersHovered {
+            background-color: #eeebeb;
+        }
+
+        .campVin {
+            background-color: white;
+            max-height: 150px !important;
+            overflow-y: scroll !important;
+            width: 200px;
+            padding-top: 0px;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+
+        function checkSelectedvin(event) {
+            if ($("#CampaignVinCodes").val() != "") {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+            else {
+                return true;
+            }
+
+        }
+
+        $(document).ready(documentInit());
+
+        function documentInit() {
+            $("#campVinSearch").bind('paste', function (event) {
+                setTimeout(function () {
+                    searchVinNo($("#campVinSearch").val());
+                }, 250);
+            });
+
+
+            LoadCampVins(@Model.CampaignCode);
+        }
+
+        function clearSelectedVins()
+        {
+            $('.vinNumbers input[type="checkbox"]:checked').prop('checked',false);
+            $("#CampaignVinCodes").val('');
+            $(".clearVinBtn").hide();
+            $(".orderVinBtn").hide();
+            $(".vinNumbers").removeClass("vinNumbersHovered");
+            $(".vinNumbers").attr("order", "2");
+
+            $("#Quantity").val('');
+            $("#campVinSearch").val('');
+            searchVinNo('');
+        }
+
+        function selectVin(elem,vinNo)
+        {
+            var selectedChecks = $('.vinNumbers input[type="checkbox"]:checked');
+            var map = selectedChecks.map(function () { return this.value; }).get().join(',');
+
+            $("#CampaignVinCodes").val(map);
+            $(".clearVinBtn").show();
+            $(".orderVinBtn").show();
+
+            var closesVin = $(elem).closest(".vinNumbers");
+            var order = (closesVin.attr("order") == "2" ? "1" : "2");
+            closesVin.attr("order", order);
+
+            closesVin.toggleClass("vinNumbersHovered");
+
+            $("#Quantity").val(selectedChecks.length == 0 ? "" : selectedChecks.length);
+
+        }
+
+        function ReOrderVinList() {
+
+            var vinNumberList = $(".vinNumbers").sort(function (a, b) {
+
+                var sortA = parseInt($(a).attr("order"));
+                var sortB = parseInt($(b).attr("order"));
+                return (sortA < sortB) ? -1 : (sortA > sortB) ? 1 : 0;
+            });
+
+            $("#campVinSearch").val('');
+            searchVinNo('');
+            $(".campVin").html(vinNumberList);
+            $(".campVin").scrollTop(0);
+        }
+
+        function LoadCampVins(CampCode)
+        {
+
+            $.post('@Url.Action("GetCampaignVinNumbers", "CampaignRequest")',
+            {
+                CampaignCode: CampCode
+
+            }, function (data) {
+
+                var html = "";
+
+                if (data.Data.length>0) {
+                    $(".vinSearches").show();
+                }
+
+                var selectedVins = '@Model.CampaignVinCodes';
+
+                if (selectedVins != '' && selectedVins != undefined) {
+
+                    $("#CampaignVinCodes").val(selectedVins);
+
+                    $(".clearVinBtn").show();
+                    $(".orderVinBtn").show();
+                }
+
+                var forApproval = "True";@*'@(Model.RequestStatusId == (int)CommonValues.CampaignRequestStatus.WaitingForApproval)';*@
+
+                $.each(data.Data, function () {
+
+                    var dex = selectedVins.indexOf(this.VinNo);
+
+                    html += "<div  class='vinNumbers " + (dex > -1 ? "vinNumbersHovered" : "") + "' vin='" + this.VinNo + "' order='" + (dex > -1 ? "1" : "2") + "'>";
+                    html += "<label>";
+                    html += "<input type='checkbox' class='" + (forApproval == "False" ? " hide " : "") + "' value='" + this.VinNo + "' " + (dex > -1 ? " checked='checked' " : "") + "  onclick=\"selectVin(this,'" + this.VinNo + "')\"/>";
+                    html += this.VinNo;
+                    html += "</label>";
+                    html += "</div>";
+
+                });
+
+
+                $(".campVin").html(html);
+                ReOrderVinList();
+
+                if (forApproval == "False") {
+                    $(".campTools").hide();
+
+                }
+
+            });
+
+        }
+
+    function searchVinNo(searchKey) {
+
+        searchKey = searchKey.toLocaleLowerCase();
+
+        var vinNumbers = $(".vinNumbers");
+
+        $.each(vinNumbers, function () {
+
+            var currentElem = $(this);
+            var currentVin = currentElem.attr("vin").toLocaleLowerCase();
+
+            if (searchKey.indexOf(',') > -1) {
+                var searchKeyArray = searchKey.split(',');
+
+                var exitFlag = 0;
+                $.each(searchKeyArray, function () {
+
+                    if (currentVin.indexOf(this) > -1) {
+                        currentElem.show();
+                        exitFlag = 1;
+                    }
+                    else {
+                        currentElem.hide();
+                    }
+
+                    if (exitFlag == 1) {
+                        return false;
+                    }
+
+                });
+            }
+            else {
+                if (currentVin.indexOf(searchKey) > -1) {
+                    currentElem.show();
+                }
+                else {
+                    currentElem.hide();
+                }
+            }
+
+        });
+
+
+        }
+
+    </script>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    //İş kartından geldiyse şasi seçmesin. aynı zamanda adet'te giremez çünkü 1'dir.
+    @Html.HiddenFor(v => v.CampaignVinCodes)
+    if (Model.WorkOrderId <= 0)
+    {
+        <div class="labelDiv campLabel vinSearches">@MessageResource.CampaignRequest_Display_VinNumbers</div>
+        <div class="shortTxtDiv vinSearches">
+            <input id="campVinSearch" type='text' class='k-input' onkeyup='searchVinNo(this.value);' placeholder='@MessageResource.CampaignRequest_Display_SearchVin' />
+
+
+            <div class="campVin">
+
+            </div>
+            <div class="btn-group campTools">
+                <button class="orderVinBtn btn btn-primary" type="button" onclick="ReOrderVinList();">@MessageResource.CampaignRequest_Display_OrderVin</button>
+                <button class="clearVinBtn btn btn-danger" type="button" onclick="clearSelectedVins();">@MessageResource.CampaignRequest_Display_ClearVin</button>
+            </div>
+
+        </div>
+
+
+        <div class="clearDiv">&nbsp;</div>
+    }
+
+
+
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.CampaignRequest.CampaignRequestUpdate, "CampaignRequestUpdate")
+
+
+    @Html.HiddenFor(v => v.IdDealer)
+    @Html.HiddenFor(v => v.CampaignCode)
+    @Html.HiddenFor(v => v.IdCampaignRequest)
+    @Html.HiddenFor(v => v.RequestStatus)
+    @Html.HiddenFor(v => v.VerihcleModelCode)
+    @Html.HiddenFor(v => v.DealerName)
+    @Html.HiddenFor(v => v.WorkOrderId)
+    @Html.HiddenFor(v => v.RejectionNote)
+
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $("#Order").click(function () {
+            $("#RequestStatus").val("1");
+        })
+
+        //$("#RequestStatus").data("kendoComboBox").enable(false);
+
+        //$("#PartDiscountRatio").on("keydown",function(){
+        //    var discountRatio = $("#PartDiscountRatio").val().split(",");
+        //    if(discountRatio != null && discountRatio[1].length > 1)
+        //    {
+        //        $("#PartDiscountRatio").val(discountRatio[0] + "," + discountRatio[1].substring(0,1));
+        //    }
+        //});
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+        $('#PreferredOrderDate').prop("readonly", true);
+
+    });
+</script>
+
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContentWrapper").css("height", 440);
+    }
+</script>

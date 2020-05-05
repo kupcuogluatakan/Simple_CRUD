@@ -1,0 +1,281 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+
+@model ODMSModel.DealerGuaranteeControl.DealerGuaranteeControlListModel
+
+@{
+    ViewBag.Title = MessageResource.DealerGuaranteeControlList_PageTitle_Index;
+}
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script src="~/Scripts/custom.js"></script>
+<style>
+    #GuaranteeRequestApproveGrid tr td:nth-of-type(8) {
+        white-space: pre-wrap;
+    }
+</style>
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.WorkOrderId)</div>
+                <div class="shortTxtDiv">
+                    @Html.TextBoxFor(c => c.WorkOrderId)
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.WorkOrderDetailId)</div>
+                <div class="shortTxtDiv">
+                    @Html.TextBoxFor(c => c.WorkOrderDetailId)
+                </div>
+            </div>
+@if (!ODMSCommon.Security.UserManager.UserInfo.IsDealer)
+{
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.CategoryId)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(v => v.CategoryId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.CategoryList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                </div>
+            </div>
+}
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.WarrantyStatus)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(v => v.WarrantyStatus).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.WarrantyStatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+                <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+                <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.ApproveStartDate)</div>
+                <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ApproveStartDate).Events(e => e.Open("OpenApproveStartDate").Change("OpenApproveEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.ApproveEndDate)</div>
+                <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ApproveEndDate).Events(e => e.Open("OpenApproveEndDate").Change("OpenApproveStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.ProcessType)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(v => v.ProcessType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.ProcessTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.IndicatorType)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(v => v.IndicatorType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.IndicatorTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(b => b.ModelKodList)</div>
+                <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ModelKodList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="labelDiv">@Html.LabelFor(v => v.VehicleType)</div>
+                <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+            </div>
+        </div>
+    </div>
+    <br />
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerGuaranteeControlList.Index)
+
+
+<br />
+<div id="GuaranteeRequestApproveModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("GuaranteeRequestApproveModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#GuaranteeRequestApproveGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<div id="ShowWorkOrderDocumentsWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+    function OpenDocuments(id) {
+        $('#ShowWorkOrderDocumentsWindow').kwnd('@Url.Action("WorkOrderDocumentsIndex","WorkOrderDocuments")/' + id, '@Html.Raw(MessageResource.WorkOrderCard_Display_Documents)',
+      {
+          iframe: false,
+          width: 1200,
+          height: 460,
+          onClose: function () {
+              $("#ShowWorkOrderDocumentsWindow").html('');
+
+          }
+      });
+        $('#ShowWorkOrderDocumentsWindow').removeClass("hide");
+        OpenWindow($('#ShowWorkOrderDocumentsWindow'));
+    }
+
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    function OpenApproveStartDate() {
+        var dateStart = $("#ApproveStartDate").data("kendoDatePicker");
+        var dateEnd = $("#ApproveEndDate").data("kendoDatePicker");
+
+        if ($("#ApproveEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenApproveEndDate() {
+        var dateStart = $("#ApproveStartDate").data("kendoDatePicker");
+        var dateEnd = $("#ApproveEndDate").data("kendoDatePicker");
+
+        if ($("#ApproveStartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    function ShowPopup(frameTitle, link) {
+        $("#GuaranteeRequestApproveModelWindow_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#GuaranteeRequestApproveModelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+        windowWidget.wrapper.css({
+            width: 1250,
+            height: 650
+        });
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+    $(document).ready(init);
+
+    function GuaranteeRequestApproveSearch() {
+        return {
+            WorkOrderId: $("#WorkOrderId").val(),
+            WorkOrderDetailId: $("#WorkOrderDetailId").val(),
+            IndicatorType: $("#IndicatorType").val(),
+            ApproveStartDate: $('#ApproveStartDate').val(),
+            ApproveEndDate: $('#ApproveEndDate').val(),
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            WarrantyStatus: $('#WarrantyStatus').val(),
+            ProcessType: $('#ProcessType').val(),
+            CategoryId: $('#CategoryId').val(),
+            ModelKodList: $("#ModelKodList").data('kendoMultiSelect').value().toString(),
+            VehicleType: $("#VehicleType").data('kendoMultiSelect').value().toString()
+        };
+    }
+
+    function init() {
+
+
+
+        $('input[data-role=datepicker]').attr("readonly", "readonly");//DatePicker set readonly
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#GuaranteeRequestApproveGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+    }
+    function OpenVehicleHistory(obj) {
+        ShowPopup('@Html.Raw(MessageResource.WorkOrderCard_Display_VehicleHistory)', '@Url.Action("VehicleHistoryIndex","Vehicle")' + '?vehicleId=' + obj);
+    }
+    function OpenWorkOrderDoc(obj) {
+        ShowPopup('@Html.Raw(MessageResource.WorkOrderDoc_PageTitle_Index)', '@Url.Action("WorkOrderDocumentsIndex", "WorkOrderDocuments")/' + obj);
+    }
+</script>
+<div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.DealerGuaranteeControl.DealerGuaranteeControlListModel>()
+          .Name("GuaranteeRequestApproveGrid")
+          .Columns(columns =>
+          {
+
+              columns.Bound(p => p.GuaranteeId).ClientTemplate("#if(GifNo>0){#" +
+                  "<center><a class='loadTab' target='_blank' href='" + Url.Action("Details") + "?guaranteeId=#=GuaranteeId#&guaranteeSeq=#=GuaranteeSeq#' >#=GifNo#</a></center>" +
+                  "#}else{#" +
+                  "<center><a class='loadTab' target='_blank' href='" + Url.Action("Details") + "?guaranteeId=#=GuaranteeId#&guaranteeSeq=#=GuaranteeSeq#' ><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'></a></center>" +
+                  "#}#").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerGuaranteeControlList.Index));
+              columns.Bound(p => p.WorkOrderId).ClientTemplate("<center><a class='' style='cursor:pointer' onclick='OpenDocuments(#=WorkOrderId#)'><img class=iconLink src='" + Url.Content("~/Images/save.gif") + "'></a></center>").Sortable(false).Title(MessageResource.Global_Display_Doc);
+              columns.Bound(p => p.Dealer).Visible(UserManager.UserInfo.IsDealer == false).Sortable(false);
+              columns.Bound(p => p.WarrantyStatus).Sortable(true).HtmlAttributes(new { title = " #= ConfirmDesc # ", style = "color:red;" });
+              columns.Bound(p => p.ProcessType).Width(100).Sortable(true);
+              columns.Bound(p => p.IndicatorType).Width(100).Sortable(true);
+              columns.Bound(p => p.WorkOrderId).Width(80).ClientTemplate("<center><a class='' id='#=WorkOrderId#' target='_blank' href='" + Url.Action("WorkOrderCardIndex", "WorkOrderCard") + "/#=WorkOrderId#'>#=WorkOrderId#</a></center>").Sortable(true);
+              columns.Bound(p => p.WorkOrderDetailId).ClientTemplate("<center>#=WorkOrderDetailId#</center>").Width(60);
+              columns.Bound(p => p.VinNo).ClientTemplate("<center><a class='' style='cursor:pointer' onclick='OpenVehicleHistory(#=VehicleId#)'>#=VinNo#</a></center>").Sortable(true);
+              columns.Bound(p => p.IsPermString).Width(60).Sortable(true);
+              columns.Bound(p => p.FailCodeDesc).Visible(false);
+              columns.Bound(p => p.FailCode).Width(80).Sortable(true).HtmlAttributes(new { title = " #= FailCodeDesc # ", style = "color:red;" });
+              // columns.Bound(p => p.RequestDescription).Sortable(true).Width(60);
+              columns.Bound(p => p.RequestDate).Format("{0:dd/MM/yyyy}").Sortable(true);
+              columns.Bound(p => p.ApproveDate).Format("{0:dd/MM/yyyy}").Sortable(true);
+
+          })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(20)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("List", "DealerGuaranteeControlList", Model).Data("GuaranteeRequestApproveSearch"))
+                                        .Model(model => model.Field(o => o.GuaranteeId).DefaultValue(-1)))
+
+    )
+</div>

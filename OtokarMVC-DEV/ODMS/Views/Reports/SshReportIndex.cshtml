@@ -1,0 +1,142 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.Reports
+@using ODMSBusiness
+
+@model SshReportFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.Ssh_PageTitle_Index;
+}
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DefectIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DefectIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DefectIdList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.ContractIdList) </div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ContractIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ContractIdList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.PoStatus)</div>  
+        <div class="shortTxtDiv"> @Html.Kendo().ComboBoxFor(v => v.PoStatus).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.PoStatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+            @*<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsActive).BindTo(CommonBL.ListStatusAll(2).Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All) </div>*@
+            <div class="clearDiv">&nbsp;</div>
+
+            <div class="labelDiv">@Html.LabelFor(v => v.VehicleVinNo) </div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(x => x.VehicleVinNo)</div>
+
+            <div class="clearDiv">&nbsp;</div>
+
+            @*<div class="labelDiv">@Html.LabelFor(v => v.ContractStartDate) </div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ContractStartDate).Events(e => e.Open("function(){ODMS.Component.OpenBeginDate('ContractStartDate','ContractEndDate');}").Change("function(){ODMS.Component.OpenEndDate('ContractStartDate','ContractEndDate');}")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.ContractEndDate) </div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ContractEndDate).Events(e => e.Open("function(){ODMS.Component.OpenEndDate('ContractStartDate','ContractEndDate');}").Change("function(){ODMS.Component.OpenBeginDate('ContractStartDate','ContractEndDate');}")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>*@
+        </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.SshReportIndex)
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.SshExcelExport))
+{
+    @Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<SshReport>()
+          .Name("SshReportGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DefectNo).Sortable(true);
+              columns.Bound(p => p.ContractName).Sortable(true);
+              columns.Bound(p => p.PoNumber).Sortable(true);
+              columns.Bound(p => p.PartCode).Sortable(true);
+              columns.Bound(p => p.PartName).Sortable(true);
+              columns.Bound(p => p.Duration).Sortable(true);
+              columns.Bound(p => p.DealerName).Sortable(true);
+              columns.Bound(p => p.VinNo).Sortable(true);          
+              columns.Bound(p => p.DeclarationDate).Sortable(true).Format("{0:dd/MM/yyyy hh:mm}");
+              columns.Bound(p => p.DealerDeclarationDate).Sortable(true).Format("{0:dd/MM/yyyy hh:mm}");
+              columns.Bound(p => p.CreateDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+              columns.Bound(p => p.DurationDate).Sortable(true).Format("{0:dd/MM/yyyy hh:mm}");
+              columns.Bound(p => p.PoStatus).Sortable(true);
+              columns.Bound(p => p.OrderDate).Sortable(true).Format("{0:dd/MM/yyyy}");           
+              columns.Bound(p => p.OrderPeriod).Sortable(true);
+
+          })
+          .Pageable()
+          .Sortable()
+          .Events(e => e.DataBound("onDataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                                .Read(read => read.Action("ListSSHReport", "Reports", Model).Data("GetParameters"))
+                                        )
+
+    )
+</div>
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+        if ($("#DealerIdList").data('kendoMultiSelect').value().toString() == null || $("#DealerIdList").data('kendoMultiSelect').value().toString() == '') {
+            SetErrorMessage('@MessageResource.CycleCountResult_Validation_Required');
+            e.preventDefault();
+        } else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+
+    $(document).ready(init);
+
+    function Search() { return { a: 1 }; }
+    function GetQuotedList(list) {
+        if (list != '') {
+            list = '\'' + list + '\'';
+
+            list = list.replace(",", "','");
+
+        }
+        return list;
+    }
+    function GetParameters() {
+        return {
+            DealerIdList: GetQuotedList($("#DealerIdList").data('kendoMultiSelect').value().toString()),
+            DefectIdList: GetQuotedList($("#DefectIdList").data('kendoMultiSelect').value().toString()),
+            ContractIdList: GetQuotedList($("#ContractIdList").data('kendoMultiSelect').value().toString()),
+            ContractStartDate: $("#ContractStartDate").val(),
+            ContractEndDate: $("#ContractEndDate").val(),
+            VehicleVinNo: $("#VehicleVinNo").val(),
+            PoStatusList: $("#PoStatusList").val(),
+            IsActive: $("#IsActive").val(),
+            ReportType: 53,
+            Columns: "ContractName,DealerName,DurationDate,DefectNo,Duration,PartCode,PartName,PoStatus,IsActive,CreateDate,OrderDate,OrderPeriod,VinNo"
+        };
+    }
+
+    function init() {
+
+        $("#searchDiv").show("slow");
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#DealerIdList").data('kendoMultiSelect').value("");
+            $("#DefectIdList").data('kendoMultiSelect').value("");
+            $("#ContractIdList").data('kendoMultiSelect').value("");
+            $("#ContractStartDate").val("");
+            $("#ContractEndDate").val("");
+            $("#VehicleVinNo").val("");
+            $("#IsActive").prop("checked", false);
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#SshReportGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+
+    function onDataBound(e) {
+    }
+
+
+</script>

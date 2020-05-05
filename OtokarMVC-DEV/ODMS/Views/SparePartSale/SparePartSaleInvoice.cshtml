@@ -1,0 +1,245 @@
+﻿@{
+    ViewBag.Title = MessageResource.SparePartSale_PageTitle_Invoice;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+@using ODMSCommon.Resources
+@using ODMSModel.PaymentType
+@model ODMSModel.SparePartSale.SparePartSaleViewModel
+@{
+    var paymentTypeList = (List<PaymentTypeListModel>)ViewBag.PaymentTypeList;
+    foreach (var paymentType in paymentTypeList)
+    {
+        @Html.Hidden("PaymentType" + paymentType.Id, paymentType.Id, new { paymentType.BankRequired, paymentType.InstalmentRequired, paymentType.TransmitNoRequired, paymentType.DefermentRequired })
+    }
+}
+@using (Html.BeginForm("SparePartSaleInvoice", "SparePartSale", FormMethod.Post, new { id = "frmSparePartSale" }))
+{
+    @Html.HiddenFor(c => c.CustomerId)
+    @Html.HiddenFor(c => c.CustomerName)
+    @Html.HiddenFor(c => c.CustomerTypeId)
+    @Html.HiddenFor(c => c.CustomerType)
+    @Html.HiddenFor(c => c.BillingAddressId)
+    @Html.HiddenFor(c => c.BillingAddress)
+    @Html.HiddenFor(c => c.ShippingAddressId)
+    @Html.HiddenFor(c => c.ShippingAddress)
+    @Html.HiddenFor(c => c.SaleDate)
+    @Html.HiddenFor(c => c.VehicleName)
+    @*@Html.HiddenFor(c => c.PaymentAmount)*@
+    @Html.HiddenFor(c => c.StockTypeId)
+    @Html.HiddenFor(c => c.TransmitNo)
+    @Html.HiddenFor(c => c.SparePartSaleId)
+    @Html.HiddenFor(c => c.SaleStatusLookVal)
+    @Html.HiddenFor(c => c.IsTenderSale)
+    @Html.HiddenFor(c => c.BankRequired)
+    @Html.HiddenFor(c => c.DefermentNumberRequired)
+    @Html.HiddenFor(c => c.InstalmentNumberRequired)
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerName) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerTypeId)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerType)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.BillingAddressId)</div>
+    <div>@Html.DisplayFor(v => v.BillingAddress)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.ShippingAddressId)</div>
+    <div>@Html.DisplayFor(v => v.ShippingAddress)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.SaleDate)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.SaleDate) </div>
+    <div class="labelDiv">@Html.LabelFor(c => c.VehicleName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleName) </div>
+    <div class="clearDiv">&nbsp;</div>
+    @*<div class="labelDiv">@Html.LabelFor(c => c.PaymentAmount)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PaymentAmount)</div>*@
+    <div class="labelDiv">@Html.LabelFor(c => c.TransmitNo)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TransmitNo) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.InvoiceSerialNo)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.InvoiceSerialNo)
+        @Html.ValidationMessageFor(v => v.InvoiceSerialNo)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(c => c.InvoiceNo)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.InvoiceNo)
+        @Html.ValidationMessageFor(v => v.InvoiceNo)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.InvoiceDate)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().DateTimePickerFor(v => v.InvoiceDate).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(DateTime.Now).Enable(@Model.SaleStatusLookVal != "3").HtmlAttributes(new { type = "text" })
+    @Html.ValidationMessageFor(v => v.InvoiceDate)
+</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.PaymentTypeId)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.PaymentTypeId).Events(e => e.Change("PaymentTypeSelectionChanged")).BindTo(ViewBag.PaymentTypeList as List<PaymentTypeListModel>).DataValueField("Id").DataTextField("PaymentTypeName").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(@Model.SaleStatusLookVal != "3")
+        @Html.ValidationMessageFor(v => v.PaymentTypeId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.BankId)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.BankId).BindTo(ViewBag.BankList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(@Model.SaleStatusLookVal != "3")
+        @Html.ValidationMessageFor(v => v.BankId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DueDuration) </div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.DueDuration).Spinners(false).Min(0).Format("0").HtmlAttributes(new { type = "text" })
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.InstallmentNumber)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(q => q.InstallmentNumber).Spinners(false).Min(0).Format("0").HtmlAttributes(new { type = "text", maxlength = "4", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.InstallmentNumber)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(c => c.IsPrintActualDispatchDate)</div>    
+    <div class="shortTxtDiv">
+        @Html.CheckBoxFor(c => c.IsPrintActualDispatchDate)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.SparePartSale.SparePartSaleUpdate, "SparePartSaleUpdate")
+    @ODMSHelpers.Button("Invoice", CommonUtility.GetResourceValue("SparePartSale_Display_Invoice"), CommonValues.PermissionCodes.SparePartSale.SparePartSaleInvoice, "SparePartSaleInvoice", "SparePartSaleInvoice();", false)
+    @ODMSHelpers.Button("InvoiceReport", CommonUtility.GetResourceValue("SparePartSale_Display_InvoiceReport"), CommonValues.PermissionCodes.SparePartSale.SparePartSaleInvoice, "SparePartSaleInvoiceReport")
+    @ODMSHelpers.Button("InvoiceProformaReport", CommonUtility.GetResourceValue("SparePartSale_Display_InvoiceProformaReport"), CommonValues.PermissionCodes.SparePartSale.SparePartSaleInvoice, "SparePartSaleInvoiceProformaReport")
+}
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script src="~/Scripts/jqueryFileDowload.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        if ('@Model.SaleStatusLookVal' == '2')
+        {
+            $('#Update').show();
+        }
+        else
+        {
+            $('#Update').hide();
+        }
+        if ('@ViewBag.IsUpdated' == 'True')
+        {
+            if('@Model.SaleStatusLookVal' != '3')
+                $('#Invoice').show();
+            else
+                $('#Invoice').show();
+
+            $('#InvoiceReport').show();
+            $('#InvoiceProformaReport').show();
+        }
+        else
+        {
+            $('#Invoice').hide();
+            $('#InvoiceReport').hide();
+            $('#InvoiceProformaReport').hide();
+        }
+
+        if ('@Model.SaleStatusLookVal' != '2') {
+            $("#InstallmentNumber").data("kendoNumericTextBox").enable(false);
+            $("#DueDuration").data("kendoNumericTextBox").enable(false);
+            $("#InvoiceNo").attr("disabled", true);
+            $("#InvoiceSerialNo").attr("disabled", true);
+            $("#TransmitNo").attr("disabled", true);
+            $("#PaymentTypeId").data("kendoComboBox").enable(false);
+            $("#BankId").data("kendoComboBox").enable(false);
+        } else {
+            $("#InstallmentNumber").data("kendoNumericTextBox").enable(true);
+            $("#DueDuration").data("kendoNumericTextBox").enable(true);
+            $("#InvoiceNo").attr("disabled", false);
+            $("#InvoiceSerialNo").attr("disabled", false);
+            $("#TransmitNo").attr("disabled", false);
+            $("#PaymentTypeId").data("kendoComboBox").enable(true);
+            $("#BankId").data("kendoComboBox").enable(true);
+
+            if (!$("#InstallmentNumber").data("kendoNumericTextBox").value()) {
+                $("#InstallmentNumber").data("kendoNumericTextBox").value('');
+            }
+            if ($('#SparePartSaleId').val() == null) {
+                $("#PaymentTypeId").data("kendoComboBox").text('');
+                $("#BankId").data("kendoComboBox").text('');
+            }
+        }
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+    function SparePartSaleInvoice() {
+        var spsId = @Model.SparePartSaleId;
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        CustomConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SparePartSaleInvoiceConfirm", "SparePartSale")",
+                    data: { sparePartSaleId: spsId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            $('#Update').hide();
+                            $('#Invoice').hide();
+                            $('#InvoiceReport').show();
+                            $('#InvoiceProformaReport').show();
+
+                            $("#InstallmentNumber").data("kendoNumericTextBox").enable(false);
+                            $("#DueDuration").data("kendoNumericTextBox").enable(false);
+                            $("#InvoiceNo").attr("disabled", true);
+                            $("#InvoiceSerialNo").attr("disabled", true);
+                            $("#PaymentTypeId").data("kendoComboBox").enable(false);
+                            $("#BankId").data("kendoComboBox").enable(false);
+
+                            //SetSuccessMessage('@MessageResource.Global_Display_Success');
+
+                $.fileDownload('@Url.Action("PrintSparePartReportReal", "SparePartSale")'+'/?sparePartSaleId=' + spsId, null);
+            }
+        },
+                    dataType: "json"
+                });
+            }, "@MessageResource.SparePartSale_Display_Invoice", "@MessageResource.SparePartSale_Display_InvoiceConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+
+        }
+
+        function PaymentTypeSelectionChanged() {
+            if ('@Model.SaleStatusLookVal' == '2') {
+                var selectedItemId = $("#PaymentTypeId").val();
+                var hiddenDataId = "PaymentType" + selectedItemId;
+                var data = $("#" + hiddenDataId);
+
+                var bankRequired = data.attr("BankRequired");
+                var instalmentRequired = data.attr("InstalmentRequired");
+                var defermentRequired = data.attr("DefermentRequired");
+
+
+                $("#BankRequired").val(bankRequired);
+                $("#InstalmentNumberRequired").val(instalmentRequired);
+                $("#DefermentNumberRequired").val(false);
+                SetInputAvailability(bankRequired, instalmentRequired, defermentRequired);
+            }
+        }
+
+    function SetInputAvailability(bankRequired, instalmentRequired, defermentRequired) {
+        if (bankRequired == "False") {
+            $("#BankId").data("kendoComboBox").text('');
+            $("#BankId").data("kendoComboBox").enable(false);
+        } else {
+            $("#BankId").data("kendoComboBox").enable(true);
+        }
+        if (instalmentRequired == "False") {
+            $("#InstallmentNumber").data("kendoNumericTextBox").value('');
+            $("#InstallmentNumber").data("kendoNumericTextBox").enable(false);
+        } else {
+            $("#InstallmentNumber").data("kendoNumericTextBox").enable(true);
+        }
+        if (defermentRequired == "False") {
+            $("#DueDuration").data("kendoNumericTextBox").enable(false);
+            $("#DueDuration").data("kendoNumericTextBox").value('');
+        }
+        else
+            $("#DueDuration").data("kendoNumericTextBox").enable(true);
+    }
+</script>

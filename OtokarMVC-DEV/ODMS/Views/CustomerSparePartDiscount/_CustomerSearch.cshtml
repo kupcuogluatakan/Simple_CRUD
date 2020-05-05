@@ -1,0 +1,152 @@
+﻿@model ODMSModel.ObjectSearch.CustomerSearchViewModel
+
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<style>
+    #popupContent {
+        width: 98%;
+    }
+</style>
+
+<div id="bodyContainer">
+    <div id="searchCriterias">
+        <input type="hidden" id="OrgTypeId" value="@ViewBag.OrgTypeId" />
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerFullName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CustomerFullName)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TCIdentityNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TCIdentityNo)</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TaxNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TaxNo)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PassportNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.PassportNo)</div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+    @ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.CustomerSearch.CustomerSearchIndex)
+    @ODMSHelpers.LinkButton("btnClear", ODMSCommon.Resources.MessageResource.Global_Display_Clear, "", "", "", "")
+    @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickCustomer createNewCustomer", CommonUtility.GetResourceValue("Customer_PageTitle_Create"), CommonValues.PermissionCodes.Customer.CustomerCreate)
+
+    <div id="grd5">
+        @(Html.Kendo().Grid<ODMSModel.ObjectSearch.CustomerSearchListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.CustomerId).ClientTemplate("<center><a class='loadTab' onclick='selectCustomer(#=CustomerId#, \"#=CustomerFullName#\")' id='#=CustomerId#'><img class=iconLink src='" + Url.Content("~/Images/choose.ico") + "'/></a></center>").Title(ODMSCommon.Resources.MessageResource.Global_Display_Select).Width(50).Sortable(false);
+              columns.Bound(p => p.CustomerFullName).Width(150).Sortable(true);
+              columns.Bound(p => p.SAPCustomerSSID).Width(150).Sortable(true);
+              columns.Bound(p => p.CountryName).Width(100).Sortable(true);
+              columns.Bound(p => p.CompanyTypeName).Width(100).Sortable(true);
+              columns.Bound(p => p.CustomerTypeName).Width(100).Sortable(true);
+              columns.Bound(p => p.GovernmentTypeName).Width(100).Sortable(true);
+              columns.Bound(p => p.TCIdentityNo).Width(100).Sortable(true);
+              columns.Bound(p => p.TaxNo).Width(100).Sortable(true);
+              columns.Bound(p => p.TaxOffice).Width(100).Sortable(true);
+              columns.Bound(p => p.PassportNo).Width(100).Sortable(true);
+
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+          .Events(e => e.DataBound("dataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(ODMSCommon.CommonValues.GridPageSize.Short)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("SearchCustomer", "CustomerSparePartDiscount").Data("CustomerSearch"))
+                                        .Model(model => model.Field(o => o.CustomerId).DefaultValue(-1))
+                                        .Model(model => model.Field(o => o.CustomerFullName).DefaultValue("-")))
+        )
+    </div>
+</div>
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Draggable()
+          .Resizable()
+          .Width(950)
+          .Height(440)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close("CreateClosed"))
+    )
+</div>
+<script type="text/javascript">
+    var isCreateClosed;
+    var beforeCount;
+
+    function CreateClosed() {
+        var grid = $("#grid").data("kendoGrid");
+        beforeCount = grid.dataSource.total();
+        grid.dataSource.read();
+        isCreateClosed = true;
+    }
+    function dataBound(e) {
+        var grid = $("#grid").data("kendoGrid");
+        var afterCount = grid.dataSource.total();
+        var isRowInserted = beforeCount != afterCount;
+        if (isRowInserted && isCreateClosed) {
+            var list = grid.dataSource.data();
+            $('tr[data-uid="' + list[0].uid + '"] ').addClass("k-state-selected");
+        }
+    }
+
+    function CustomerSearch() {
+        return {
+            CustomerFullName: $('#CustomerFullName').val(),
+            TCIdentityNo: $('#TCIdentityNo').val(),
+            TaxNo: $('#TaxNo').val(),
+            PassportNo: $('#PassportNo').val(),
+            OrgTypeId: $("#OrgTypeId").val()
+        };
+    }
+
+    $(document).ready(function () {
+        $("#btnSearch").on("click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("#btnClear").on("click", function (e) {
+            $('#searchCriterias').find('input:text').val('');
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("#btnCreate").on("click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+            var frameTitle = $(this).attr("frameTitle");
+            var link = "@Url.Action("CustomerCreate", "Customer")";
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    });
+
+    function selectCustomer(customerId, customerName) {
+        if (customerName == null || customerName == '')
+            customerName = "-";
+
+        window.parent.SetCustomerValues(customerId, customerName);
+ @*
+        if (window.parent != "undefined") {
+            var currentWindowState = window.parent.getWindowState("@Model.ReferenceObjectId" + "SearchWindow",false);
+            var parentSetterFunctionName = "setFoundValuesFor" + "@Model.ReferenceObjectId";
+            window.parent[parentSetterFunctionName]("@Model.ReferenceObjectId", customerId, customerName, "@Model.SelectCallBackFunction", currentWindowState);
+        }*@
+    }
+
+</script>

@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Campaign_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.Campaign.CampaignViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.CampaignCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CampaignCode)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CampaignName)</div>
+<div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = false }); }</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.StartDate) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.EndDate) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ModelKod)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.ModelKod) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.MainFailureCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.MainFailureDesc) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IsValidAbroadName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsValidAbroadName) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.AdminDesc) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.SubCategoryId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SubCategoryName) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IsMustName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsMustName) &nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<br />
+
+
+
+

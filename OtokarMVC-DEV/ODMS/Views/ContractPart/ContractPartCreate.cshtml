@@ -1,0 +1,36 @@
+﻿@model ODMSModel.ContractPart.ContractPartViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("ContractPart_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@using (Html.BeginForm("ContractPartCreate", "ContractPart", FormMethod.Post))
+{
+    @Html.HiddenFor(x=>x.IdContract)
+    @Html.HiddenFor(x => x.ContractName)
+    @*<div class="labelDiv">@Html.LabelFor(v => v.IdContractPart)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.IdContractPart) @Html.ValidationMessageFor(c => c.IdContractPart)</div>*@
+    @*<div class="labelDiv">@Html.LabelFor(v => v.IdContract)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ContractName)</div>*@
+    <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "IdPart", Title1 = "", Title2 = "", DefaultText = Model.PartCode, DefaultValue = Model.IdPart });@Html.ValidationMessageFor(v => v.IdPart)
+    <div class="clearDiv">&nbsp;</div>
+
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Contract.ContractCreate, "ContractPartCreate")
+}
+
+<script type="text/javascript">
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

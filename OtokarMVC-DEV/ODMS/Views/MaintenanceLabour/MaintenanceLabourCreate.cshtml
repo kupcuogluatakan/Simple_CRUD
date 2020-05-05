@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = MessageResource.MaintenanceLabour_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@model ODMSModel.MaintenanceLabour.MaintenanceLabourViewModel
+@using (Html.BeginForm("MaintenanceLabourCreate", "MaintenanceLabour", FormMethod.Post))
+{
+     Model.IsMust = false;
+     Html.RenderPartial("_MaintenanceLabourEdit", Model);
+     <input type="hidden" name="MaintenanceId" id="MaintenanceId" value="@Model.MaintenanceId"/>
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourCreate,"MaintenanceLabourCreate")        
+}

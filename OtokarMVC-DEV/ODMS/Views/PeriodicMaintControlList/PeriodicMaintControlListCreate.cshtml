@@ -1,0 +1,65 @@
+﻿@model ODMSModel.PeriodicMaintControlList.PeriodicMaintControlListViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PeriodicMaintControlList_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("PeriodicMaintControlListCreate", "PeriodicMaintControlList", FormMethod.Post))
+{
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IdType)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IdType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.IdType)
+    </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EngineType)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.EngineType).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(ds => ds.Read(read => read.Action("ListVehicleEngineTypes", "PeriodicMaintControlList").Data("GetParameters")).ServerFiltering(true)).DataValueField("Value").DataTextField("Text").AutoBind(false).CascadeFrom("IdType") 
+        @Html.ValidationMessageFor(d => d.EngineType)
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.LanguageCustom)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.LanguageCustom).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.LanguageList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.LanguageCustom)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DocumentDesc)</div>
+    <div class="shortTxtDiv" style="width:300px; height:100px;">@Html.TextAreaFor(v => v.DocumentDesc)
+        @Html.ValidationMessageFor(c => c.DocumentDesc)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.DocId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().Upload().Name("attachments").Messages(x=>x.Select(ODMSCommon.Resources.MessageResource.Global_Display_SelectFile))
+                @Html.ValidationMessageFor(d => d.DocId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(c=>c.IdType)
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.PeriodicMaintControlList.PeriodicMaintControlListCreate, "PeriodicMaintControlListCreate")        
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function GetParameters() {
+        return {
+            vehicleTypeId: $("#IdType").val()
+        };
+    }
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+        if ('@ViewBag.IsSuccessfull' == 'True') {
+            $("#IdType").data("kendoComboBox").text('');
+            $("#EngineType").data("kendoComboBox").text('');
+            $("#LanguageCustom").data("kendoComboBox").text('');
+            $("#DocumentDesc").val('');
+        }
+    });
+</script>

@@ -1,0 +1,466 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.WorkOrderCard.WorkOrderCardModel
+<div class="panel-group" id="accordion" style="margin-bottom: 5px;">
+
+    <div class="panel panel-default ">
+        <div class="panel-heading">
+            <a class="k-link" data-parent="#accordion" data-target="#collapseVehicle">
+                <strong style="font-size: 16px;">
+                    @MessageResource.Appointment_Display_Vehicle
+                </strong>
+            </a>
+        </div>
+        <div id="collapseVehicle" class="panel-body" style="">
+            <table class="table table-bordered table-zipped">
+                <tbody>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Appointment_Display_VehicleModel :</th>
+                        <td class="col-md-3">@Model.Vehicle.VehicleModel</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Appointment_Display_VehicleType :</th>
+                        <td class="col-md-3">@Model.Vehicle.VehicleType</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.VehicleCode_Display_Kod :</th>
+                        <td class="col-md-3">@Model.Vehicle.VehicleCode</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Vehicle_Display_Plate:</th>
+                        <td class="col-md-3">@Model.Vehicle.Plate</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Vehicle_Display_VinNo :</th>
+                        <td class="col-md-3">@Model.Vehicle.VinNo</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Vehicle_Display_EngineNo :</th>
+                        <td class="col-md-3">@Model.Vehicle.EngineNo</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Vehicle_Display_WarrantyStatus :</th>
+                        <td class="col-md-3">
+                            @if (Model.Vehicle.WarrantyStartDate.HasValue)
+                            {
+                                if (Model.Vehicle.WarrantyStatus)
+                                {
+                                    <text>@MessageResource.WorkOrderCard_Display_VehicleWarranty</text>
+                                }
+                                else
+                                {
+                                    <text>@MessageResource.WorkOrderCard_Display_VehicleOutOfWarranty</text>
+
+
+                                }
+                            }
+                            else
+                            {
+                                @Html.Raw("-")
+                             
+                            }
+
+                        </td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_WarrantyStartDate :</th>
+                        <td class="col-md-3">
+                            @if (Model.Vehicle.WarrantyStartDate != default(DateTime))
+                            {
+                                @Model.Vehicle.WarrantyStartDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                            }
+                            else
+                            {
+                                @Html.Raw("-")
+                            }
+                        </td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_WarrantyEndDate :</th>
+                        <td class="col-md-3">
+                            @if (Model.Vehicle.WarrantyEndDate != default(DateTime))
+                            {
+                                @Model.Vehicle.WarrantyEndDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                            }
+                            else
+                            {
+                                @Html.Raw("-")
+                            }
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_PaintWarrantyEndDate :</th>
+                        <td class="col-md-3">
+                            @if (Model.Vehicle.PaintWarrantyEndDate.HasValue && Model.Vehicle.PaintWarrantyEndDate != default(DateTime))
+                            {
+                                @Model.Vehicle.PaintWarrantyEndDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                            }
+                            else
+                            {
+                                @Html.Raw("-")
+                            }
+                        </td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_CorrosionWarrantyEndDate :</th>
+                        <td class="col-md-3">
+                            @if (Model.Vehicle.CorrosionWarrantyEndDate.HasValue && Model.Vehicle.CorrosionWarrantyEndDate != default(DateTime))
+                            {
+                                @Model.Vehicle.CorrosionWarrantyEndDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                            }
+                            else
+                            {
+                                @Html.Raw("-")
+                            }
+                        </td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Vehicle_Display_VehicleKilometer :</th>
+                        <td class="col-md-3">@Model.Vehicle.VehicleKilometer</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead">
+                            <i class="glyphicon glyphicon-chevron-right"></i>
+                            @MessageResource.WorkOrderCard_Display_VehicleLocation
+                        </th>
+
+                        <td class="col-md-3">@Model.Vehicle.Location</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_VehicleResponsible :</th>
+                        <td class="col-md-3">  @Model.Vehicle.ResponsiblePerson</td>
+
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_VehicleResponsiblePhone :</th>
+                        <td class="col-md-3">  @Model.Vehicle.ResponsiblePersonPhone</td>
+
+                    </tr>
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="panel panel-default ">
+        <div class="panel-heading">
+
+            <a class="k-link">
+                <strong style="font-size: 16px;">
+                    @MessageResource.Appointment_Display_Customer
+                </strong>
+            </a>
+        </div>
+        <div class="panel-body " id="collapseCustomer">
+            <table class="table table-bordered table-zipped">
+                <tbody>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.CustomerAddress_Display_CustomerName :</th>
+                        <td class="col-md-3">@Model.Customer.CustomerName</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Customer_Display_TCIdentityNo :</th>
+                        <td class="col-md-3">@Model.Customer.TcIdentityNo</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrder_Display_ResponsibleConsultant :</th>
+                        <td class="col-md-3">@Model.Customer.Staff</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrderCard_Display_ContactInfo :</th>
+                        <td class="col-md-3">@Model.ContactInfo</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Customer_Display_TaxOffice :</th>
+                        <td class="col-md-3">@Model.Customer.TaxOffice</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Dealer_Display_TaxNo :</th>
+                        <td class="col-md-3">@Model.Customer.TaxNo</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.User_Display_Address :</th>
+                        <td colspan="5" class="col-md-11">@Model.Customer.CustomerAddress </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a id="btnPeriodicMaintHistory" style="display:none;" class="k-link" onclick="PeriodicMaintHistory(this)"><i class="glyphicon glyphicon-edit"></i></a>
+    <a id="btnGuaranteeStatus" style="display:none;" class="k-link" onclick="ShowGuaranteeStatus(this)"><i class="glyphicon glyphicon-edit"></i></a>
+</div>
+
+@(Html.Kendo().Window()
+          .Name("PeriodicMaintHistoryWindow")
+          .Modal(true).Width(550).Height(350)
+          .Visible(false)
+          .HtmlAttributes(new { style = "background-color:#EDF1F4 !important" })
+          .Title(string.Format("{0}", MessageResource.PeriodicMaint_History_Index)))
+@(Html.Kendo().Window()
+          .Name("GuaranteeStatusWindow")
+          .Modal(true).Width(150).Height(50)
+          .Visible(false)
+          .HtmlAttributes(new { style = "background-color:#EDF1F4 !important" })
+          .Title(string.Format("{0}", MessageResource.Global_Display_Warning)))
+<script>
+  
+    $(document).ready(function () {
+
+        if(@Model.Vehicle.PeriodicMaintCount > 0){
+            if($('#btnPeriodicMaintHistory').length>0){
+                //DisableClicks();
+
+                $('#btnPeriodicMaintHistory').removeClass("disabled");
+                $('#btnPeriodicMaintHistory').trigger('click');
+            }
+            else{
+                if ('@Model.Vehicle.WarrantyStatus' == 'False' || '@Model.Vehicle.WarrantyStartDate' == '') {
+                    if($('#btnGuaranteeStatus').length>0){
+                        //DisableClicks();
+
+                        $('#btnGuaranteeStatus').removeClass("disabled");
+                        $('#btnGuaranteeStatus').trigger('click');
+                    }
+                }
+            }
+        }
+       
+    });
+
+    function PeriodicMaintHistory(obj) {
+         
+         $('#PeriodicMaintHistoryWindow').kwnd('@Url.Action("PeriodicMaintHistory", "WorkOrder")?id=' +  @Model.WorkOderId, '@Html.Raw(MessageResource.PeriodicMaint_History_Index)',
+         {
+               iframe: true,
+               width: 1250,
+               height: 650,
+               modal : true,
+               draggable : true,
+               onClose: function () {
+                   $("#PeriodicMaintHistoryWindow").html('');
+                    if ('@Model.Vehicle.WarrantyStatus' == 'False' || '@Model.Vehicle.WarrantyStartDate' == '') {
+                    if($('#btnGuaranteeStatus').length>0){
+                        //DisableClicks();
+
+                        $('#btnGuaranteeStatus').removeClass("disabled");
+                        $('#btnGuaranteeStatus').trigger('click');
+                    }
+                }
+              }
+         });
+        
+        $('#PeriodicMaintHistoryWindow').removeClass("hide");
+        OpenWindow($('#PeriodicMaintHistoryWindow'));
+
+    }
+    
+    function ShowGuaranteeStatus(obj) {
+        $('#GuaranteeStatusWindow').kwnd('@Url.Action("ShowGuaranteeStatus", "WorkOrder")?id=' +  @Model.WorkOderId, '@Html.Raw(MessageResource.PeriodicMaint_History_Index)',
+        {
+              iframe: true,
+              width: 150,
+              height: 50,
+              draggable : true,
+              onClose: function () {
+                  $("#GuaranteeStatusWindow").html('');
+              }
+        });
+        $('#GuaranteeStatusWindow').removeClass("hide");
+        OpenWindow($('#GuaranteeStatusWindow'));
+    }
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+@*
+
+                <div class="labelDiv">@MessageResource.CustomerAddress_Display_CustomerName</div>
+                <div class="shortTxtDiv">@Model.Customer.CustomerName &nbsp;</div>
+                <div class="labelDiv">@MessageResource.Customer_Display_TCIdentityNo</div>
+                <div class="shortTxtDiv">@Model.Customer.TcIdentityNo &nbsp;</div>
+                <div class="labelDiv">@MessageResource.User_Display_Address</div>
+                <div class="shortTxtDiv">@Model.Customer.CustomerAddress &nbsp;</div>
+                <div class="labelDiv">@MessageResource.WorkOrderCard_Display_ContactInfo</div>
+                <div class="shortTxtDiv">
+                    <div style="display: inline-block" id="ContactInfo">@Model.ContactInfo &nbsp;</div>
+                </div>
+
+
+                <div class="clearDiv"></div>
+
+
+                <div class="labelDiv">@MessageResource.Customer_Display_TaxOffice</div>
+                <div class="shortTxtDiv">@Model.Customer.TaxOffice &nbsp;</div>
+                <div class="labelDiv">@MessageResource.Dealer_Display_TaxNo</div>
+                <div class="shortTxtDiv">@Model.Customer.TaxNo &nbsp;</div>
+                <div class="labelDiv">@MessageResource.WorkOrder_Display_ResponsibleConsultant</div>
+                <div class="shortTxtDiv">@Model.Customer.Staff &nbsp;</div>
+
+                <div class="clearfix"></div>
+                <div class="seperator"></div>
+            </div>
+        </div>
+
+    </div>*@
+
+
+
+@*@using ODMSCommon.Resources
+    @model ODMSModel.WorkOrderCard.WorkOrderCardModel
+    <div class="panel-group" id="accordion" style="margin-bottom: 5px;">
+
+        <div class="panel panel-default ">
+            <div class="panel-heading">
+                <a class="k-link" data-parent="#accordion" data-target="#collapseVehicle">
+                    <strong style="font-size: 16px;">
+                        @MessageResource.Appointment_Display_Vehicle
+                    </strong>
+                </a>
+            </div>
+            <div id="collapseVehicle" class="panel-body" style="">
+
+
+                <div class="labelDiv">@MessageResource.VehicleCode_Display_Kod</div>
+
+                <div class="shortTxtDiv">@Model.Vehicle.VehicleCode</div>
+
+                <div class="labelDiv">@MessageResource.Appointment_Display_VehicleType</div>
+                <div class="shortTxtDiv">@Model.Vehicle.VehicleType</div>
+
+                <div class="labelDiv">@MessageResource.Vehicle_Display_VinNo</div>
+                <div class="shortTxtDiv">@Model.Vehicle.VinNo &nbsp;</div>
+
+                <div class="labelDiv">@MessageResource.Vehicle_Display_VatExclude</div>
+                <div class="shortTxtDiv">
+                    @if (Model.Vehicle.VatExclude)
+                    {
+                        @MessageResource.Global_Display_Yes
+                    }
+                    else
+                    {
+                        @MessageResource.Global_Display_No
+                    }
+                </div>
+
+
+                <div class="clearDiv"></div>
+
+                <div class="labelDiv">@MessageResource.Appointment_Display_VehicleModel</div>
+                <div class="shortTxtDiv">@Model.Vehicle.VehicleModel &nbsp;</div>
+
+                <div class="labelDiv">@MessageResource.Vehicle_Display_EngineNo</div>
+                <div class="shortTxtDiv">@Model.Vehicle.EngineNo &nbsp;</div>
+
+                <div class="labelDiv">@MessageResource.Vehicle_Display_Plate</div>
+                <div class="shortTxtDiv">@Model.Vehicle.Plate &nbsp;</div>
+
+                <div class="labelDiv">@MessageResource.Vehicle_Display_VehicleKilometer</div>
+                <div class="shortTxtDiv"><span id="VehicleKM">@Model.Vehicle.VehicleKilometer </span></div>
+
+                <div class="clearDiv"></div>
+
+                <div class="labelDiv">@MessageResource.Vehicle_Display_WarrantyStatus</div>
+                <div class="shortTxtDiv">
+                    @if (Model.Vehicle.WarrantyStatus)
+                    {
+                        <text>@MessageResource.WorkOrderCard_Display_VehicleWarranty</text>
+                    }
+                    else
+                    {
+                        <text>@MessageResource.WorkOrderCard_Display_VehicleOutOfWarranty</text>
+                    } &nbsp;
+
+                </div>
+
+                <div class="labelDiv">@MessageResource.WorkOrderCard_Display_WarrantyStartDate</div>
+                <div class="shortTxtDiv">
+                    @if (Model.Vehicle.WarrantyStartDate != default(DateTime))
+                    {
+                        @Model.Vehicle.WarrantyStartDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                    }
+                </div>
+                <div class="labelDiv">@MessageResource.WorkOrderCard_Display_WarrantyEndDate</div>
+                <div class="shortTxtDiv">
+                    @if (Model.Vehicle.WarrantyEndDate != default(DateTime))
+                    {
+                        @Model.Vehicle.WarrantyEndDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                    }
+                </div>
+                <div class="labelDiv">@MessageResource.WorkOrderCard_Display_PaintWarrantyEndDate</div>
+                <div class="shortTxtDiv">
+                    @if (Model.Vehicle.PaintWarrantyEndDate.HasValue && Model.Vehicle.PaintWarrantyEndDate != default(DateTime))
+                    {
+                        @Model.Vehicle.PaintWarrantyEndDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                    }
+                </div>
+
+                <div class="clearDiv"></div>
+
+                <div class="labelDiv">@MessageResource.WorkOrderCard_Display_CorrosionWarrantyEndDate</div>
+                <div class="shortTxtDiv">
+                    @if (Model.Vehicle.CorrosionWarrantyEndDate.HasValue && Model.Vehicle.CorrosionWarrantyEndDate != default(DateTime))
+                    {
+                        @Model.Vehicle.CorrosionWarrantyEndDate.GetValueOrDefault().ToString("dd/MM/yyyy").Replace(".", "/")
+                    }
+                </div>
+
+                <div class="clearDiv"></div>
+                <div class="row" style="margin-top: 10px">
+                    <fieldset style="margin: 6px 15px;">
+                        <legend class="bold" style="font-size: 12px;">
+                            @MessageResource.WorkOrderCard_Display_VehicleContactInfo
+
+                        </legend>
+                        <table>
+                            <tr>
+                                <td style="padding-right: 20px;" class="bold">
+                                    @MessageResource.WorkOrderCard_Display_VehicleLocation
+                                </td>
+                                <td id="VehicleLocation" style="min-width: 120px;">
+                                    @Model.Vehicle.Location
+                                </td>
+                                <td style="padding-right: 20px;" class="bold">
+                                    @MessageResource.WorkOrderCard_Display_VehicleResponsible
+                                </td>
+                                <td id="VehicleResponsiblePerson" style="min-width: 120px;">
+                                    @Model.Vehicle.ResponsiblePerson
+                                </td>
+                                <td style="padding-right: 20px;" class="bold">
+                                    @MessageResource.WorkOrderCard_Display_VehicleResponsiblePhone
+                                </td>
+                                <td id="VehicleResponsiblePersonPhone" style="min-width: 120px;">
+                                    @Model.Vehicle.ResponsiblePersonPhone
+                                </td>
+                            </tr>
+                        </table>
+
+                    </fieldset>
+                </div>
+                <div class="clearfix"></div>
+                <div class="seperator"></div>
+            </div>
+        </div>
+
+        <div class="panel panel-default ">
+            <div class="panel-heading">
+
+                <a class="k-link">
+                    <strong style="font-size: 16px;">
+                        @MessageResource.Appointment_Display_Customer
+                    </strong>
+                </a>
+
+            </div>
+            <div class="panel-body " id="collapseCustomer" style="height: 0px">
+
+                <div class="labelDiv">@MessageResource.CustomerAddress_Display_CustomerName</div>
+                <div class="shortTxtDiv">@Model.Customer.CustomerName &nbsp;</div>
+                <div class="labelDiv">@MessageResource.Customer_Display_TCIdentityNo</div>
+                <div class="shortTxtDiv">@Model.Customer.TcIdentityNo &nbsp;</div>
+                <div class="labelDiv">@MessageResource.User_Display_Address</div>
+                <div class="shortTxtDiv">@Model.Customer.CustomerAddress &nbsp;</div>
+                <div class="labelDiv">@MessageResource.WorkOrderCard_Display_ContactInfo</div>
+                <div class="shortTxtDiv">
+                    <div style="display: inline-block" id="ContactInfo">@Model.ContactInfo &nbsp;</div>
+                </div>
+
+
+                <div class="clearDiv"></div>
+
+
+                <div class="labelDiv">@MessageResource.Customer_Display_TaxOffice</div>
+                <div class="shortTxtDiv">@Model.Customer.TaxOffice &nbsp;</div>
+                <div class="labelDiv">@MessageResource.Dealer_Display_TaxNo</div>
+                <div class="shortTxtDiv">@Model.Customer.TaxNo &nbsp;</div>
+                <div class="labelDiv">@MessageResource.WorkOrder_Display_ResponsibleConsultant</div>
+                <div class="shortTxtDiv">@Model.Customer.Staff &nbsp;</div>
+
+                <div class="clearfix"></div>
+                <div class="seperator"></div>
+            </div>
+        </div>
+
+    </div>*@

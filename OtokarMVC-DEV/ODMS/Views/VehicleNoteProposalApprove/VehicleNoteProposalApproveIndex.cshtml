@@ -1,0 +1,189 @@
+﻿@model VehicleNoteProposalApproveModel
+@using ODMSModel.VehicleNoteProposalApprove
+@using ODMSCommon.Resources
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.VehicleNoteApprove_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DealerId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DNSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.Note)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Note)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CreateDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CreateDate).Name("CreateDate").Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", @style = "width: 165px; margin-top: 0px" }) </div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.VinId)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VinId) </div>
+
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.VehicleNoteApprove.VehicleNoteApproveIndex)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+
+
+    @(Html.Kendo().Grid<VehicleNoteProposalApproveListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+    {
+        columns.Bound(o => o.VehicleNotesId).ClientTemplate("<center><a class='edit modalClick' id='#=VehicleNotesId#' frameTitle='" + CommonUtility.GetResourceValue("VehicleNoteApprove_PageTitle_Approve") + "' href='" + Url.Action("VehicleNoteProposalApproveIndex", "VehicleNoteProposalApprove") + "/#=VehicleNotesId#'><img class='iconLink' style='width:16px;' src='" + Url.Content("~/Images/choose.ico") + "'/></a></center>").Title(CommonUtility.GetResourceValue("VehicleNoteApprove_Display_btnApprove")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleNoteApprove.VehicleNoteApproveApprove));
+        columns.Bound(o => o.VehicleNotesId).ClientTemplate("<center><a onclick='DeleteVehicleNoteProposalApprove(#=VehicleNotesId#)' href='javascript:void(0);' id='#=VehicleNotesId#' frameTitle='" + @CommonUtility.GetResourceValue("VehicleNote_PageTitle_Delete") + "' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("VehicleNoteApprove_Display_btnReject")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleNoteApprove.VehicleNoteApproveDelete));
+        columns.Bound(p => p.DealerName).Width(100).Sortable(true);
+        columns.Bound(p => p.VinId).Width(100).Sortable(true);
+        columns.Bound(p => p.VehicleKm).Width(100).Sortable(true);
+        columns.Bound(p => p.WarrantlyStartDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+        columns.Bound(p => p.Note).Width(100).Sortable(true);
+        columns.Bound(p => p.CreateDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+    })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(CommonValues.GridPageSize.Short)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListVehicleNoteProposalApprove", "VehicleNoteProposalApprove", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.VehicleNotesId).DefaultValue(-1)))
+
+    )
+</div>
+@section Scripts
+{
+    <script type="text/javascript">
+
+
+        function Search() {
+            return {
+                IsActiveSearch: $("#IsActiveSearch").val(),
+                DealerId: $("#DealerId").val(),
+                Note: $("#Note").val(),
+                CreateDate: $("#CreateDate").val(),
+                VinId: $("#VinId").val()
+            };
+        }
+
+        $(document).ready(function () {
+
+
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+
+                grid.dataSource.page(1);
+            });
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("index") == true) {
+                    link = "@Url.Action("VehicleNoteProposalApproveIndex", "VehicleNoteProposalApprove", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+
+                } else if ($(this).hasClass("edit")) {
+                    if ($("#IsActiveSearch")) {
+                        $(this).removeClass("edit");
+                        $("#edit").hide("fast");
+                    } else {
+                        $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                        $(this).addClass("edit");
+                        $("#edit").hide("fast");
+                    }
+                    link = "@Url.Action("VehicleNoteProposalApproveApprove", "VehicleNoteProposalApprove", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("VehicleNoteProposalApproveIndex", "VehicleNoteProposalApprove")";
+
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+
+        });
+
+        function DeleteVehicleNoteProposalApprove(vnId) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            var parameter = {
+                VehicleNotesId: vnId, "__RequestVerificationToken": token
+            };
+
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteVehicleNoteProposalApprove", "VehicleNoteProposalApprove")',
+                    data: parameter,
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+
+    </script>
+}

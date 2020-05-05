@@ -1,0 +1,238 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.SparePart.SparePartIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("SparePart_PageTitle_Index");
+}
+ 
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.IsOriginalName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsOriginal).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DealerId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.PartTypeName)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.PartTypeCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SparePartTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.UnitName)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.Unit).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.UnitsList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.Brand)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Brand)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.GuaranteeAuthorityNeed)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.GuaranteeAuthorityNeed).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.GuaranteeAuthorityNeedList as List<SelectListItem>).SelectedIndex(((List<SelectListItem>)ViewBag.GuaranteeAuthorityNeedList).FindIndex(c => c.Value == "0")).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+        <div class="shortTxtDiv">
+            @{           
+                Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });       
+            }
+        </div>
+        <br />
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.SparePart.SparePartDetails)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("SparePart_PageTitle_Create"), CommonValues.PermissionCodes.SparePart.SparePartCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(650)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    var PartId = 0;
+    function ShowTabs(id) {
+        PartId = id;
+        $('#TabContent').html('');
+        $("#Tabs").data("kendoTabStrip").select(0);
+        $('#divDetails').show();
+        LoadTabContent('@Url.Action("GetSupplyDisCountRatios", "SparePart")');
+    }
+    function LoadTabContent(url) {
+        $('#TabContent').html('');
+        $.ajax({
+            type: "GET",
+            url: url + '/' + PartId,
+            data: {},
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $('#TabContent').html(result);
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+
+    function Search() {
+        return {
+            IsOriginal: $('#IsOriginal').val(),
+            DealerId: $('#DealerId').val(),
+            PartTypeCode: $('#PartTypeCode').val(),
+            Unit: $("#Unit").data("kendoComboBox").text(),
+            Brand: $('#Brand').val(),
+            GuaranteeAuthorityNeed: $('#GuaranteeAuthorityNeed').val(),
+            PartId: $('#PartId').val()
+        };
+    }
+    $(document).ready(function () {
+
+        $("#DealerId").data("kendoComboBox").enable(false);
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            
+            var clickedId = $(this).attr("id");
+            var idList = clickedId.split("$");
+            var partId = idList[0];
+            var isOriginal = idList[1];
+
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("SparePartDetails", "SparePart", new { id = -1 })";
+                link = link.replace("-1", partId);
+            }
+            else if ($(this).hasClass("edit")) {
+                // parça orijinalse ve bayi giriş yapmışsa değişiklik yapamaz
+                if (isOriginal == 1 && '@UserManager.UserInfo.IsDealer' == 'True') {
+                    SetErrorMessage('@MessageResource.SparePart_Warning_OriginalPartsCannotChangedByDealer');
+                    return;
+                }
+                link = "@Url.Action("SparePartUpdate", "SparePart", new { id = -1 })";
+                link = link.replace("-1", partId);
+            } else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("SparePartCreate", "SparePart")";
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+    });
+
+    function DeleteSparePart(sId, isOriginal) {
+        // parça orijinalse ve bayi giriş yapmışsa silemez
+        if (isOriginal == 1 && '@UserManager.UserInfo.IsDealer' == 'True') {
+            SetErrorMessage('@MessageResource.SparePart_Warning_OriginalPartsCannotDeletedByDealer');
+            return;
+        }
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteSparePart", "SparePart")",
+                data: { partId: sId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.ListModel.SparePartListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.PartId).ClientTemplate("<center><a class='loadTab' onclick='ShowTabs(#=PartId#);' id='#=PartId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePart.SparePartIndex));
+                  columns.Bound(p => p.PartId).ClientTemplate("<center><a class='details modalClick' id='#=PartId#" + "$" + "#=IsOriginal#'" + " frameTitle='" + @CommonUtility.GetResourceValue("SparePart_PageTitle_Details") + "' href='/SparePart/SparePartDetails/#=PartId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePart.SparePartDetails));
+                  columns.Bound(p => p.PartId).ClientTemplate("<center><a class='edit modalClick' id='#=PartId#" + "$" + "#=IsOriginal#'" + " frameTitle='" + @CommonUtility.GetResourceValue("SparePart_PageTitle_Update") + "' href='/SparePart/SparePartUpdate/#=PartId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePart.SparePartUpdate));
+                  columns.Bound(o => o.PartId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("SparePart_PageTitle_Delete") + "' onclick='DeleteSparePart(#=PartId#,#=IsOriginal#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePart.SparePartDelete));
+                  columns.Bound(p => p.PartCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.PartName).Width(100).Sortable(true);
+                  columns.Bound(p => p.AdminDesc).Width(100).Sortable(true);
+                  columns.Bound(p => p.IsOriginalName).Width(100).Sortable(true);
+                  columns.Bound(p => p.GuaranteeAuthorityNeedName).Width(100).Sortable(true);
+                  columns.Bound(p => p.IsActiveName).Width(100).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListSparePart", "SparePart", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.PartCode).DefaultValue(-1)))
+
+          )
+</div>
+
+@*tab content start*@
+<div id="divDetails" style="display: none; margin-top: 20px;">
+    @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.SparePart_Display_SupplyDiscounts).Selected(true).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("GetSupplyDisCountRatios", "SparePart") + "');" }))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.SparePart_Display_VatRatio).Selected(false).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("CountryVatRatioList", "CountryVatRatio") + "');" }))
+          )
+    <div id="TabContent" style="padding: 10px 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+</div>
+@*tab content end*@

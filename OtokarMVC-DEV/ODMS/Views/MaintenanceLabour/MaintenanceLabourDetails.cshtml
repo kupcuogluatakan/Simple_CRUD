@@ -1,0 +1,38 @@
+﻿@model ODMSModel.MaintenanceLabour.MaintenanceLabourViewModel
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<style type="text/css">
+    #popupContentWrapper{ min-height: 250px !important;}
+</style>
+@Html.AntiForgeryToken()
+@using ODMSCommon.Resources
+
+@{
+    ViewBag.Title = MessageResource.MaintenanceLabour_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<div class="labelDiv">@Html.LabelFor(v => v.MaintenanceId)</div>
+<div class="shortTxtDiv">@Model.MaintenanceName</div>
+<div class="labelDiv">@Html.LabelFor(v => v.LabourId)</div>
+<div class="shortTxtDiv">@Model.LabourName</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+<div class="shortTxtDiv">@Model.Quantity
+</div>
+<div class="labelDiv">@Html.LabelFor(v => v.@IsMustString)</div>
+<div class="shortTxtDiv">@Model.IsMustString
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+</script>

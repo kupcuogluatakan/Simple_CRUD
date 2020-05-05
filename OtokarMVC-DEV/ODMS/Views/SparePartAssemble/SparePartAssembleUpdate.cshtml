@@ -1,0 +1,74 @@
+﻿@model ODMSModel.SparePartAssemble.SparePartAssembleIndexViewModel
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.SparePartAssemble_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("SparePartAssembleUpdate", "SparePartAssemble", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new {SearchType = "SparePart", ControlId = "IdPart", Title1 = "", Title2 = "", DefaultText = Model.PartCode, DefaultValue = Model.IdPart}); 
+    @Html.ValidationMessageFor(v => v.IdPart)
+    @Html.HiddenFor(v=>v.IdPart)
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.PartCodeAssemble)</div>
+    @Html.DisplayFor(d => d.PartCodeAssemble)
+    
+    <div class="clearDiv">&nbsp;</div>
+        
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c=>c.Quantity).Decimals(2).Spinners(false).Format("{0:N}").HtmlAttributes(new{ type = "text", maxlength ="6",data_val_min="0",style="width:204px"})
+        @Html.ValidationMessageFor(c => c.Quantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <br />
+    @Html.HiddenFor(v => v.IdPart)
+    @Html.HiddenFor(v => v.IdPartAssemble)
+    @Html.HiddenFor(v => v.IdDealer)
+    @Html.HiddenFor(v => v.PartCode)
+    @Html.HiddenFor(v => v.PartCodeAssemble)
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.SparePartAssemble.SparePartAssembleUpdate, "SparePartAssembleUpdate")
+    
+
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+
+    function BindAutoComplate(e) {
+        var dataItem = this.dataItem(e.item.index());
+        $("#IdPart").val(dataItem.Value);
+    }
+
+    function GetPartId() {
+        return {
+            IdPart: $('#IdPart').val()
+        };
+    }
+    function GetAssemblePartId() {
+        return {
+            IdPartAssemble: $('#IdPartAssemble').val()
+        };
+    }
+    $(document).ready(function () {
+
+        if ($("#IdPart").val()!="") {
+            var dataItem = this.dataItem(e.item.index());
+            $("#IdPart").val(dataItem.BindAutoComplate);
+        }
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

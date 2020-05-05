@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = MessageResource.SparePartSaleOrder_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@model ODMSModel.SparePartSaleOrder.SparePartSaleOrderViewModel
+@using (Html.BeginForm("SparePartSaleOrderUpdate", "SparePartSaleOrder", FormMethod.Post, new { id = "frmSparePartSaleOrder" }))
+{
+    Html.HiddenFor(c => c.SoNumber);
+    Html.HiddenFor(c => c.OrderDate);
+    Html.RenderPartial("_SparePartSaleOrderEdit", Model);
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.SparePartSaleOrder.SparePartSaleOrderUpdate, "SparePartSaleOrderUpdate")
+}

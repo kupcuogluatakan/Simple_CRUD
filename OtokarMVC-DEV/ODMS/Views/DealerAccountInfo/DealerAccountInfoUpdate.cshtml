@@ -1,0 +1,81 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.DealerAccountInfo.DealerAccountListModel
+@{
+    ViewBag.Title = MessageResource.DealerAccountInfo_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    var isFullBankCapacity = false;
+}
+@if (ViewBag.IsMessage == true)
+{
+    isFullBankCapacity = true;
+    <div class="alert alert-danger">
+        <span>@MessageResource.Bank_Account_Count_Warning_Update</span>
+    </div>
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("DealerAccountInfoUpdate", "DealerAccountInfo", FormMethod.Post))
+{
+    @Html.HiddenFor(c => c.Id)
+    <div class="labelDiv" style="position: absolute; margin-top: 10px; width: 100px">@Html.LabelFor(d => d.BankName)</div>
+    <div style="position: absolute; margin-top: 10px; margin-left: 100px;">
+        @(Html.Kendo().ComboBox()
+                  .Name("BankId")
+                  .Placeholder(@MessageResource.Global_Display_Select)
+                  .BindTo(ViewBag.BankList)
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .HtmlAttributes(new { @class = "ComboBox", @style = "width: 200px;" })
+        )
+        @Html.ValidationMessageFor(d => d.BankId)
+    </div>
+
+    <div class="labelDiv" style="width: 100px; margin-top: 50px;">@Html.LabelFor(d => d.Branch)</div>
+    <div class="shortTxtDiv" style="position: absolute; margin-left: 100px; margin-top: 50px; width: 100px">
+        @Html.TextBoxFor(b => b.Branch)
+        @Html.ValidationMessageFor(d => d.Branch)
+    </div>
+    <div class="labelDiv" style="width:100px;position:absolute; margin-top: 80px;">@Html.LabelFor(d => d.Iban)</div>
+        <div class="shortTxtDiv" style="position: absolute; margin-left: 100px; margin-top: 80px; width: 100px">
+            @Html.TextBoxFor(b => b.Iban)
+
+        </div>
+        <div class="labelDiv" style="position: absolute; width: 100px; margin-left: 100px; margin-top: 110px;">@Html.LabelFor(d => d.IsActiveString)</div>
+        <div class="shortTxtDiv" style="position: absolute; margin-top: 110px; margin-left: 170px; width: 110px">@Html.CheckBoxFor(d => d.IsActive)</div>
+    if (isFullBankCapacity == false) { 
+    @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.DealerAccountInfo.DealerAccountInfoUpdate, "DealerAccountInfoUpdate")
+    }
+}
+
+
+<script>
+    $(function () {
+        adjustPage();
+        adjustControlPositions();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 300);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 250);
+        $("#popupContentWrapper").css("width", 350);
+
+        $("#ajaxWarning").css("width", 350);
+        $("#ajaxError").css("width", 350);
+        $("#ajaxSuccess").css("width", 350);
+    }
+    function adjustControlPositions() {
+        $("#Update").css("position", "absolute");
+        $("#Update").css("margin-top", "140px");
+        $("#Update").css("margin-left", "-100px");
+        $("#Update").css("width", "75px");
+
+        $(".shortTxtDiv span[data-valmsg-for='Code']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='Code']").css("margin-left", "200px");
+        $(".shortTxtDiv span[data-valmsg-for='Code']").css("margin-top", "-20px");
+
+        $(".shortTxtDiv span[data-valmsg-for='Name']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='Name']").css("margin-left", "200px");
+        $(".shortTxtDiv span[data-valmsg-for='Name']").css("margin-top", "-20px");
+    }
+</script>

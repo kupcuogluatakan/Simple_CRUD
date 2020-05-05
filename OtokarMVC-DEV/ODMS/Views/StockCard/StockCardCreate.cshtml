@@ -1,0 +1,132 @@
+﻿@using ODMSCommon.Security
+@model ODMSModel.StockCard.StockCardViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("StockCard_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+@Html.AntiForgeryToken()
+ 
+@using (Html.BeginForm("StockCardCreate", "StockCard", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DealerId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        @Html.ValidationMessageFor(v => v.DealerId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">
+        @{ Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", ExtraParameter = UserManager.UserInfo.GetUserDealerId(), Title1 = "", Title2 = "", DefaultText = Model.PartName, DefaultValue = Model.PartId, CallbackFunction = "SetValues" }); }
+
+        @Html.ValidationMessageFor(v => v.PartId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AutoOrderName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(c => c.AutoOrder)
+        @Html.ValidationMessageFor(v => v.AutoOrder)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MinSaleQuantity)</div>
+
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.MinSaleQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.MinSaleQuantity) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MinStockQuantity)</div>
+
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.MinStockQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.MinStockQuantity) </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.MaxStockQuantity)</div>
+
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.MaxStockQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.MaxStockQuantity) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.WarehouseName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.WarehouseId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.WarehouseList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.RackName)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.RackId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListRacks", "StockCard").Data("GetWarehouseId")).ServerFiltering(true)).Enable(true).AutoBind(false).CascadeFrom("WarehouseId").SelectedIndex(0)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AvgDealerPrice)</div>
+
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.AvgDealerPrice).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.AvgDealerPrice) </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.CriticalStockQuantity)</div>
+
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.CriticalStockQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.CriticalStockQuantity) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div id ="divOriginal">
+    <div class="labelDiv">@Html.LabelFor(v => v.SalePrice)</div>
+
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.SalePrice).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_max = "1000", style = "width:200px" }) 
+            @Html.ValidationMessageFor(v => v.SalePrice)
+            @Html.ValidationMessageFor(v => v.CalculatedPrice)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.ProfitMarginRatio)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.ProfitMarginRatio).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "7", data_val_max = "1000", style = "width:200px" }) 
+            @Html.ValidationMessageFor(v => v.ProfitMarginRatio) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UnitName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v=>v.UnitName)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.IsOriginalPart)
+    @Html.HiddenFor(v => v.UnitName)
+    @Html.HiddenFor(v => v.DealerId)
+    @Html.HiddenFor(v => v.PartId)
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.StockCard.StockCardCreate, "StockCardCreate")
+}
+
+<script>
+    function SetValues() {
+        $("#IsOriginalPart").val('');
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        $.post("@Url.Action("GetSparePartInfo", "StockCard")", {
+            partId: $('#PartId').val(), "__RequestVerificationToken": token
+        }, function (json) {
+            $("#IsOriginalPart").val(json.IsOriginalPart == 1 ? true : false);
+            if (json.IsOriginalPart == 1) {
+                $('#divOriginal').show();
+                
+                $("#SalePrice").data("kendoNumericTextBox").enable(true);
+                $("#ProfitMarginRatio").data("kendoNumericTextBox").enable(true);
+            } else {
+                $('#divOriginal').hide();
+
+                $("#SalePrice").data("kendoNumericTextBox").enable(false);
+                $("#ProfitMarginRatio").data("kendoNumericTextBox").enable(false);
+            }
+            $("#IsOriginalPart").attr("disabled", "disabled");
+
+            $("#UnitName").val(json.UnitName);
+            $("#UnitName").attr("readonly", "readonly");
+        }, "JSON");
+
+    }
+    function GetWarehouseId() {
+        return {
+            id: $('#WarehouseId').val()
+        };
+    }
+    $(document).ready(function () {
+
+        SetValues();
+
+        $(function () {
+            $('.k-widget').addClass('input-validation-valid');
+            $(".k-widget").removeClass("input-validation-error");
+        });
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

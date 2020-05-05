@@ -1,0 +1,226 @@
+﻿@using ODMSCommon.Resources
+@{
+    ViewBag.Title = Model == null ? MessageResource.CustomerSparePartDiscount_Title_Create : MessageResource.CustomerSparePartDiscount_Title_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    var action = Model.CustomerSparePartDiscountId == 0 ? "CustomerSparePartDiscountCreate" : "CustomerSparePartDiscountUpdate";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+@model ODMSModel.CustomerSparePartDiscount.CustomerSparePartDiscountViewModel
+<style>
+    #popupContentWrapper {
+        width: 630px !important;
+    }
+
+    #popupContent {
+        width: auto !important;
+    }
+</style>
+
+<link href="~/Style/Content.css" rel="stylesheet" />
+@using (Html.BeginForm(action, "CustomerSparePartDiscount", FormMethod.Post))
+{
+    @Html.HiddenFor(c=>c.CustomerId)
+    <input data-val="true" data-val-number="*" data-val-required="'Customer Spare Part Discount Id' değeri boş olamaz." id="CustomerSparePartDiscountId" name="CustomerSparePartDiscountId" type="hidden" value="@Html.Raw(Model==null?0:Model.CustomerSparePartDiscountId)">
+    <div class="labelDiv">@Html.LabelFor(v => v.OrgTypeName)</div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBoxFor(c => c.OrgTypeId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        .BindTo(ViewBag.OrgTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        //.Events(e=>e.Change("SetCustomerList"))
+        )
+        @Html.ValidationMessageFor(v => v.OrgTypeId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(c => c.CustomerName, new { @readonly = "readonly" })
+        <a class="k-button" onclick=" OpenCustomerSelectWindow(); ">
+            <i class="glyphicon glyphicon-search" title="@MessageResource.ObjectSearch_WindowTitle_Customer"></i>
+        </a>
+        <i id="ok" class="glyphicon glyphicon-remove text-danger"></i>
+        @Html.ValidationMessageFor(c => c.CustomerId)
+    </div>
+
+
+    @*<div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+        <div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.CustomerSearchViewModel { ObjectSearchType = CommonValues.ObjectSearchType.Customer, WindowTitle = ODMSCommon.Resources.MessageResource.ObjectSearch_WindowTitle_Customer, ReferenceObjectId = "CustomerId",FilterId = "OrgTypeId",  SelectCallBackFunction = "SetOrgType", Required = false, ReferenceObjectValue = Model == null ? null : Model.CustomerId, ParentWindowId = "modelWindow" })</div>*@
+
+
+
+    @*<div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+        <div class="shortTxtDiv">
+            @(Html.Kendo().ComboBoxFor(c => c.CustomerId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            .BindTo(ViewBag.CustomerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            .Events(e => e.Change("SetOrgType")))
+            @Html.ValidationMessageFor(v => v.CustomerId)
+        </div>*@
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv special">
+        <div id="divPart">
+            @(Html.Action("AutocompleteSearch", "AutocompleteSearch",
+            new
+            {
+                Required = false,
+                SearchType = "SparePart",
+                ControlId = "PartId",
+                Title1 = "",
+                Title2 = "",
+                DefaultText = Model.CustomerSparePartDiscountId != 0 ? Model.PartName : string.Empty,
+                DefaultValue = Model.CustomerSparePartDiscountId != 0 ? Model.PartId.ToString() : "",
+                CallbackFunction = "GetSparePartData"
+            }))
+        </div>
+       @*@Html.ValidationMessageFor(c => c.PartId)*@
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SparePartClassCode)</div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBoxFor(v => v.SparePartClassCode).Events(e => e.Change("SetPartValue")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SparePartClassCodeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+              .AutoBind(true).Value(Model.CustomerSparePartDiscountId == 0 ? "" : Model.SparePartClassCode))
+        @Html.ValidationMessageFor(c => c.SparePartClassCode)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DiscountRatio)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.DiscountRatio).Decimals(2).Format("{0:N2}").Spinners(false).HtmlAttributes(new { type = "text", style = "width:203px;" }) @Html.ValidationMessageFor(v => v.DiscountRatio) </div>
+    <div class="clearDiv">&nbsp;</div>
+    @*<div class="labelDiv">@Html.LabelFor(v => v.IsApplicableToWorkOrder)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsApplicableToWorkOrder).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>*@
+    @*<div class="clearDiv">&nbsp;</div>*@
+
+    @ODMSHelpers.Button(Model.CustomerSparePartDiscountId == 0 ? "Create" : "Update", CommonUtility.GetResourceValue("Global_Display_Save"),
+    Model.CustomerSparePartDiscountId == 0 ?
+    CommonValues.PermissionCodes.CustomerSparePartDiscount.CustomerSparePartDiscountCreate : CommonValues.PermissionCodes.CustomerSparePartDiscount.CustomerSparePartDiscountUpdate, action)
+}
+
+<div id="CustomerSelectWindow" class="hide" style="background-color: #EDF1F4 !important">
+</div>
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        @*if ('@Model.CustomerId' == '') {
+            $("#CustomerId").data("kendoComboBox").value('');
+            $("#CustomerId").data("kendoComboBox").text('');
+        }*@
+        if ('@Model.OrgTypeId' == '') {
+            $("#OrgTypeId").data("kendoComboBox").value('');
+            $("#OrgTypeId").data("kendoComboBox").text('');
+        }
+        if('@Model.CustomerSparePartDiscountId' == '0')
+        {
+            $("#SparePartClassCode").data("kendoComboBox").value('');
+            $("#SparePartClassCode").data("kendoComboBox").text('');
+            $('#DiscountRatio').data("kendoNumericTextBox").value('0,00');
+        }
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function SetPartValue() {
+        $('#PartId').val('');
+        $.ajax({
+            url: '@Url.Action("AutocompleteSearch", "AutocompleteSearch")',
+            dataType: 'html',
+            data: {
+                Required : false,
+                SearchType : "SparePart",
+                ControlId : "PartId",
+                Title1 : "",
+                Title2 : "",
+                DefaultText : '@Model.CustomerSparePartDiscountId' != '0' ? '@Model.PartName' : '',
+                DefaultValue : '@Model.CustomerSparePartDiscountId' != '0' ? '@Model.PartId' : '',
+                CallbackFunction: "GetSparePartData"
+            },
+            traditional: true,
+            type: 'POST',
+            success: function (content) {
+                $("#divPart").html(content);
+            }
+        });
+    }
+    @*function SetCustomerList() {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetCustomerList", "CustomerSparePartDiscount")",
+            data: { orgTypeId: $('#OrgTypeId').val() },
+        traditional: true,
+        success: function (result) {
+            $("#CustomerId").data("kendoComboBox").enable(true);
+            var combobox = $("#CustomerId").data("kendoComboBox");
+            combobox.dataSource.data(result);
+            combobox.dataSource.query();
+            if ($("#CustomerId").data("kendoComboBox").dataSource.data().length == 1)
+                $("#CustomerId").data("kendoComboBox").select(0);
+            else
+                $("#CustomerId").val('');
+        },
+        dataType: "json"
+    });
+    }*@
+    function SetOrgType() {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetOrgTypeList", "CustomerSparePartDiscount")",
+            data: { customerId: $('#CustomerId').val() },
+        traditional: true,
+        success: function (json) {
+            $("#OrgTypeId").data("kendoComboBox").enable(true);
+            var combobox = $("#OrgTypeId").data("kendoComboBox");
+            combobox.dataSource.data(json.result);
+            combobox.dataSource.query();
+            $("#OrgTypeId").data("kendoComboBox").value(json.selectedOrgTypeId);
+        },
+        dataType: "json"
+    });
+    }
+    function GetSparePartData() {
+        mvc.build("@Url.Action("GetSparePartData")", "", "", { partId: $('#PartId').val() }, false, "json");
+        mvc.post(null, function (json) {
+            $("#SparePartClassCode").data("kendoComboBox").value(json.SparePartClassCode);
+        }, null);
+    }
+    function SetCustomerValues(customerId, customerName) {
+        $("#CustomerId").val(customerId);
+        $("#CustomerName").val(customerName);
+        CloseSearch(customerId);
+    }
+
+    function OpenCustomerSelectWindow() {
+        @*if ($('#CustomerId').val() == '') {
+            SetErrorMessage("@MessageResource.Delivery_Warning_SelectSupplier")
+            return;
+        }*@
+        window.parent.ResizeWindow(1400, 800);
+
+        $('#CustomerSelectWindow').kwnd('@Url.Action("SearchCustomer")' + '?orgTypeId=' + $('#OrgTypeId').val(), '@Html.Raw(MessageResource.ObjectSearch_WindowTitle_Customer)',
+            {
+                iframe: true,
+                width: 1300,
+                height: 700,
+                onClose: function () {
+                    $("#CustomerSelectWindow").html('');
+                    window.parent.ResizeWindow(650, 350);
+                },
+            });
+        $('#CustomerSelectWindow').removeClass("hide");
+        OpenWindow($('#CustomerSelectWindow'));
+
+    }
+
+    function CloseSearch(customerId) {
+        var wnd = $('#CustomerSelectWindow').data("kendoWindow");
+        wnd.close();
+        if (parseInt(customerId) > 0) {
+            $("#ok").removeClass("glyphicon-remove").removeClass("text*danger").addClass("glyphicon-ok").addClass("text-success");
+        } else {
+            $("#ok").removeClass("glyphicon-ok").removeClass("text-success").addClass("glyphicon-remove").addClass("text-danger");
+        }
+        if ($("#OrgTypeId").val() == "") {
+            SetOrgType();
+        }
+
+    }
+</script>

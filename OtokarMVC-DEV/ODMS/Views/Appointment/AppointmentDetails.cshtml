@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@model ODMSModel.Appointment.AppointmentViewModel
+
+<style>
+#popupContent {
+width: 1600px;
+padding-top: 10px;
+padding-left: 10px;
+margin: 0;
+background-color: #EDF1F4 !important;
+}
+ </style>
+    @{ Html.RenderPartial("_AppointmentDisplay", Model); }
+<style>
+    body
+    {
+        background-color:#EDF1F4 !important;
+        height:2000px;
+        overflow:hidden;
+        width:2000px;
+    }
+
+</style>

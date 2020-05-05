@@ -1,0 +1,123 @@
+﻿@using ODMSModel.FleetPartPartial
+@model ODMSModel.FleetPartPartial.FleetPartViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("FleetPartPartial_PageTitle_Index");
+}
+@Html.AntiForgeryToken()
+<script>
+    //Popup
+    $("body").delegate(".modalClickFleet", "click", function (e) {
+        $('#modelWindow').html('');
+        e.preventDefault();
+
+        var link;
+        var clickedId = $(this).attr("id");
+        var frameTitle = $(this).attr("frameTitle");
+
+        if ($(this).hasClass("createNew")) {
+            link = "@Url.Action("FleetPartPartialCreate", "FleetPartPartial", new { fleetId = Model.FleetId })";
+        } else if ($(this).hasClass("createExcelNew")) {
+            link = "@Url.Action("FleetPartPartialExcelCreate", "FleetPartPartial", new { fleetId = Model.FleetId })";
+        }
+
+        $("#modelWindow_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#modelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+       
+    });        
+</script>
+
+<script>
+    function GetFleetId() {
+        return { FleetId: '@Model.FleetId' };
+        }
+    function Delete(fleetId, partId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+
+        var paramaters = {
+            FleetID: fleetId,
+            PartId: partId, "__RequestVerificationToken": token
+        };
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("FleetPartPartialDelete", "FleetPartPartial")",
+                data: paramaters,
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#FleetPartPartialGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+
+
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickFleet createNew", CommonUtility.GetResourceValue("FleetPartPartial_PageTitle_Create"), CommonValues.PermissionCodes.FleetPartPartial.FleetPartPartialCreate)
+@ODMSHelpers.LinkButton("btnExcelCreate", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "Create", "modalClickFleet createExcelNew", CommonUtility.GetResourceValue("FleetPartPartial_PageTitle_Excel_Create"), CommonValues.PermissionCodes.FleetPartPartial.FleetPartPartialCreate)
+@Html.ExportExcelButton(new ExcelExportDto("FleetPartPartial", "ListFleetPartPartial", "GetFleetId", "sdfsdf").Build<FleetPartPartialListModel, object>( c => c.PartCode,c => c.PartName))
+
+<div class="kendoGridDiv" id="grd">
+
+    @(Html.Kendo().Grid<FleetPartViewModel>()
+          .Name("FleetPartPartialGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(o => o.FleetId).ClientTemplate("<center><a onclick='Delete(#=FleetId#,#=PartId#)' href='javascript:void(0);' id='#=FleetId#' frameTitle='' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>")
+                  .Title(CommonUtility.GetResourceValue("Global_Display_Delete"))
+                  .Width(50).Sortable(false)
+                  .Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.FleetPartPartial.FleetPartPartialDelete)).Width(10);
+              columns.Bound(p => p.PartCode).Width(50).Sortable(true);
+              columns.Bound(p => p.PartName).Width(50).Sortable(true);
+              
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListFleetPartPartial", "FleetPartPartial", Model))
+              .Model(model => model.Field(o => o.FleetId).DefaultValue(-1)))
+
+          )
+
+</div>
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Title("FleetPartPartial")
+        .Draggable()
+        .Resizable()
+        .Width(504)
+        .Height(400)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+            var grid = $('#FleetPartPartialGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>

@@ -1,0 +1,47 @@
+﻿@model ODMSModel.Education.EducationViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Education_PageTitle_Details");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+
+<div class="labelDiv">@Html.LabelFor(v => v.EducationCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationCode)</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.EducationTypeId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationTypeName)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.EducationName)</div>
+<div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = false }); }</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.AdminDesc)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleModelName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleModelName)</div>
+
+<div class="labelDiv">
+    @Html.LabelFor(v => v.EducationDurationDay) &nbsp;
+    @Html.DisplayFor(v => v.EducationDurationDay)
+</div>
+
+
+<div class="labelDiv">
+    @Html.LabelFor(v => v.EducationDurationHour) &nbsp;
+    @Html.DisplayFor(v => v.EducationDurationHour)
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.IsMandatory)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsMandatory)</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActive)</div>
+
+

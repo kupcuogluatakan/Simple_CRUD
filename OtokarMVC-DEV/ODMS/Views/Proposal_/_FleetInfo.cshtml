@@ -1,0 +1,110 @@
+﻿@model ODMSModel.Fleet.FleetViewModel
+@using ODMSCommon.Resources
+<div class="panel panel-default ">
+    <div class="panel-heading">
+
+        <a class="k-link">
+            <strong style="font-size: 16px;">
+                @MessageResource.WorkOrderCard_Display_FleetInfo
+            </strong>
+        </a>
+    </div>
+    <div class="panel-body " id="collapseCustomer">
+        <table class="table table-bordered table-zipped">
+            <tbody>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_FleetCode :</th>
+                    <td class="col-md-3">@Model.FleetCode</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_FleetName :</th>
+                    <td class="col-md-3">@Model.FleetName</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_IsConstrictedName :</th>
+                    <td class="col-md-3">@Html.Raw(Model.IsConstricted == 1 ? MessageResource.Global_Display_Yes : MessageResource.Global_Display_No)</td>
+                </tr>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_StartDateValid :</th>
+                    <td class="col-md-3">@Model.StartDateValid</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_EndDateValid :</th>
+                    <td class="col-md-3">@Model.EndDateValid</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_DealerLabourDiscount :</th>
+                    <td class="col-md-3">@Model.DealerLabourDiscount</td>
+                </tr>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_DealerPartDiscount:</th>
+                    <td class="col-md-3">@Model.DealerPartDiscount</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_OtokarLabourDiscount :</th>
+                    <td class="col-md-3">@Model.OtokarLabourDiscount</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Fleet_Display_OtokarPartDiscount :</th>
+                    <td class="col-md-3">@Model.OtokarPartDiscount</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="panel-footer">
+        <p class="alert alert-warning bold"><span><img src="@Url.Content("~/Images/messagebox_warning.png")" style="height: 20px; vertical-align: middle" /></span>  İşleme devam etmek için filo indirimlerini onaylamanız veya reddetmeniz gerekmektedir.</p>
+        <button class="btn btn-success" onclick="ApproveFleet();">
+            @MessageResource.Global_Display_Approve
+        </button>
+        <button class="btn btn-danger" onclick="RejectFleet();">
+            @MessageResource.Global_Display_Reject
+        </button>
+    </div>
+</div>
+<script id="confirm-request" type="text/x-kendo-template">
+    <p class="add-message" style="width:350px;">
+        <div class="checkbox">
+            <label for="chkAccept">
+                <input type="checkbox" id="chkAccept">
+                @Html.Raw(string.Format(MessageResource.FleetRequest_Warning_AcceptConditions, Url.Content("~" + ODMSBusiness.CommonBL.GetGeneralParameterValue("FLEET_REQUEST_CONDITIONS_DOC").Model)))
+            </label>
+        </div>
+    </p>
+    <p style="text-align:right">
+        <button class="add-confirm k-button">@MessageResource.Global_Display_Ok</button>
+        <button class="add-cancel k-button">@MessageResource.Global_Display_Close</button>
+    </p>
+</script>
+<script>
+
+    function ApproveFleet() {
+        SendApprovalConfirmed(function() {
+            SetFleetId(@Model.IdFleet);
+            var wnd = $('#AddFleetWindow').data("kendoWindow");
+            if (wnd) wnd.close();
+        });
+    }
+
+
+    var isConfirmed = false;
+
+    function SendApprovalConfirmed(addFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div id='RequestConfirm' />").kendoWindow({
+            title: "@MessageResource.Global_Display_Warning",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#confirm-request").html())
+            .center().open();
+
+        kendoWindow
+            .find(".add-confirm, .add-cancel")
+            .click(function () {
+                if ($(this).hasClass("add-confirm")) {
+                    isConfirmed = $('#chkAccept').prop("checked");
+                    if (addFunction) {
+                        if (isConfirmed == true)
+                            addFunction();
+                        else {
+                            //SetErrorMessage("@MessageResource.FleetRequest_Error_TermsMustBeAccepted");
+                        }
+                    }
+                }
+                kendoWindow.data("kendoWindow").destroy();
+            })
+            .end();
+        isConfirmed = confirm;
+        return confirm;
+    }
+</script>

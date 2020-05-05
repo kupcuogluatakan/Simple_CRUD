@@ -1,0 +1,74 @@
+﻿@using ODMSBusiness.Terminal.Common
+@using ODMSBusiness.Terminal.StockMovement.Dtos
+@model ODMSTerminal.Models.WarehouseSearchModel
+@{
+    ViewBag.Title = MessageResource.Terminal_RackQuery_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+    var warehouses = ViewBag.Warehouses as EnumerableResponse<DealerWareHouseListItem>;
+    bool hasOnlyOneRack = (warehouses.Count() == 1 && warehouses.First().Racks.Count() == 1);
+
+}
+@section header{
+    @Html.Partial("_subheader")
+}
+<div class="margin-3 pageContent">
+    @using (Html.BeginForm("Results", "RackQuery", FormMethod.Post, new { id = "frmSearch" }))
+    {
+
+        <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+            <tbody>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.CycleCountResultReport_Display_WareHouseName:</td>
+                    <td width="60%">
+                        @if (warehouses.Count() == 1)
+                        {
+                            @Html.TextBox("WarehouseCode", warehouses.First().WarehouseCode, new { @class = "text", disabled = "disabled" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(c => c.WarehouseCode, new { @class = "text", onblur = "Rack.SearchWareHouse()" })
+                        }
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.CycleCountResultReport_Display_RackName:</td>
+                    <td width="60%">
+                        @if (hasOnlyOneRack)
+                        {
+                            @Html.TextBox("RackCode", warehouses.First().Racks.First().RackCode, new { @class = "text", disabled = "disabled" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(c => c.RackCode, new { @class = "text", onblur = "Rack.SearchRack()" })
+                        }
+                    </td>
+                    <td>&nbsp;</td>
+
+                </tr>
+
+            </tbody>
+        </table>
+
+        <input type="hidden" name="WarehouseId" id="WarehouseId" value="@Html.Raw(warehouses.Count() == 1?warehouses.First().WarehouseId.ToString():"")" />
+        <input type="hidden" name="RackId" id="RackId" value="@Html.Raw(hasOnlyOneRack?warehouses.First().Racks.First().RackId.ToString():"")" />
+    }
+    <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+        <tr>
+            <td class="text-right last-child"><input id="btnSearch" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Search"></td>
+        </tr>
+    </table>
+</div>
+@section scripts
+{
+
+    <script src="~/Scripts/views/rackquery/index.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            Rack.PageInit();
+            KS.Common.Focus("#WarehouseCode");
+        })
+    </script>
+
+}

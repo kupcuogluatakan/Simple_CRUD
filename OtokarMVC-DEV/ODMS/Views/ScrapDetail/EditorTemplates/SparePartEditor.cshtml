@@ -1,0 +1,14 @@
+﻿@(Html.Kendo().DropDownListFor(m=>m)
+      .AutoBind(false)
+      .DataTextField("Text")
+      .DataValueField("Value")
+      .DataSource(dataSource =>dataSource.Read(read => read.Action("GetSpareParts", "ScrapDetail")))
+      .Events(e=>e.Change("SetPartID"))
+      )
+@*@{Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });}*@
+@* @(Html.Kendo().AutoComplete()
+          .Name("PartId")
+          .DataTextField("Text")
+          .Filter("contains")
+          .DataSource(dataSource =>dataSource.Read(read => read.Action("GetSpareParts", "ScrapDetail")))
+          .Events(e=>e.Change("SetPartID")))*@

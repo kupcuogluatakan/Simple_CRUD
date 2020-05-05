@@ -1,0 +1,27 @@
+﻿@using ODMSCommon.Resources
+@{
+    Layout = "~/Views/Shared/NoMenu_Layout.cshtml";
+    ViewBag.Title = MessageResource.SystemAdministration_Display_AccountBlocked;
+}
+
+@*@if (TempData["MessageToShow"] != null && TempData["IsError"] != null)
+{
+    if (!string.IsNullOrEmpty(TempData["MessageToShow"].ToString()))
+    {
+        <div id="errorDiv" class="alert alert-danger messageDiv">
+            @(TempData["MessageToShow"])
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+}
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+            $("body").delegate(".close", "click", function() {
+                $("#errorDiv").hide("slow");
+            });
+        });
+
+    </script>
+}*@

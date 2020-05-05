@@ -1,0 +1,41 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.LabourPrice.LabourPriceViewModel
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<style type="text/css">
+    #popupContentWrapper{ min-height: 250px !important;}
+</style>
+@{
+    ViewBag.Title = MessageResource.LabourPrice_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<div class="labelDiv">@Html.LabelFor(v => v.ModelCode)</div>
+<div class="shortTxtDiv">@Model.ModelName &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(v => v.DealerClassName)</div>
+<div class="shortTxtDiv">@Model.DealerClass &nbsp;
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.DealerRegionId)</div>
+<div class="shortTxtDiv">@Model.DealerRegionName &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(v => v.LabourPriceTypeId)</div>
+<div class="shortTxtDiv">@Model.LabourPriceType &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.ValidFromDate)</div>
+<div class="shortTxtDiv">@Model.ValidFromDate.ToString("d") &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(v => v.ValidEndDate)</div>
+<div class="shortTxtDiv">@Model.ValidEndDate.ToString("d") &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.HasTSUnitPrice)</div>
+<div class="shortTxtDiv">@Model.HasTSUnitPrice &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.HasNoTSUnitPrice)</div>
+<div class="shortTxtDiv">@Model.HasNoTSUnitPrice &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CurrencyCode)</div>
+<div class="shortTxtDiv">@Model.CurrencyName &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+<div class="shortTxtDiv">@Model.IsActiveString &nbsp;
+</div>
+<div class="clearDiv">&nbsp;</div>
+

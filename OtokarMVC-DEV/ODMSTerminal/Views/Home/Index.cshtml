@@ -1,0 +1,18 @@
+﻿@using ODMSTerminal.Infrastructure.Constants
+@using ODMSTerminal.Infrastructure.Utility
+
+@{
+    ViewBag.Title =MessageResource.Terminal_Display_Menu;
+    ViewBag.WrapperCssClass = "wrapper-light";
+}
+@Html.ActionLink(MessageResource.Terminal_Putaway_Title_Index,"Index", "PutawayList", new{ pageId = 1 },new {@class= "btn btn-xs primary" }).HasPermission(Permissions.PutawayList)
+@Html.ActionLink(MessageResource.Terminal_PickingList_Title_Index, "Index", "PickingList", new { pageId = 1 }, new { @class = "btn btn-xs primary margin-top-2" }).HasPermission(Permissions.PickingList)
+@Html.ActionLink(MessageResource.Terminal_StockMovement_Title_Index, "Index", "StockMovement",null, new { @class = "btn btn-xs primary margin-top-2" }).HasPermission(Permissions.StockMovement)
+@Html.ActionLink(MessageResource.Terminal_ClaimWaybill_Title_Index, "Index", "ClaimWaybill", null, new { @class = "btn btn-xs primary margin-top-2" }).HasPermission(Permissions.ClaimWaybill)
+@Html.ActionLink(MessageResource.Terminal_StockcardQuery_Title_Index, "Index", "StockcardQuery", null, new { @class = "btn btn-xs success margin-top-2" }).HasPermission(Permissions.StockcardQuery)
+@Html.ActionLink(MessageResource.Terminal_RackQuery_Title_Index, "Index", "RackQuery", null, new { @class = "btn btn-xs success margin-top-2" }).HasPermission(Permissions.RackQuery)
+@Html.ActionLink(MessageResource.Terminal_OldRackQuery_Title_Index, "Index", "OldRackQuery", null, new { @class = "btn btn-xs success margin-top-2" }).HasPermission(Permissions.OldRackQuery)
+@Html.ActionLink(MessageResource.Terminal_CycleCountList_Title_Index, "Index", "CycleCountList", new { pageId = 1 }, new { @class = "btn btn-xs danger margin-top-2" }).HasPermission(Permissions.CycleCountList)
+@Html.ActionLink(MessageResource.Terminal_CycleCountConfirm_Title_Index, "Index", "CycleCountConfirm", new { pageId = 1 }, new { @class = "btn btn-xs danger margin-top-2" }).HasPermission(Permissions.CycleCountConfirm)
+@Html.ActionLink(MessageResource.SystemAdministration_Display_Logout, "Logout", "Login", new { pageId = 1 }, new { @class = "btn btn-xs transparent margin-top-2" })
+

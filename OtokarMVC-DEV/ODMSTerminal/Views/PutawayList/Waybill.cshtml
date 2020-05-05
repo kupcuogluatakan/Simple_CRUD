@@ -1,0 +1,118 @@
+﻿@{
+    ViewBag.Title = MessageResource.Terminal_Putaway_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+}
+
+@using ODMSTerminal.Infrastructure.Utility
+@model ODMSTerminal.Models.DeliveryDetailModel
+@section header{
+    @Html.Partial("_subheader")
+}
+
+@Html.ValidationSummary()
+
+<div class="margin-3 pageContent">
+    <table border="0" cellspacing="0" width="100%" class="margin-top-3 readonly">
+        <tbody>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_PutawayList_WaybillNo</td>
+                <td class="bold">:</td>
+                <td>@Model.DeliveryInfo.WaybillNo</td>
+            </tr>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_PutawayList_SAPDeliveryNo</td>
+                <td class="bold">:</td>
+                <td>@Model.DeliveryInfo.SapNo</td>
+            </tr>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_PutawayList_WaybillDate</td>
+                <td class="bold">:</td>
+                <td>@Model.DeliveryInfo.WaybillDate.FormatForView()</td>
+            </tr>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_PutawayList_AcceptedBy</td>
+                <td class="bold">:</td>
+                <td>@Model.DeliveryInfo.AcceptedBy</td>
+            </tr>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_PutawayList_Sender</td>
+                <td class="bold">:</td>
+                <td>@Model.DeliveryInfo.Sender</td>
+            </tr>
+        </tbody>
+    </table>
+    @using (Html.BeginForm("FindRack", "PutawayList", FormMethod.Post, new { id = "frmRack" }))
+    {
+        <input type="hidden" name="DeliveryId" value="@Model.DeliveryInfo.DeliveryId" />
+        <table border="0" cellspacing="0" class="margin-top-3 readonly" width="100%">
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_PutawayList_Part :</td>
+                <td width="60%">
+                    <input type="text" class="text" name="partCode" id="PartCode" />
+                </td>
+                <td class="last-child">&nbsp;</td>
+            </tr>
+        </table>
+    }
+
+    <table border="0" cellspacing="0" class="margin-top-3 readonly" width="100%">
+        <tr>
+            <td colspan="3" class="last-child"><input id="btnSearch" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Go"></td>
+        </tr>
+    </table>
+    @using (Html.BeginForm("CompleteRack", "PutawayList", FormMethod.Post, new { id = "completeRack" }))
+    {
+        <input type="hidden" name="DeliveryId" value="@Model.DeliveryInfo.DeliveryId" />
+        <table border="0" cellspacing="0" width="100%" class="margin-top-3 datatable">
+            <thead>
+                <tr>
+                    <th>@MessageResource.Terminal_PutawayList_Part</th>
+                    <th>@MessageResource.Terminal_PickingList_AcceptedQuantity</th>
+                    <th>@MessageResource.Terminal_PickingList_StockType</th>
+                    <th class="last-child">@MessageResource.Terminal_PickingList_LeftQuantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Details.Items)
+                {
+                    <tr onclick="location.href='@Url.Action("Rack",new {seqNo=item.DeliverySequenceNo,deliveryId = Model.DeliveryInfo.DeliveryId})';">
+                        <td style="word-break: break-all">@item.PartName</td>
+                        <td>@item.AcceptedAmount</td>
+                        <td>@item.Type</td>
+                        <td class="last-child">@item.LeftAmount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <table border="0" cellspacing="0" class="margin-top-3 readonly" width="100%">
+        <tr>
+            <td colspan="3" class="last-child"><input id="btnFinish" type="submit" class="btn btn-xs primary margin-top-3" value="@MessageResource.Global_Display_Complete" /></td>
+        </tr>
+    </table>
+
+
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $('table.datatable tr:even').addClass('even');
+            $('table.datatable tr:odd').addClass('odd');
+            KS.Common.Focus("#PartCode");
+            $("#btnSearch").click(function () {
+                if ($("#PartCode").val().length == 0) {
+                    KS.PageMessage("danger", KS.Resource.WarningPartSelect);
+                    return;
+                } else {
+                    $("#frmRack").submit();
+                }
+            });
+
+            $('#btnFinish').click(function () {
+                $('#completeRack').submit();
+            });
+        });
+    </script>
+}

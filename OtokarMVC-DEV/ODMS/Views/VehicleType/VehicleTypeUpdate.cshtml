@@ -1,0 +1,37 @@
+﻿@model ODMSModel.VehicleType.VehicleTypeIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("VehicleType_PageTitle_Delete");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+ 
+
+@using (Html.BeginForm("VehicleTypeUpdate", "VehicleType", FormMethod.Post))
+{
+    if (!Model.HideFormElements)
+    {
+        @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.ModelName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ModelName) </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.TypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TypeName) </div>
+    
+    <div class="clearDiv">&nbsp;</div>@* 
+  
+    <div class="labelDiv">@Html.LabelFor(v => v.TypeSSID)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TypeSSID) </div>       
+    
+    *@<div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive) </div>
+    
+    
+    <div class="clearDiv">&nbsp;</div> 
+    <br /> 
+    @Html.HiddenFor(v => v.TypeId)
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), ODMSCommon.CommonValues.PermissionCodes.VehicleType.VehicleTypeUpdate, "VehicleTypeUpdate")
+    }
+
+
+}

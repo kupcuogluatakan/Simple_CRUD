@@ -1,0 +1,70 @@
+﻿@using ODMSCommon.Resources
+@{
+    Layout = null;// "~/Views/Shared/Popup_Layout.cshtml";
+    long proposalId = ViewBag.ProposalId;
+    long? vehicleKM = ViewBag.VehicleKM;
+    bool isHourMaint = ViewBag.IsHourMaint;
+    int seq = ViewBag.ProposalSeq;
+    int hour = ViewBag.Hour;
+}
+<div id="warning-wrap" class="alert alert-warning">
+    @if (vehicleKM == null)
+    {
+        <strong>@MessageResource.WorkOrderCard_Warning_VehicleKM</strong>
+    }
+    else
+    {
+        <strong>@MessageResource.WorkOrderCard_Display_VehicleKMUpdateWarning</strong>
+    }
+</div>
+    <div style="margin-top: 20px;">
+      
+        @Html.Hidden("VehicleId", proposalId)
+        @Html.Hidden("ProposalSeq",seq)
+         @Html.Hidden("VehicleKM", vehicleKM)
+        @Html.Hidden("IsHourMaint",isHourMaint)
+        <div class="col-sm-2 labelDiv">
+            @MessageResource.Vehicle_Display_VehicleKilometer
+        </div>
+        <div class="col-sm-1 shortTxtDiv">
+            @Html.Kendo().NumericTextBox().Name("KM").Max(9999999999).Decimals(0).Spinners(false).Format("{0:N0}").HtmlAttributes(new { maxlength="10", style = "width:205px;" })
+        </div>  
+        <div class="clearfix"></div>
+        @if (isHourMaint)
+        {
+            <div class="col-sm-2 labelDiv">
+                @MessageResource.Vehicle_Display_Hour
+            </div>
+            <div class="col-sm-1 shortTxtDiv">
+                @Html.Kendo().NumericTextBox().Name("Hour").Max(9999999999).Decimals(0).Spinners(false).Format("{0:N0}").HtmlAttributes(new {maxlength = "10", style = "width:205px;"})
+            </div>
+            <div class="clearfix"></div>
+        }
+        <div class="" style="margin-right:30px; margin-top:10px">
+            @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.ProposalCard.ProposalCardUpdate,"ProposalCardUpdate","UpdateVehicleKM();")        
+        </div>
+       
+  
+    </div>
+<script type="text/javascript">
+    function UpdateVehicleKM() {
+        mvc.build("@Url.Action("UpdateVehicleKM","Proposal_Card")", null, null, { ProposalId: $("proposalId").val(), seq: $("#ProposalSeq").val(), km: $("#KM").val(), hour: $("#Hour").val(), isHourMaint: $("#IsHourMaint").val() }, true, "json");
+        mvc.post(null, function (json) {
+
+            if (json.Result == false) {
+                $("#VehicleKMWindow #warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+                $("#VehicleKMWindow #warning-wrap  strong").html(json.Message);
+
+            } else {
+                $("#VehicleKMWindow #warning-wrap").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+                $("#VehicleKMWindow #warning-wrap  strong").html(json.Message);
+                $("#VehicleKM").text(json.NewKM);
+                $("#VehicleHour").text($("#Hour").val());
+                @*$("#btnBodyWorkProcess").removeClass("disabled");
+                var obj2 = document.getElementById('btnBodyWorkProcess'); BodyWorkProcess(obj2);*@
+
+
+            }
+        }, null);
+    }
+</script>

@@ -1,0 +1,255 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model PurchaseOrderFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.PurchaseOrderReport_PageTitle_Index;
+}
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerRegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerRegionIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ViewBag.DealerRegionId.ToString()).Enable(ViewBag.DealerRegionId == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerRegionList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.SupplierIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.SupplierIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.SupplierList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.PartCode)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PurchaseOrderStartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.PurchaseOrderStartDate).Events(e => e.Open("OpenPOStartDate").Change("OpenPOEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PurchaseOrderEndDate) </div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.PurchaseOrderEndDate).Events(e => e.Open("OpenPOEndDate").Change("OpenPOStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.DeliveryStartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.DeliveryStartDate).Events(e => e.Open("OpenDStartDate").Change("OpenDEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.DeliveryEndDate) </div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.DeliveryEndDate).Events(e => e.Open("OpenDEndDate").Change("OpenDStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.InvoiceStartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.InvoiceStartDate).Events(e => e.Open("OpenIStartDate").Change("OpenIEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.InvoiceEndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.InvoiceEndDate).Events(e => e.Open("OpenIEndDate").Change("OpenIStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StockTypeId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.StockTypeId).HtmlAttributes(new { style = "width:200px;" }).DataValueField("Value").DataTextField("Text").AutoBind(true).BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IsOriginal)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsOriginal).DataValueField("Value").DataTextField("Text").AutoBind(true).BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PoLocation)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.PoLocation).DataValueField("Value").DataTextField("Text").AutoBind(true).BindTo(ViewBag.PoLocationList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+<div style="float: right">
+    <label class="">@MessageResource.DealerPurchaseOrder_Display_TotalPrice : </label><strong style="padding-left:3px; padding-right:20px;" id="totalPrice"></strong>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.PurchaseOrderReportIndex)
+
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.PurchaseOrderExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PurchaseOrderReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DealerName).Sortable(true).Width(300);
+              columns.Bound(p => p.DealerRegionName).Sortable(true).Width(200);
+              columns.Bound(p => p.PurchaseOrderNumber).Sortable(true).Width(100);
+              columns.Bound(p => p.SupplierName).Sortable(true).Width(300);
+              // columns.Bound(p => p.TaxNo).Sortable(true).Width(160);
+              columns.Bound(p => p.WaybillNo).Sortable(true).Width(150);
+              columns.Bound(p => p.WaybillDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.DeliveryId).Sortable(true).Width(150);
+              columns.Bound(p => p.InvoiceSerialNumber).Sortable(true).Width(150);
+              columns.Bound(p => p.InvoiceNumber).Sortable(true).Width(150);
+              columns.Bound(p => p.InvoiceDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.PartCode).Sortable(true).Width(200);
+              columns.Bound(p => p.PartName).Sortable(true).Width(200);
+              columns.Bound(p => p.IsOriginal).Sortable(true).Width(100);
+              columns.Bound(p => p.ShipQuant).Sortable(true).Width(100);
+              columns.Bound(p => p.Unit).Sortable(true).Width(100);
+              columns.Bound(p => p.Price).Format("{0:N2}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(100);
+              columns.Bound(p => p.OrderPrice).Format("{0:N2}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.StockType).Sortable(true).Width(150);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Events(e => e.RequestEnd("DisplayTotalPrice"))
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                        .ServerOperation(true)
+                                                .Read(read => read.Action("ListPurchaseOrderReport", "Reports", Model).Data("GetParameters"))
+                                        )
+
+    )
+</div>
+<div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+
+        if ($("#PurchaseOrderStartDate").val() != "" && $("#PurchaseOrderEndDate").val() == "")
+        {
+            SetErrorMessage('@MessageResource.PurchaseOrderReport_Display_PurchaseOrderEndDate @MessageResource.IsRequired');
+            e.preventDefault();
+            return;
+        }
+        else if ($("#PurchaseOrderStartDate").val() == "" && $("#PurchaseOrderEndDate").val() != "")
+        {
+            SetErrorMessage('@MessageResource.PurchaseOrderReport_Display_PurchaseOrderStartDate @MessageResource.IsRequired');
+            e.preventDefault();
+            return;
+        }
+
+        if ($("#DeliveryStartDate").val() != "" && $("#DeliveryEndDate").val() == "") {
+            SetErrorMessage('@MessageResource.PurchaseOrderReport_Display_DeliveryEndDate @MessageResource.IsRequired');
+            //e.stopPropagation();
+            return;
+        }
+        else if ($("#DeliveryStartDate").val() == "" && $("#DeliveryEndDate").val() != "") {
+            SetErrorMessage('@MessageResource.PurchaseOrderReport_Display_DeliveryStartDate @MessageResource.IsRequired');
+            e.preventDefault();
+            return;
+        }
+
+        if ($("#InvoiceStartDate").val() != "" && $("#InvoiceEndDate").val() == "") {
+            SetErrorMessage('@MessageResource.PurchaseOrderReport_Display_InvoiceEndDate @MessageResource.IsRequired');
+            e.preventDefault();
+            return;
+        }
+        else if ($("#InvoiceStartDate").val() == "" && $("#InvoiceEndDate").val() != "") {
+            SetErrorMessage('@MessageResource.PurchaseOrderReport_Display_InvoiceStartDate @MessageResource.IsRequired');
+            e.preventDefault();
+            return;
+        }
+
+        if (
+            ($("#PurchaseOrderStartDate").val() == "" && $("#PurchaseOrderEndDate").val() == "") &&
+            ($("#DeliveryStartDate").val() == "" && $("#DeliveryEndDate").val() == "") &&
+            ($("#InvoiceStartDate").val() == "" && $("#InvoiceEndDate").val() == "")
+            ) {
+            SetErrorMessage('@MessageResource.PurchaseOrder_Validation_Required');
+            e.preventDefault();
+            return;
+        } else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+
+    function DisplayTotalPrice(e) {
+        $("#totalPrice").html(e.response.TotalPrice);
+    }
+
+    function OpenPOStartDate() {
+        var dateStart = $("#PurchaseOrderStartDate").data("kendoDatePicker");
+        var dateEnd = $("#PurchaseOrderEndDate").data("kendoDatePicker");
+        if ($("#PurchaseOrderEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenPOEndDate() {
+        var dateStart = $("#PurchaseOrderStartDate").data("kendoDatePicker");
+        var dateEnd = $("#PurchaseOrderEndDate").data("kendoDatePicker");
+        if ($("#PurchaseOrderStartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    function OpenDStartDate() {
+        var dateStart = $("#DeliveryStartDate").data("kendoDatePicker");
+        var dateEnd = $("#DeliveryEndDate").data("kendoDatePicker");
+        if ($("#DeliveryEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenDEndDate() {
+        var dateStart = $("#DeliveryStartDate").data("kendoDatePicker");
+        var dateEnd = $("#DeliveryEndDate").data("kendoDatePicker");
+        if ($("#DeliveryStartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    function OpenIStartDate() {
+        var dateStart = $("#InvoiceStartDate").data("kendoDatePicker");
+        var dateEnd = $("#InvoiceEndDate").data("kendoDatePicker");
+        if ($("#InvoiceEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenIEndDate() {
+        var dateStart = $("#InvoiceStartDate").data("kendoDatePicker");
+        var dateEnd = $("#InvoiceEndDate").data("kendoDatePicker");
+        if ($("#InvoiceStartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    $(document).ready(init);
+    function GetParameters() {
+        return {
+            PurchaseOrderStartDate: $("#PurchaseOrderStartDate").val(),
+            PurchaseOrderEndDate: $("#PurchaseOrderEndDate").val(),
+            DeliveryStartDate: $("#DeliveryStartDate").val(),
+            DeliveryEndDate: $("#DeliveryEndDate").val(),
+            InvoiceStartDate: $("#InvoiceStartDate").val(),
+            InvoiceEndDate: $("#InvoiceEndDate").val(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            DealerRegionIdList: $("#DealerRegionIdList").data('kendoMultiSelect').value().toString(),
+            SupplierIdList: $("#SupplierIdList").data('kendoMultiSelect').value().toString(),
+            PartCode: $("#PartCode").val(),
+            IsOriginal: $("#IsOriginal").val(),
+            StockTypeId: $("#StockTypeId").data('kendoMultiSelect').value().toString(),
+            PoLocation: $("#PoLocation").val(),
+            ReportType: 28,
+            Columns: "DealerName,DealerRegionName,PurchaseOrderNumber,SupplierName,WaybillNo,WaybillDate,DeliveryId,InvoiceSerialNumber,InvoiceNumber,InvoiceDate,OrderDate,PartCode,PartName,IsOriginal,ShipQuant,Unit,Price,OrderPrice,StockType"
+
+
+        };
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#SupplierIdList").data('kendoMultiSelect').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+
+
+
+</script>

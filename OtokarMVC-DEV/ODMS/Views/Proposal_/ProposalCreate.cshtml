@@ -1,0 +1,142 @@
+﻿@{
+    ViewBag.Title = MessageResource.Proposal_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.Proposal
+@model ProposalViewModel
+@Html.ValidationSummary()
+@using (Html.BeginForm("ProposalCreate", "Proposal_", FormMethod.Post, new { id = "frmProposalCreate" }))
+{
+    Html.RenderPartial("_ProposalEdit", Model);
+    @Html.HiddenFor(c => c.FleetId)
+    <input type="hidden" id="IsRejected" value="false" />
+}
+@ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Proposal_Display_Save"), CommonValues.PermissionCodes.Proposal.ProposalCreate, "ProposalCreate", onClick: "CheckFleet();", submit: false)
+<div id="AddFleetWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<div id="CustomerChangeWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<script type="text/javascript">
+    var firstCustomerId =0 ;
+    function CheckFleet() {
+        if ($("#IsRejected").val() == "true" || $("#FleetId").val() > 0) {
+            ValidateCustomer();
+
+            return false;
+        }
+        ClearFleetId();
+
+
+        var data= {
+            customerId: $("#CustomerId").val(),
+            vehicleId: $("#VehicleId").val()
+        }
+        if (data.vehicleId.length == 0) {
+            ShowWarningMessage("@MessageResource.WorkOrder_Message_SelectVehicle");
+            return;
+        }
+        if (data.customerId.length == 0) {
+            ShowWarningMessage("@MessageResource.WorkOrder_Message_SelectCustomer")
+             return;
+        }
+        $.ajax({
+            url: "@Url.Action("CheckFleet","Proposal_")",
+            type: "POST",
+            data: data,
+            dataType: "json",
+
+        }).done(function(json) {
+            if (json.applicableFleetId > 0) {
+                ShowAddFleetWindow(json.applicableFleetId);
+            } else if (json.applicableFleetId == "0") {
+                SetFleetId(json.applicableFleetId);
+                ValidateCustomer();
+            }
+        }).fail(function() {
+            SetErrorMessage("@MessageResource.Global_Display_Error")
+        });
+
+
+    }
+    function SetFleetId(fleetId) {
+        $("#FleetId").val(fleetId);
+    }
+    function ClearFleetId() {
+        $("#FleetId").val('0');
+        $("#IsRejected").val("false");
+    }
+    function ShowAddFleetWindow(fleetId) {
+        $('#AddFleetWindow').kwnd('@Url.Action("ShowFleetInfo")/' +fleetId , '@Html.Raw(MessageResource.WorkOrderCard_Display_FleetInfo)',
+        {
+            iframe: false,
+            width: 960,
+            height: 350,
+            onClose: function () {
+                $("#AddFleetWindow").html('');
+            }
+        });
+        $('#AddFleetWindow').removeClass("hide");
+        OpenWindow($('#AddFleetWindow'));
+    }
+    function RejectFleet() {
+        var wnd = $('#AddFleetWindow').data("kendoWindow");
+        if (wnd) wnd.close();
+        $("#IsRejected").val("true");
+    }
+
+    function ValidateCustomer() {
+        GetVehicleCustomerId();
+    }
+
+    function GetVehicleCustomerId() {
+        $.ajax({
+            url: "@Url.Action("GetVehicleCustomerId","Proposal_")",
+            type: "POST",
+        data: {vehicleId:$("#VehicleId").val()},
+        dataType: "json",
+
+        }).done(function(json) {
+            if (json != $("#CustomerId").val() && json!=0) {
+                OpenCustomerChangeWindow(json);
+            }
+            else {
+                var $form = $("#frmProposalCreate");
+                if ($form.valid()) {
+                    $form.submit();
+                }
+            }
+        }).fail(function() {
+            SetErrorMessage("@MessageResource.Global_Display_Error");
+        });
+    }
+
+    function OpenCustomerChangeWindow(vehicleCustomerId) {
+        $('#CustomerChangeWindow').kwnd('@Url.Action("OpenCustomerChange")?customerId=' + $("#CustomerId").val() + '&vehicleCustomerId=' + vehicleCustomerId, '@Html.Raw(MessageResource.Global_Display_Warning)',
+         {
+             iframe: false,
+             width: 800,
+             height: 250,
+             onClose: function () {
+                 $("#CustomerChangeWindow").html('');
+             }
+         });
+        $('#CustomerChangeWindow').removeClass("hide");
+        OpenWindow($('#CustomerChangeWindow'));
+    }
+
+    function CloseCustomerChangeWindow() {
+        $('#CustomerChangeWindow').html('');
+        var wnd = $('#CustomerChangeWindow').data("kendoWindow");
+        if (wnd) wnd.close();
+    }
+
+    function SetProposalCustomer(id) {
+        $("#CustomerId").val(id);
+        CloseCustomerChangeWindow();
+        var $form = $("#frmProposalCreate");
+        if ($form.valid()) {
+            $form.submit();
+        }
+    }
+
+</script>
+

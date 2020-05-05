@@ -1,0 +1,54 @@
+﻿@using ODMSBusiness.WorkOrder
+@using ODMSCommon.Resources
+@model List<ODMSModel.WorkOrderInvoice.WorkOrderInvoicesListModel>
+@{
+    Layout = null;
+}
+<div class="panel panel-success" style="width: 99%;">
+    <div class="panel-heading">
+        @MessageResource.WorkOrderCard_Display_Invoices
+    </div>
+    <div class="panel-body">
+
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                 
+                    <th>&nbsp;</th>
+                    <th>@MessageResource.WorkOrderInvoice_Display_InvoiceId</th>
+                    <th>
+                        @MessageResource.Customer_Display_Name
+                    </th>
+                    <th>
+                        @MessageResource.WorkorderListInvoices_Display_InvSerialNo
+                    </th>
+                    <th>
+                        @MessageResource.WorkOrderInvoiceList_Display_InvoiceNo
+                    </th>
+                    <th>
+                        @MessageResource.WorkOrderInvoiceList_Display_InvoiceDate
+                    </th>
+                    <th>
+                        @MessageResource.WorkOrderCard_Display_TotalPrice
+                    </th>
+                </tr>
+            </thead>
+            @foreach (var item in Model.Where(c => c.InvoiceAmount > 0))
+            {
+                <tr>
+                    <td>
+                        <a class="btn btn-primary" href="@Url.Action("PrintWorkOrderInvoice", "WorkOrderCard", new { id = (long)ViewBag.WorkOrderId, invoiceId = item.WorkOrderInvoiceId, printType = InvoicePrintType.Printed })">@MessageResource.WorkOrderCard_Display_InvoiceTypePrinted</a>
+                        <a class="btn btn-default" href="@Url.Action("PrintWorkOrderInvoice", "WorkOrderCard", new { id = (long)ViewBag.WorkOrderId, invoiceId = item.WorkOrderInvoiceId, printType = InvoicePrintType.Transcript })">@MessageResource.WorkOrderCard_Display_InvoiceTypeTranscript</a>
+                        <a class="btn btn-default" href="@Url.Action("PrintWorkOrderInvoice", "WorkOrderCard", new { id = (long)ViewBag.WorkOrderId, invoiceId = item.WorkOrderInvoiceId, printType = InvoicePrintType.Proforma })">@MessageResource.WorkOrderCard_Display_InvoiceTypeProforma</a>
+                    </td>
+                    <td>@item.WorkOrderInvoiceId</td>
+                    <td>@item.CustomerName</td>
+                    <td>@item.InvoiceSerialNo</td>
+                    <td>@item.InvoiceNo</td>
+                    <td>@item.InvoiceDate.Normalize(true)</td>
+                    <td>@item.PriceString</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>

@@ -1,0 +1,276 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.PurchaseOrder.PurchaseOrderSearchListModel
+
+@{
+    ViewBag.Title = MessageResource.PurchaseOrderSearch_PageTitle_Index;
+    Layout = !string.IsNullOrEmpty(Model.DMSOrderNo) ? "~/Views/Shared/Popup_Layout.cshtml" : "~/Views/Shared/_Layout.cshtml";
+}
+@Html.AntiForgeryToken()
+<style>
+    #popupContent {
+        width: auto !important;
+        padding: 10px !important;
+    }
+</style>
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.DMSOrderNo)</div>
+        <div class="shortTxtDiv" style="width: 230px">
+            @if (!string.IsNullOrEmpty(Model.DMSOrderNo))
+            {
+                @Html.DisplayFor(v => v.DMSOrderNo)
+                @Html.HiddenFor(v => v.DMSOrderNo)
+            }
+            else
+            {
+                @Html.TextBoxFor(v => v.DMSOrderNo)
+            }
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.OtokarProposeNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.OtokarProposeNo)</div>
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.PurchaseType)</div>
+        <div class="shortTxtDiv" style="width: 350px">@Html.Kendo().ComboBoxFor(v => v.PurchaseType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLPOType as List<SelectListItem>).Placeholder(MessageResource.Global_Display_Choose)</div>
+
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IsDealerOrder)</div>
+        <div class="shortTxtDiv" style="width: 230px">@Html.CheckBoxFor(v => v.IsDealerOrder) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv" style="width: 350px">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StatusId)</div>
+        <div class="shortTxtDiv" style="width: 230px">@Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(MessageResource.Global_Display_Choose)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PartId)</div>
+        <div class="shortTxtDiv">
+            <div id="divPart">
+                @{
+                    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch",
+                                      new
+                                      {
+                                          SearchType = "SparePart",
+                                          ControlId = "PartId",
+                                          Title1 = "",
+                                          Title2 = "",
+                                          DefaultText = "",
+                                          DefaultValue = "",
+                                          CallbackFunction = "AddPart"
+                                      });
+                }
+            </div>
+        </div>
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(b => b.PartCodeList)</div>
+        <div class="shortTxtDiv" style="width: 350px">
+            @Html.Kendo().MultiSelectFor(c => c.PartCodeList).DataValueField("Value").DataTextField("Text") @Html.ValidationMessageFor(d => d.PartCodeList)
+        </div>
+        @*<div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PoStatusId)</div>
+        <div class="shortTxtDiv" style="width: 230px">@Html.Kendo().ComboBoxFor(v => v.PoStatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.PoStatusList as List<SelectListItem>).Placeholder(MessageResource.Global_Display_Choose)</div>*@
+    
+    </div>
+    <br />
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderSearchIndex)
+<br />
+<div class="clearDiv">&nbsp;</div>
+@(Html.Kendo().Grid<ODMSModel.PurchaseOrder.PurchaseOrderSearchListModel>()
+          .Name("PurchaseOrderGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.VBELN).Sortable(false).Width(100);
+                  columns.Bound(p => p.ParentStatus).Sortable(false).Width(80);
+                  columns.Bound(p => p.POSNR).Sortable(false).Width(60);
+                  columns.Bound(p => p.ANGDT).Sortable(false).Width(80);
+                  columns.Bound(p => p.MATNR).Sortable(false).Width(100);
+                  columns.Bound(p => p.BSTKD).Sortable(false).Width(100);
+                  columns.Bound(p => p.KWMENG).Format("{0:N}").Sortable(false).Width(100);
+                  columns.Bound(p => p.SASI_TEXT).Sortable(false).Width(80);
+                  columns.Bound(p => p.BAKIYE).Sortable(false).Format("{0:N}").Width(50);
+                  columns.Bound(p => p.TEYIT).Sortable(false).Format("{0:N}").Width(50);
+                  columns.Bound(p => p.PAKETLEME).Sortable(false).Format("{0:N}").Width(80);
+                  columns.Bound(p => p.MCIKISI).Sortable(false).Format("{0:N}").Width(80);
+                  columns.Bound(p => p.IRSNO).Sortable(false).Width(100);
+                  columns.Bound(p => p.BLDAT).Sortable(false).Width(80);
+                  columns.Bound(p => p.DURUM).Sortable(false).Width(80);
+              })
+          .Scrollable()
+          .AutoBind(false)
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .Read(read => read.Action("ListPurchaseOrderSearch", "PurchaseOrder", Model).Data("PurchaseOrderSearch"))
+                                        .Events(e => e.RequestEnd("OnRequestEnd"))
+                                        .Model(model => model.Field(o => o.I_AUART).DefaultValue(-1)))
+
+)
+
+<script type="text/javascript">
+    //function resizeGrid() {
+
+    //    //$("#outerWrapper").height($('#body').innerHeight());
+    //    //var gridElement = $("#PurchaseOrderGrid");
+    //    //var dataArea = gridElement.find(".k-grid-content");
+
+    //    //var newGridHeight = $(document).height() - 50;
+    //    //var newDataAreaHeight = newGridHeight - 5;
+
+    //    //var newGridWidth = $(document).width() - 50;
+    //    //var newDataAreaWidth = newGridWidth - 5;
+
+    //    //dataArea.height(newDataAreaHeight);
+    //    //gridElement.height(newGridHeight);
+
+    //    //dataArea.width(newDataAreaWidth);
+    //    //gridElement.width(newGridWidth);
+
+    //    //$("#PurchaseOrderGrid").data("kendoGrid").refresh();
+
+    //    var gridElement = $("#PurchaseOrderGrid"),
+    //    dataArea = gridElement.find(".k-grid-content"),
+    //    gridHeight = gridElement.innerHeight(),
+    //    otherElements = gridElement.children().not(".k-grid-content"),
+    //    otherElementsHeight = 0;
+    //    otherElements.each(function () {
+    //        otherElementsHeight += $(this).outerHeight();
+    //    });
+    //    dataArea.height(gridHeight - otherElementsHeight);
+    //    gridElement.height(gridHeight - otherElementsHeight);
+    //}
+
+    //$(window).resize(function () {
+    //    resizeGrid();
+    //});
+    function AddPart() {
+        var partId = $('#PartId').val().toString();
+        if (partId != '') {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.post("@Url.Action("GetPartCode", "PurchaseOrder")", {
+                partId: partId,
+                "__RequestVerificationToken": token
+            }, function (json) {
+                if (json) {
+                    var ms = $("#PartCodeList").data('kendoMultiSelect');
+                    ms.dataSource.insert(0, { Text: json.PartCode, Value: json.PartCode });
+                    var selected = ms.value();
+                    if (selected.toString().indexOf(json.PartCode) < 0) {
+                        var res = $.merge($.merge([], selected), [json.PartCode]);
+                        //var res = $.merge(selected, [json.PartCode]);
+                        ms.value(res);
+                        $('#PartId').val('');
+                        $.ajax({
+                            url: '@Url.Action("AutocompleteSearch", "AutocompleteSearch")',
+                                dataType: 'html',
+                                data: {
+                                    SearchType: "SparePart",
+                                    ControlId: "PartId",
+                                    Title1: "",
+                                    Title2: "",
+                                    DefaultText: "",
+                                    DefaultValue: "",
+                                    CallbackFunction: "AddPart"
+                                },
+                                traditional: true,
+                                type: 'POST',
+                                success: function (content) {
+                                    $("#divPart").html(content);
+                                }
+                            });
+                    }
+                }
+                }
+                ,
+                "JSON");
+        }
+    }
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    $(document).ready(init);
+    function PurchaseOrderSearch() {
+        return {
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            DMSOrderNo: $('#DMSOrderNo').val(),
+            OtokarProposeNo: $('#OtokarProposeNo').val(),
+            PurchaseType: $('#PurchaseType').val(),
+            IsDealerOrder: $("#IsDealerOrder").is(":checked"),
+            PartCodeList: $("#PartCodeList").data('kendoMultiSelect').value().toString(),
+            StatusId: $('#StatusId').val(),
+            PoStatusId: $('#PoStatusId').val()
+        };
+    }
+    function init() {
+
+        //resizeGrid();
+
+        $("#ajaxWarning").css("width", 1350);
+        $("#ajaxError").css("width", 1350);
+        $("#ajaxSuccess").css("width", 1350);
+
+        $("#showSearch").html("@MessageResource.Global_Display_Hide_Search_Criteria");
+        $("#showSearch").addClass("searchVisible");
+        $("#searchDiv").show("slow");
+
+        if ('@Model.DMSOrderNo' != '') {
+            var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#showSearch').hide();
+            $('#searchDiv').hide();
+            $('#btnSearch').hide();
+        }
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            var ms = $("#PartCodeList").data('kendoMultiSelect');
+            ms.value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+    }
+    function OnRequestEnd(e) {
+        if (e.type == "read") {
+            if (e.response.ErrorMessage.length != 0) {
+                SetErrorMessage(e.response.ErrorMessage);
+            }
+            else {
+                SetSuccessMessage('@MessageResource.Global_Display_Success');
+            }
+        }
+    }
+</script>

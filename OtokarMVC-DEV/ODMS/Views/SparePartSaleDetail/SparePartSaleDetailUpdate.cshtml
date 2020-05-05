@@ -1,0 +1,130 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.SparePartSaleDetail.SparePartSaleDetailDetailModel
+@{
+    ViewBag.Title = MessageResource.SparePartSaleDetail_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script>
+    $('body').css('overflow', 'hidden');
+</script>
+@using (Html.BeginForm("SparePartSaleDetailUpdate", "SparePartSaleDetail", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(d => d.SparePartName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.SparePartName)</div>
+
+    <div class="labelDiv">@Html.LabelFor(d => d.ListPrice)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.ListPrice).Enable(false).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.ListPrice)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(d => d.DealerPrice)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.DealerPrice).Enable(false).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+
+    @Html.ValidationMessageFor(v => v.DealerPrice)
+</div>
+
+   
+    <div class="labelDiv">@Html.LabelFor(d => d.DiscountPrice)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.DiscountPrice).Enable(Model.SparePartSaleWaybillId.GetValueOrDefault(0)==0 && Model.SparePartSaleInvoiceId.GetValueOrDefault(0)==0).Events(ev => ev.Change(@"function(e){CalculateValues(2);}")).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.DiscountPrice)
+    </div>
+     <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IsPriceFixed)</div>
+    <div class="shortTxtDiv">
+        @Html.CheckBoxFor(v => v.IsPriceFixed)
+    @Html.ValidationMessageFor(c => c.IsPriceFixed)
+</div>
+  
+    <div class="labelDiv">@Html.LabelFor(d => d.DiscountRatio)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.DiscountRatio).Enable(Model.SparePartSaleWaybillId.GetValueOrDefault(0)==0 && Model.SparePartSaleInvoiceId.GetValueOrDefault(0)==0).Events(ev => ev.Change(@"function(e){CalculateValues(1);}")).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.DiscountRatio)
+    </div>
+     <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.PlanQuantity)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.PlanQuantity).Enable(Model.SparePartSaleWaybillId.GetValueOrDefault(0)==0).Events(ev => ev.Change(@"function(e){CalculateValues(3);}")).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.PlanQuantity)
+    </div>
+    @*
+    <div class="labelDiv">@Html.LabelFor(d => d.PickQuantity)</div>*@@*
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.PickQuantity).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.PickQuantity)
+    </div>*@@*
+    <div class="labelDiv">@Html.LabelFor(d => d.PickedQuantity)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.PickedQuantity).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.PickedQuantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.ReturnedQuantity)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.ReturnedQuantity).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:202px" })
+        @Html.ValidationMessageFor(v => v.ReturnedQuantity)
+    </div>*@
+    <div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.VatRatio).Enable(false).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:202px" })</div>
+    <div class="clearDiv">&nbsp;</div>
+
+
+
+    @Html.HiddenFor(d => d.SparePartSaleDetailId)
+    @Html.HiddenFor(d => d.PartSaleId)
+    @Html.HiddenFor(d => d.SparePartId)
+    @Html.HiddenFor(d => d.SparePartName)
+    @Html.HiddenFor(d => d.VatRatio)
+    @Html.HiddenFor(d => d.StatusId)
+    @Html.HiddenFor(d => d.DealerPrice)
+    @Html.HiddenFor(d => d.ListPrice)
+    @Html.HiddenFor(d => d.SoDetSeqNo)
+
+
+    @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailUpdate, "SparePartSaleDetailUpdate")
+}
+
+<script type="text/javascript">
+    function CalculateValues(type) {
+        var discountRatio = $("#DiscountRatio").val().replace(',', '.');
+        var listPrice = $("#ListPrice").val().replace(',', '.');
+        var discountPrice = $("#DiscountPrice").val().replace(',', '.');
+        var planQuantity = $("#PlanQuantity").val().replace(',', '.');
+        var pickQuantity = $("#PickQuantity").val().replace(',', '.');
+        var pickedQuantity = $("#PickedQuantity").val().replace(',', '.');
+        var returnedQuantity = $("#ReturnedQuantity").val().replace(',', '.');
+
+        if (type == 2) {
+            if (listPrice != '' && discountPrice != '') {
+                discountRatio = ((parseFloat(listPrice) - parseFloat(discountPrice)) * 100) / parseFloat(listPrice);
+                $("#DiscountRatio").kendoNumericTextBox({
+                    value: discountRatio.toString().replace('.', ','),
+                    spinners: false
+                });
+            }
+        } else {
+            if (discountRatio != '' && listPrice != '') {
+                discountPrice = parseFloat(listPrice) * ((100 - parseFloat(discountRatio)) / 100);
+                $("#DiscountPrice").kendoNumericTextBox({
+                    value: discountPrice.toString().replace('.', ','),
+                    spinners: false
+                });
+            }
+        }
+
+        if (discountPrice < dealerPrice) {
+            $("#DiscountPrice").data("kendoNumericTextBox").wrapper.find(".k-input").css("background-color", "red");
+        }
+        else {
+            $("#DiscountPrice").data("kendoNumericTextBox").wrapper.find(".k-input").css("background-color", "white");
+        }
+
+        if (planQuantity < (pickedQuantity + pickQuantity - returnedQuantity)) {
+            SetErrorMessage("@MessageResource.SparePartSaleDetail_Warning_QuantityPickQuantity");
+        }
+    }
+</script>

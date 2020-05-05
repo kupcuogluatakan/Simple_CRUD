@@ -1,0 +1,200 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.User.UserIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("DealerUser_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+@using (Html.BeginForm("DealerUserCreate", "User", FormMethod.Post))
+{    
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DealerId).Enable(UserManager.UserInfo.DealerID == 0).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Events(ev => ev.Change("CheckDealerIsForeign")) @Html.ValidationMessageFor(v => v.DealerId) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.RoleTypeName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.RoleTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.RoleTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Events(events => events.Change("function (){ if (this.value() && this.selectedIndex == -1) {" +
+            "var dt = this.dataSource._data[0];" +
+                "this.text('');" +
+            "}" +
+        "}"))
+        @Html.ValidationMessageFor(c => c.RoleTypeId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UserCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserCode) @Html.ValidationMessageFor(v => v.UserCode) </div>
+    <div id="TCIdentityDiv">
+        <div class="labelDiv">@Html.LabelFor(v => v.TCIdentityNo)</div>
+        @Html.Kendo().NumericTextBoxFor(p => p.TCIdentityNo).Spinners(false).Format("###########").Max(99999999999).Min(10000000000).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(v => v.TCIdentityNo)
+
+    </div>
+    <div id="PassportNoDiv" style="display: none">
+        <div class="labelDiv">@Html.LabelFor(v => v.PassportNo)</div>
+        <div class="shortTxtDiv">
+            @Html.TextBoxFor(p => p.PassportNo) @Html.ValidationMessageFor(v => v.PassportNo)
+        </div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UserFirstName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserFirstName) @Html.ValidationMessageFor(v => v.UserFirstName) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UserMidName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserMidName) @Html.ValidationMessageFor(v => v.UserMidName)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UserLastName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserLastName) @Html.ValidationMessageFor(v => v.UserLastName)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(c => c.IsActive,new { onchange = "IsActiveClickEvent(this);" })</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.EmploymentDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EmploymentDate).HtmlAttributes(new { type = "text", onkeypress = "return false;" }).Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }) @Html.ValidationMessageFor(v => v.EmploymentDate)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UnemploymentDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.UnemploymentDate).HtmlAttributes(new { type = "text", onkeypress = "return false;" }).Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }) @Html.ValidationMessageFor(v => v.UnemploymentDate) </div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Phone)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Phone) @Html.ValidationMessageFor(v => v.Phone)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Extension)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Extension) @Html.ValidationMessageFor(c => c.Extension)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Mobile)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Mobile) @Html.ValidationMessageFor(v => v.Mobile)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.EMail)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.EMail) @Html.ValidationMessageFor(c => c.EMail)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Sex)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.SexId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SexList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.SexId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MaritalStatus)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.MaritalStatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.MaritalStatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(c => c.MaritalStatusId)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.BirthDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.BirthDate).Start(CalendarView.Decade).HtmlAttributes(new { type = "text", onkeypress = "return false;" }).Format("dd/MM/yyyy").Max(DateTime.Now).ParseFormats(new string[] { "dd.MM.yyyy" }) @Html.ValidationMessageFor(v => v.BirthDate)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Address)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Address) @Html.ValidationMessageFor(c => c.Address)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.LanguageCode)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.LanguageCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.LanguageList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.LanguageCode) </div>
+        <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PhotoDocId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().Upload().Name("attachments").Events(e => e.Select("onSelectPhoto")).Messages(x=>x.Select("Resim Yükle"))</div>
+  
+            <div class="clearDiv">&nbsp;</div>
+     @ODMSHelpers.Button("Create", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.User.DealerUserCreate, "DealerUserCreate") 
+         
+    @Html.HiddenFor(c => c.DealerId)
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#Phone").mask("(999) 999 99 99", { placeholder: "_" });
+        $("#Mobile").mask("(999) 999 99 99", { placeholder: "_" });
+        $("#Extension").mask("9999", { placeholder: "" });
+        
+        if($('#RoleTypeId').val() == '')
+            $("#RoleTypeId").data("kendoComboBox").text('');
+
+        if ($('#MaritalStatusId').val() == '')
+            $("#MaritalStatusId").data("kendoComboBox").text('');
+
+        if ($('#DealerId').val() == '')
+            $("#DealerId").data("kendoComboBox").text('');
+
+        if ($('#DealerId').val() == '')
+            $("#DealerId").data("kendoComboBox").text('');
+
+        if ($('#SexId').val() == '')
+            $("#SexId").data("kendoComboBox").text('');
+
+
+        IsActiveClickEvent($("#IsActive"));
+
+
+      
+   
+
+    });
+
+    $(function () {
+        AdjustPage();
+        AdjustControls();
+        ValidationSettings();
+        CheckDealerIsForeign();
+    });
+    function CheckDealerIsForeign() {
+
+        var windowWidget = $("#modelWindow").data("kendoWindow");
+        console.log(windowWidget);
+
+        $.post("@Url.Action("CheckDealerIsForeign", "User")",
+    { dealerId: $("#DealerId").val() },
+    function(result) {
+        if (result.result == true) {
+            $("#TCIdentityDiv").hide();
+            $("#PassportNoDiv").show();
+            $("#Phone,#Mobile").unmask();
+            $("#TCIdentityNo").data('kendoNumericTextBox').value('');
+            $("#TCIdentityNo").data('kendoNumericTextBox').enable(false);
+            $("#PassportNo").prop('disabled',false);
+
+        } else {
+            $("#TCIdentityDiv").show();
+            $("#PassportNoDiv").hide();
+            $("#Phone,#Mobile").mask("(999) 999 99 99", { placeholder: " " });
+            $("#PassportNo").val('');
+            $("#PassportNo").prop('disabled',true);
+            $("#TCIdentityNo").data('kendoNumericTextBox').enable(true);
+        }
+
+    });
+    }
+    function onSelectPhoto(e) {
+        var files = e.files;
+        $.each(files, function () {
+
+            if (this.extension.toLowerCase() != '@CommonValues.PhotoExtGIF'
+                && this.extension.toLowerCase() != '@CommonValues.PhotoExtJPEG'
+                && this.extension.toLowerCase() != '@CommonValues.PhotoExtJPG'
+                && this.extension.toLowerCase() != '@CommonValues.PhotoExtPNG'
+                && this.extension.toLowerCase() != '@CommonValues.PhotoExtTIF') {
+                SetErrorMessage('@MessageResource.Global_Warning_TypePhoto');
+                e.preventDefault();
+            }
+
+            @* if (this.size / 1024 / 1024 > 5) {
+                SetErrorMessage('@MessageResource.Global_Warning_FileSize');
+                e.preventDefault();
+            }*@
+
+        });
+     }
+    function AdjustPage() {
+        $("#popupContentWrapper").css("height", 640);
+    }
+
+    function AdjustControls() {
+        $("#attachments").closest(".k-button").find("span").text("@Html.Raw(MessageResource.Add_Photo)");
+        $("#attachments").closest(".k-button").css("margin-top", "20px");
+        $("#attachments").closest(".k-button").css("margin-left", "-150px");
+
+     
+    }
+
+
+    function IsActiveClickEvent(obj) {
+        if ($(obj).prop('checked')) {
+            $('#UnemploymentDate').data('kendoDatePicker').value('');
+            $('#UnemploymentDate').data('kendoDatePicker').enable(false);
+        } else {
+            $('#UnemploymentDate').data('kendoDatePicker').enable(true);
+        }
+    }
+
+    function ValidationSettings() {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    }
+</script>

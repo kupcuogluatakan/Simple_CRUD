@@ -1,0 +1,23 @@
+﻿ 
+@Html.AntiForgeryToken()
+@using ODMSModel.PdiGifApproveGroup
+@model PdiGifApproveGroupViewModel
+<div class="labelDiv">@Html.LabelFor(c=>c.GroupName)</div>
+<div class="shortTxtDiv">@Html.TextBoxFor(c=>c.GroupName) @Html.ValidationMessageFor(c=>c.GroupName) </div>
+<div class="labelDiv">@Html.LabelFor(c=>c.MailList)</div>
+<div class="shortTxtDiv">@Html.TextAreaFor(c=>c.MailList)  @Html.ValidationMessageFor(c=>c.MailList) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(c=>c.IsActive)  </div>
+<div class="clearDiv">&nbsp;</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+});
+</script>

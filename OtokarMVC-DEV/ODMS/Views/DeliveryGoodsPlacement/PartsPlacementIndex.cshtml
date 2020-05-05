@@ -1,0 +1,427 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.DeliveryGoodsPlacement
+@using ODMSModel.DeliveryListPart
+@model ODMSModel.DeliveryGoodsPlacement.DeliveryGoodsPlacementListModel
+
+@{
+    ViewBag.Title = @MessageResource.WorkOrderPicking_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<script id="complete-confirmation" type="text/x-kendo-template">
+        <p class="complete-message">@Html.Raw(MessageResource.Global_Display_CompleteConfirmQuestionWithSave)</p>
+        <p style="text-align:right">
+        <button class="complete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="complete-cancel k-button">@MessageResource.Global_Display_No</button></p>
+</script>
+<script id="clear-confirmation" type="text/x-kendo-template">
+        <p class="clear-message">@Html.Raw(MessageResource.Global_Display_ClearConfirmQuestion)</p>
+        <p style="text-align:right">
+        <button class="clear-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="clear-cancel k-button">@MessageResource.Global_Display_No</button></p>
+</script>
+<style>
+    .redClss {
+        background-color: #f08080;
+    }
+
+    .blueClss {
+        background-color: #b0e0e6;
+    }
+</style>
+<script>
+    function onNumChange() {
+        return this.value(); 
+    }
+    //Complete Dialog Box
+    function CompleteConfirm(completeFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.DeliveryListPart_Display_CompleteConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#complete-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".complete-confirm, .complete-cancel")
+            .click(function() {
+                if ($(this).hasClass("complete-confirm")) {
+                    confirm = true;
+                    if (completeFunction)
+                        completeFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+    function ClearConfirm(clearFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_Clear",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#clear-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".clear-confirm, .clear-cancel")
+            .click(function() {
+                if ($(this).hasClass("clear-confirm")) {
+                    confirm = true;
+                    if (clearFunction)
+                        clearFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+
+//Save all result row to db
+
+    function saveGoodsPlacement() {
+        $('tr').removeClass("redClss");
+        $('tr').removeClass("blueClss");
+        $('tr').removeClass("k-state-selected");
+        var pushedData = [];
+        var parentGrid = $("#gridDeliveryListPart").data("kendoGrid");
+        var data = parentGrid.dataSource.data();
+        $.each(data, function(i, row) {
+            parentGridId = row.DeliverySeqNo;
+            var subGrid = $("#PartsPlacementSubGrid_" + parentGridId).data('kendoGrid');
+            if (subGrid.dataSource.total() > 0) {
+                var subData = subGrid.dataSource.data();
+                $.each(subData, function(ii, subRow) {
+                    //Push data to json array
+                    pushedData.push({
+                        Text: row.ReceiveQnty,
+                        Quantity: subRow.Quantity,
+                        DeliverySeqNo: subRow.DeliverySeqNo,
+                        PlacementId: subRow.PlacementId,
+                        Value: subRow.Value
+                    });
+                });
+            }
+
+        });
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SavePartsPlacement", "DeliveryGoodsPlacement")",
+            data: JSON.stringify(pushedData),
+            traditional: true,
+            success: function(result) {
+                if (result.ErrorNo == 1) {
+                    SetErrorMessage(result.ErrorMessage);
+
+                    var grid = $('#gridDeliveryListPart').data('kendoGrid');
+                    var data = grid.dataSource.data();
+
+                    $.each(data, function(i, row) {
+
+                        for (var ii = 0; ii < result.Data.length; ii++) {
+                            if (row.DeliverySeqNo == result.Data[ii].DeliverySeqNo) {
+                                $('tr[data-uid="' + row.uid + '"]').addClass("redClss");
+                            }
+                        }
+                    });
+                } else {
+                    //Refresh main grid if success   
+                    var grid = $('#gridDeliveryListPart').data('kendoGrid');
+                    grid.dataSource.read();
+                    SetSuccessMessage('@MessageResource.Global_Display_Success');
+                }
+            },
+            dataType: "json"
+        });
+        setTimeout(function() { $('tr').removeClass("redClss", 600); }, 2000);
+
+    }
+
+    $(".clssSave").click(function() {
+        saveGoodsPlacement();
+    });
+    
+    //Complete 
+    function completeGoodsPlacement() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        CompleteConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CompleteDeliveryGoodsPlacement", "DeliveryGoodsPlacement")",
+                data: { deliveryId: '@Model.DeliveryId', "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0) {
+                        SetErrorMessage(result.Message);
+                        checkDataError();    
+                    }else {
+                        //Refresh main grid if success
+                        var grid = $('#gridDeliveryGoodsPlacement').data('kendoGrid');
+                        grid.dataSource.read();
+                        $('#divDetails').hide();
+                        SetSuccessMessage('@MessageResource.Global_Display_Success');
+
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    $(".clssComplete").click(function() {
+        $.when(saveGoodsPlacement()).then(completeGoodsPlacement());
+    });
+    //Fill Default Rack
+    $(".clssDefaultRack").click(function() {
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DefaultDeliveryGoodsPlacement", "DeliveryGoodsPlacement")",
+            data: { deliveryId: '@Model.DeliveryId' },
+            traditional: true,
+            success: function(result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    //Refresh main grid if success
+                    SetSuccessMessage(result.Message);
+                }
+                var grid = $('#gridDeliveryListPart').data('kendoGrid');
+                grid.dataSource.read();
+            },
+            dataType: "json"
+        });
+    });
+    //Clear Rack
+    $(".clssClearDefaultRack").click(function() {
+     
+        ClearConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("ClearDeliveryGoodsPlacement", "DeliveryGoodsPlacement")",
+                data: { deliveryId: '@Model.DeliveryId' },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        //Refresh main grid if success
+                        var grid = $('#gridDeliveryListPart').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    });
+    //When add button clicked
+    function addSubRow(rowUId) {
+        var grid = $("#gridDeliveryListPart").data("kendoGrid");
+        var parentGridId = '';
+        var qty = 0;
+        var data = grid.dataSource.data();
+        $.each(data, function(i, row) {
+            if (row.uid == rowUId) {
+                parentGridId = row.DeliverySeqNo;
+                qty = row.RemainingQnty;
+                //Change color that we add sub row 
+                $('tr[data-uid="' + row.uid + '"]').addClass("blueClss");
+            }
+        });
+        addGrid(parentGridId,qty);
+    }
+    
+    //Add grid row virtual
+    function addGrid(id,qty) {
+        var childGrid = $('#PartsPlacementSubGrid_' + id).data("kendoGrid");
+
+        childGrid.dataSource.add({ DeliverySeqNo: id, PlacementId: -1, Text: '@ODMSCommon.Resources.MessageResource.Global_Display_Choose', Value: '0', Quantity: qty });
+    }
+
+    //Delete Action when X clicked
+
+    function DeletePlacement(SeqNo, PlaceId, UId) {
+        if (PlaceId == -1) {
+            //Virtual Row that we added
+            var dataRow = $('#PartsPlacementSubGrid_' + SeqNo).data("kendoGrid").dataSource.getByUid(UId);
+            $('#PartsPlacementSubGrid_' + SeqNo).data("kendoGrid").dataSource.remove(dataRow);
+            var grid = $('#gridDeliveryListPart').data('kendoGrid');
+            grid.dataSource.read();
+        } else {
+            //DB row that already exist
+            DeleteResultFromDb(PlaceId, SeqNo, UId);
+        }
+    }
+
+    //Delete record from DB
+
+    function DeleteResultFromDb(PlaceId, SeqNo, UId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteDeliveryGoodsPlacement", "DeliveryGoodsPlacement")",
+                data: { id: PlaceId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        //If Succes we need to delete db row manually.
+                        //var dataRow = $('#PartsPlacementSubGrid_' + SeqNo).data("kendoGrid").dataSource.getByUid(UId);
+                        //$('#PartsPlacementSubGrid_' + SeqNo).data("kendoGrid").dataSource.remove(dataRow);
+                        var grid = $('#gridDeliveryListPart').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    //For Expand all main row
+    function onDataBound() {
+        checkDataError();
+    }
+    function checkDataError() {
+        var grid = $("#gridDeliveryListPart").data("kendoGrid");
+        var data = grid.dataSource.data();
+        $.each(data, function(i, row) {
+            grid.expandRow(grid.tbody.find('>tr[data-uid="' + row.uid + '"].k-master-row:first'));     
+        });
+        $.each(data, function(i, row) {
+            if (row.ChildCount > 0) {
+                if (row.ChildCount == row.ReceiveQnty) {
+                    grid.collapseRow(grid.tbody.find('>tr[data-uid="' + row.uid + '"].k-master-row:first'));
+                } else {
+                    $('tr[data-uid="' + row.uid + '"]').addClass("redClss");
+                }
+
+            }
+            if (row.ChildCount == 0) {
+                $('tr[data-uid="' + row.uid + '"]').addClass("redClss");
+            }
+
+        });
+        
+        setTimeout(function(){$('tr').removeClass("redClss",600);},2000);
+    }
+    //For setting Kendo row 
+    function onSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        var parentGridId = this.element.parent().closest('div').attr('id');
+        var selectedItemUId = this.element.parent().closest('tr').attr('data-uid');
+        var childGrid = $('#' + parentGridId).data("kendoGrid");
+        var item = childGrid.dataSource.getByUid(selectedItemUId);
+        
+        item.set("Text", dataItem.Text);
+        item.set("Value",dataItem.Value);
+    }
+    //List Rack - Warehouse By DeliverySeqNo
+    function ListRackByPart(id) {
+        return { id: id };
+    }
+    
+    function SearchDeliveryListPart() {
+        return {
+            DeliveryId: @Model.DeliveryId
+            };
+    }
+    
+</script>
+@{
+    if (!Model.IsPlaced)
+    {
+        if (Model.StatusId == 2 || Model.StatusId == 3)
+        {
+            @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("Global_Display_Save"), "Create", "clssSave", CommonUtility.GetResourceValue("AppointmentDetailsMaint_PageTitle_Create"), CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)  
+            @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("Global_Display_Complete"), "Create", "clssComplete", null, CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)
+            @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("GoodsPlacementParts_Display_DefaultFill"), "Create", "clssDefaultRack", null, CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)
+            @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("Global_Display_Clear"), "Create", "clssClearDefaultRack", null, CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)
+        }
+
+    }
+    else
+    {
+        @Html.Raw("<div class='labelDiv'>" + Html.LabelFor(b => b.StatusId) + "</div><div style='background-color:orangered;color:white;width:auto;padding:2px'  class='shortTxtDiv'>" + MessageResource.Global_Display_Completed + " </div>")   
+    }
+}
+<div class="clearfix"></div>
+<div class="kendoGridDiv" id="gridDet">
+    @(Html.Kendo().Grid<DeliveryListPartListModel>()
+          .Name("gridDeliveryListPart")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DeliverySeqNo).ClientTemplate("<center><a class='loadTab' onClick='addSubRow(\"#=uid#\")' id='#=DeliveryId#'><img class=iconLink src='" + Url.Content("~/Images/add.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Add")).Width(70).Sortable(false).Visible((!Model.IsPlaced && (Model.StatusId == 2 || Model.StatusId == 3)));
+              columns.Bound(b => b.StockType).Width(200).Sortable(false);
+              columns.Bound(b => b.PartName).Width(200).Sortable(false);
+              columns.Bound(b => b.ShipQnty).Width(200).Sortable(false);
+              columns.Bound(b => b.PartId).Visible(false);
+              columns.Bound(b => b.ReceiveQnty).Width(100).Sortable(false);
+              columns.Bound(b => b.RemainingQnty).Width(100);
+              columns.Bound(b => b.ChildCount).Visible(false);
+
+          })
+          .ClientDetailTemplateId("template")
+          .Events(e => e.DataBound("onDataBound"))
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(100)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListDeliveryListPart", "DeliveryListPart", Model).Data("SearchDeliveryListPart"))
+              .Model(model => model.Field(o => o.DeliverySeqNo).DefaultValue(-1)))
+          )
+
+</div>
+<script id="template" type="text/kendo-tmpl">
+
+    @(Html.Kendo().Grid<PartsPlacementListModel>()
+          .Name("PartsPlacementSubGrid_#=DeliverySeqNo#")
+          .HtmlAttributes(new { style = "width: 480px;" })
+          .Columns(columns =>
+          {
+              columns.Bound(b => b.PlacementId).ClientTemplate("<center><a href='javascript:void(0);' onClick='DeletePlacement(\\#=DeliverySeqNo\\#,\\#=PlacementId\\#,\"\\#=uid\\#\")'  frameTitle='" + MessageResource.Bank_PageTitle_Delete + "' ><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Visible((!Model.IsPlaced && (Model.StatusId == 2 || Model.StatusId == 3))).Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false);
+              columns.Bound(o => o.Value).EditorTemplateName("RackListbyPartEditorDelivery").ClientTemplate("\\#=Text\\#").Width(300);
+              columns.Bound(p => p.DeliverySeqNo).Visible(false);
+              columns.Bound(o => o.Quantity).EditorTemplateName("NewNumericTextBoxEditor").Width(100);
+          })
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .Read(read => read.Action("ListPartsPlacement", "DeliveryGoodsPlacement", new { DeliverySeqNo = "#=DeliverySeqNo#" }))
+              .Model(m =>
+              {
+                  m.Id(p => p.PlacementId);
+                  m.Field(p => p.PlacementId).Editable(false);
+                  m.Field(p => p.Value).Editable(!Model.IsPlaced);
+                  m.Field(p => p.Quantity).Editable(!Model.IsPlaced);
+              })
+          )
+          .AutoBind(true)
+          .Editable(e => e.Mode(GridEditMode.InCell))
+          .ToClientTemplate()
+          )
+
+</script>
+<br />
+@{
+    if (!Model.IsPlaced && (Model.StatusId == 2 || Model.StatusId == 3))
+    {
+    @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("Global_Display_Save"), "Create", "clssSave", CommonUtility.GetResourceValue("AppointmentDetailsMaint_PageTitle_Create"), CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)  
+    @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("Global_Display_Complete"), "Create", "clssComplete", null, CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)
+    @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("GoodsPlacementParts_Display_DefaultFill"), "Create", "clssDefaultRack", null, CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)
+    @ODMSHelpers.LinkButton("", CommonUtility.GetResourceValue("Global_Display_Clear"), "Create", "clssClearDefaultRack", null, CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementPartsAction)
+    }
+}
+

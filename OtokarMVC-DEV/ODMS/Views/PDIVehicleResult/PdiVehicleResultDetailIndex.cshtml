@@ -1,0 +1,6 @@
+﻿@model Int64
+@Html.Action("GetPdiPackageDetails","WorkOrderCard",new{id=Model})
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PDIVehicleResult_PageTitle_Details");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}

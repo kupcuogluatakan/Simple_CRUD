@@ -1,0 +1,60 @@
+﻿@model ODMSModel.SparePartCountryVatRatio.SparePartCountryVatRatioViewModel
+@{
+    ViewBag.Title = ViewBag.Title = ODMSCommon.Resources.MessageResource.SparePartCountryVatRatio_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("SparePartCountryVatRatioUpdate", "SparePartCountryVatRatio", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.IdPart)</div>
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "IdPart", Title1 = "", Title2 = "", DefaultText = Model.PartName, DefaultValue = Model.IdPart });@Html.ValidationMessageFor(v => v.IdPart)
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IdCountry)</div>  
+    <div class="shortTxtDiv">@Html.DisplayFor(v=>v.CountryName)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>  
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.VatRatio).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VatRatioList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.VatRatio)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+   
+   <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <br />
+    @Html.HiddenFor(v => v.IdPart)
+    @Html.HiddenFor(v => v.IdCountry)
+    @Html.HiddenFor(v => v.PartName)
+    @Html.HiddenFor(v => v.CountryName)
+    
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.SparePartCountryVatRatio.SparePartCountryVatRatioUpdate, "SparePartCountryVatRatioUpdate")
+    
+
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function GetPartId() {
+        return {
+            IdPart: $('#IdPart').val()
+        };
+    }
+    function GetAssemblePartId() {
+        return {
+            IdPartAssemble: $('#IdCountry').val()
+        };
+    }
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

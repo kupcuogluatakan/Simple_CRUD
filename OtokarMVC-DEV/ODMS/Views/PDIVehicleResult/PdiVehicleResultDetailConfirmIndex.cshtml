@@ -1,0 +1,27 @@
+﻿@model ODMSModel.PDIVehicleResult.PDIVehicleResultViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PDIVehicleResultConfirm_PageTitle_Details");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@Html.Action("GetPdiPackageDetails", "WorkOrderCard", new { id = Model.WorkOrderId })
+@using (Html.BeginForm("PDIVehicleResultDetailConfirmIndex", "PDIVehicleResult", FormMethod.Post))
+{
+    @Html.HiddenFor(v => v.WorkOrderId)
+    @Html.HiddenFor(v => v.PDIVehicleResultId)
+    if (Model.StatusId == (int)CommonValues.PDIVehicleResultStatus.NewRecord || Model.StatusId == (int)CommonValues.PDIVehicleResultStatus.WaitingForApproval)
+    {
+    <div class="labelDiv">@Html.LabelFor(v => v.ApprovalNote)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.ApprovalNote)  @Html.ValidationMessageFor(v => v.ApprovalNote)</div>
+    @ODMSHelpers.Button("btnAccept", CommonUtility.GetResourceValue("PDIVehicleResult_Display_Approve"),
+                            CommonValues.PermissionCodes.PDIVehicleResult.PDIVehicleResultConfirmDetailsApprove, "Approve", "")
+    @ODMSHelpers.Button("btnCancel", CommonUtility.GetResourceValue("PDIVehicleResult_Display_Cancel"),
+                            CommonValues.PermissionCodes.PDIVehicleResult.PDIVehicleResultConfirmDetailsCancel, "Cancel", "")
+    }
+    else
+    {
+    <br />
+    <br />
+    <br />
+    }
+}
+

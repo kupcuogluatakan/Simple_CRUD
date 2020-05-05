@@ -1,0 +1,50 @@
+﻿@model ODMSModel.CustomerContact.CustomerContactIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CustomerContact_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CustomerContactUpdate", "CustomerContact", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerName)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Name)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Name) @Html.ValidationMessageFor(v => v.Name) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Surname)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Surname) @Html.ValidationMessageFor(v => v.Surname) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ContactTypeName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.ContactTypeId).Events(e=>e.Change("ChangeContactTypeValueFormat")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.ContactTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.ContactTypeId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ContactTypeValue)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ContactTypeValue) @Html.ValidationMessageFor(v => v.ContactTypeValue) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.CustomerContact.CustomerContactUpdate, "CustomerContactUpdate")
+    @Html.HiddenFor(v => v.ContactId)
+    @Html.HiddenFor(v => v.CustomerId)
+    @Html.HiddenFor(v => v.CustomerName)
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function ChangeContactTypeValueFormat() {
+        $("#ContactTypeValue").val('');
+        $("#ContactTypeValue").text('');
+        if ($('#ContactTypeId').val() != 1) {
+            $("#ContactTypeValue").mask("(999) 999 99 99", { placeholder: "_" });
+        } else {
+            $("#ContactTypeValue").unmask();
+        }
+    }
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

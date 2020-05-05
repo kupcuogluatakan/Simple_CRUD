@@ -1,0 +1,128 @@
+﻿@model ODMSModel.SparePartSale.OtokarSparePartSaleViewModel
+<style type="text/css">
+    #popupContent
+    {
+        width: 1350px !important;
+    }
+</style>
+<script>
+    $('body').css('overflow', 'hidden');
+</script>
+<link href="~/Style/Content.css" rel="stylesheet" />
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+@Html.AntiForgeryToken()
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+<div class="shortTxtDivObjectSearch">@Html.DisplayFor(v => v.CustomerName)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerTypeId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerType)</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.BillingAddressId)</div>
+<div class="shortTxtDiv">
+    <table>
+        <tr>
+            <td>
+                @Html.Kendo().ComboBoxFor(c => c.BillingAddressId).DataValueField("Value").DataTextField("Text").HtmlAttributes(new { style = "width:650px;" }).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListCustomerAddresses", "SparePartSale")
+                    .Data("GetCustomerId")
+                    .Type(HttpVerbs.Post)
+                    )
+                    .ServerFiltering(true)).Enable(true).AutoBind(true).CascadeFrom("CustomerId")
+            </td>
+            <td>@Html.ValidationMessageFor(v => v.BillingAddressId)</td>
+        </tr>
+    </table>
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.ShippingAddressId)</div>
+<table>
+    <tr>
+        <td>
+            @Html.Kendo().ComboBoxFor(c => c.ShippingAddressId).DataValueField("Value").DataTextField("Text").HtmlAttributes(new { style = "width:650px;" }).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListCustomerAddresses", "SparePartSale")
+                .Data("GetCustomerId")
+                .Type(HttpVerbs.Post)
+                )
+                .ServerFiltering(true)).Enable(true).AutoBind(true).CascadeFrom("CustomerId")
+        </td>
+        <td>@Html.ValidationMessageFor(v => v.ShippingAddressId)</td>
+    </tr>
+</table>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceDate)</div>
+<div class="shortTxtDiv">@Html.Kendo().DateTimePickerFor(v => v.InvoiceDate).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" })
+    @Html.ValidationMessageFor(v => v.InvoiceDate)
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceSerialNo)</div>
+<div class="shortTxtDiv">@Html.TextBoxFor(v => v.InvoiceSerialNo) @Html.ValidationMessageFor(v => v.InvoiceSerialNo) </div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceNo)</div>
+<div class="shortTxtDiv">@Html.TextBoxFor(v => v.InvoiceNo) @Html.ValidationMessageFor(v => v.InvoiceNo) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.StockTypeName)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StockTypeId).Enable(@Model == null || @Model.SparePartSaleId == 0).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+    @Html.ValidationMessageFor(c => c.StockTypeId)
+</div>
+<div class="clearDiv">&nbsp;</div>
+@Html.HiddenFor(c => c.SparePartSaleId)
+@Html.HiddenFor(v => v.CustomerId)
+@Html.HiddenFor(v => v.CustomerName)
+@Html.HiddenFor(v => v.CustomerTypeId)
+@Html.HiddenFor(v => v.CustomerType)
+@Html.HiddenFor(v => v.DealerId)
+@Html.HiddenFor(v => v.IsTenderSale)
+@Html.HiddenFor(v => v.SaleResponsible)
+@Html.HiddenFor(v => v.SaleDate)
+@Html.HiddenFor(v => v.SaleStatusLookVal)
+@*@Html.HiddenFor(v => v.PaymentAmount)*@
+@Html.HiddenFor(v => v.IsReturn)
+@Html.HiddenFor(c => c.StockTypeId)
+@Html.HiddenFor(c => c.SparePartSaleWaybillId)
+
+<script type="text/javascript">
+    function RefreshMasterGrid() {
+        if ($('#SparePartSaleId').val() != '0') {
+            if ('@ViewBag.IsCreate' == 'True') {
+                parent.ShowTabs($('#SparePartSaleId').val(), true);
+                parent.refreshGridAndselectRow(true);
+                $('#SparePartSaleId').val('');
+            }
+        }
+    }
+    function GetValues() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.post("@Url.Action("GetVehicleFleet", "SparePartSale")", {
+            vehicleId: $('#VehicleId').val(),
+            customerId: $('#CustomerId').val(),
+            "__RequestVerificationToken": token
+        }, function (json) {
+            if (json) {
+                //alert(json.IsFleetVehicle);
+            }
+        }, "JSON");
+    }
+    function GetCustomerId() {
+        return {
+            CustomerId: $('#CustomerId').val()
+        }
+    }
+    $(document).ready(function () {
+        RefreshMasterGrid();
+
+        if ($('#BillingAddressId').val() == '' && $('#ShippingAddressId').val() == '') {
+            $("#BillingAddressId").data("kendoComboBox").text('');
+            $("#ShippingAddressId").data("kendoComboBox").text('');
+        }
+        if ($('#SparePartSaleId').val() == 0) {
+            $("#StockTypeId").data("kendoComboBox").text('');
+        }
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+

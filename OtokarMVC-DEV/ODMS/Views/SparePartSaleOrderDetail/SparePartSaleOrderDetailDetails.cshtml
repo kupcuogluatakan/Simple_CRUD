@@ -1,0 +1,41 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.SparePartSaleOrderDetail.SparePartSaleOrderDetailDetailModel
+@{
+    ViewBag.Title = MessageResource.SparePartSaleOrderDetail_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script>
+    $('body').css('overflow', 'hidden');
+</script>
+<div class="labelDiv">@Html.LabelFor(d => d.SparePartName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.SparePartName)&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(d => d.SparePartCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.SparePartCode)&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(d => d.ListPrice)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.ListPrice)&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(d => d.OrderPrice)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.OrderPrice)&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(d => d.ListDiscountRatio)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.ListDiscountRatio)&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(d => d.AppliedDiscountRatio)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.AppliedDiscountRatio)&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(d => d.StatusName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(d => d.StatusName)&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(d => d.SpecialExplanation)</div>
+<div class="shortTxtDiv">@Html.TextAreaFor(d => d.SpecialExplanation, new { @readonly = true, @style = "width: 450px; height: 150px" })&nbsp;</div>
+
+

@@ -1,0 +1,44 @@
+﻿@using ODMSModel.PDIInvoice
+@model PDIInvoiceDetailListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PDIInvoiceDetailList_PageTitle_Index");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+ 
+@Html.AntiForgeryToken()
+<script>
+    function InvoiceDetailListSearch() {
+        return {
+            RefNo: $("#RefNo").val()
+        };
+    }
+</script>
+<br />
+<div class="kendoGridDiv" id="grd">
+    @Html.HiddenFor(e=>e.RefNo)
+    @(Html.Kendo().Grid<PDIInvoiceDetailListModel>()
+          .Name("InvoiceDetailGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.RefNo).Width(30);
+                  columns.Bound(p => p.PDIRecordNo).Width(30);
+                  columns.Bound(p => p.VinNo).Width(50);
+                  columns.Bound(p => p.MaintenanceDate).Format("{0:dd/MM/yyyy}").Width(50);
+                  columns.Bound(p => p.OperationDate).Format("{0:dd/MM/yyyy}").Width(50);
+                  columns.Bound(p => p.TotalLabourPrice).Format("{0:N2}").Width(50).HtmlAttributes(new { @style = "text-align:right" });
+                  columns.Bound(p => p.TotalPartPrice).Format("{0:N2}").Width(50).HtmlAttributes(new { @style = "text-align:right" });
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListPDIInvoiceDetails", "PDIInvoiceList", Model).Data("InvoiceDetailListSearch"))
+                                        .Model(model => model.Field(o => o.RefNo).DefaultValue(-1)))
+
+          )
+</div>
+

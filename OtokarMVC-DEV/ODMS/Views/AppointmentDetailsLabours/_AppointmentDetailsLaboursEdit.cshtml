@@ -1,0 +1,55 @@
+﻿@{
+    var indicator = ViewBag.Indicator as AppointmentDetailsViewModel;
+}
+@using ODMSCommon.Resources
+@using ODMSModel.AppointmentDetails
+@using ODMSModel.AppointmentDetailsLabours
+@model AppointmentDetailsLaboursViewModel
+<style type="text/css">
+    #popupContentWrapper{ min-height: 330px !important;}
+</style>
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+@Html.AntiForgeryToken()
+
+   <div class="labelDiv">@MessageResource.AppointmentDetails_Display_Appointment</div>
+    <div class="shortTxtDiv">@indicator.AppointmentId </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@MessageResource.Global_Display_MainCategory</div>
+    <div class="shortTxtDiv">@indicator.MainCategoryName
+    </div>
+    <div class="labelDiv">@MessageResource.Global_Display_Category</div>
+    <div class="shortTxtDiv">@indicator.CategoryName
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@MessageResource.Global_Display_SubCategory</div>
+    <div class="shortTxtDiv">@indicator.SubCategoryName
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    
+     <div class="labelDiv">@Html.LabelFor(v => v.LabourId)</div>
+    @{ Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "LabourName", ControlId = "LabourId", ExtraParameter=Model.AppointmentId, Title1 = "", Title2 = "", DefaultText = Model.txtLabourId, DefaultValue = Model.LabourId }); } @Html.ValidationMessageFor(c=>c.LabourId)
+<div style="clear: left">&nbsp;</div>
+<div class="labelDiv">@MessageResource.Global_Display_Quantity</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(b => b.Quantity).Format("{0:N0}").Spinners(false).Min(1).Decimals(0).HtmlAttributes(new{ maxlength=2,style="width:204px", type="text"}) @Html.ValidationMessageFor(c=>c.Quantity) 
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+        $("#popupContentWrapper").css("min-height", 400);
+    });
+    
+    
+        
+</script>

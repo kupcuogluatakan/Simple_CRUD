@@ -1,0 +1,130 @@
+﻿@using ODMSBusiness.Terminal.ClaimWaybill.Dtos
+@using ODMSBusiness.Terminal.Common
+@model ClaimWaybillInfo
+@{
+    ViewBag.Title = MessageResource.Terminal_ClaimWaybill_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+    var list = ViewBag.Parts as EnumerableResponse<ClaimWaybillPartListItem>;
+}
+@section header{
+    @Html.Partial("_subheader")
+}
+<div class="margin-3 pageContent">
+        <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+            <tbody>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillNo</td>
+                    <td class="bold">:</td>
+                    <td width="60%">
+                        @Html.TextBoxFor(c => c.WaybillNo,new {@readonly="readonly", disabled = "disabled" })
+                    </td>
+                    <td class="last-child">&nbsp;</td>
+                </tr>
+
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillDate</td>
+                    <td class="bold">:</td>
+                    <td width="60%">
+                        @Html.TextBoxFor(c => c.WaybillDate, new { @readonly = "readonly", disabled = "disabled" })
+                    </td>
+                    <td class="last-child">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillSerialNo</td>
+                    <td class="bold">:</td>
+                    <td width="60%">
+                        @Html.TextBoxFor(c => c.WaybillSerialNo, new { @readonly = "readonly", disabled = "disabled" })
+                    </td>
+                    <td class="last-child">&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+
+    @using (Html.BeginForm("SavePart", "ClaimWaybill"))
+    {
+        <input type="hidden" value="0" name="PartId" id="PartId"/>
+        @Html.HiddenFor(c => c.ClaimWaybillId)
+        @Html.HiddenFor(c => c.ClaimRecallPeriodId)
+        <table border="0" cellspacing="1" width="100%" class="readonly">
+            <tr>
+                <td class="bold stay-line">@MessageResource.PurchaseOrderReport_Display_PartName</td>
+                <td class="bold">:</td>
+                <td width="60%">
+                    @Html.TextBox("PartCode", "", new {@class = "text", onblur = "Waybill.SearchPart()"})
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Global_Display_Id</td>
+                <td class="bold">:</td>
+                <td width="60%">
+                    @Html.TextBox("ClaimDismantledPartId", "", new {@class = "text", @readonly = "readonly"  })
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="last-child"><input id="btnSave" type="submit" disabled="disabled" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Add"></td>
+            </tr>
+        </table>
+    }
+
+    @if (list != null && list.Any())
+    {
+        <table border="0" cellspacing="1" width="100%" class="readonly datatable margin-top-3">
+            <thead>
+            <tr>
+                <th>@MessageResource.Global_Display_Delete</th>
+                <th>@MessageResource.Terminal_PickingList_Part</th>
+                <th>@MessageResource.Terminal_StockMovement_Unit</th>
+                <th>@MessageResource.GRADGif_Display_GifNo</th>
+                <th class="last-child">@MessageResource.Terminal_StockMovement_Quantity</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in list)
+            {
+                <tr>
+                    <td>
+                        <input type="button" class="btn btn-xs danger" onclick="Waybill.DeletePart(@item.ClaimDismantledPartId)" value="@MessageResource.Global_Display_Delete"/>
+                    </td>
+                    <td>
+                        @item.PartCode
+                    </td>
+                    <td>
+                        @item.Unit
+                    </td>
+                    <td>
+                        @item.GifNo
+                    </td>
+                    <td class="last-child">
+                        @item.Quantity
+                    </td>
+                </tr>
+            }
+
+            </tbody>
+        </table>
+
+        using (Html.BeginForm("DeletePart", "ClaimWaybill", FormMethod.Post, new { id = "frmDeletePart" }))
+        {
+            @Html.HiddenFor(c => c.ClaimWaybillId)
+            @Html.HiddenFor(c => c.ClaimRecallPeriodId)
+            <input type="hidden" name="DismantledPartId" id="DismantledPartId"/>
+        }
+
+    }
+
+    
+
+</div>
+@section scripts
+{
+<script src="~/Scripts/views/claimwaybill/waybill.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            Waybill.PageInit();
+            KS.Common.Focus("#PartCode");
+        });
+    </script>
+}

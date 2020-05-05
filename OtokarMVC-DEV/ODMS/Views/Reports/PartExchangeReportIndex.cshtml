@@ -1,0 +1,201 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model PartExchangeFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.PartExchangeReport_PageTitle_Index;
+}
+<input type="hidden" id="firstCall" value="1" />
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate) <br /> (@MessageResource.WorkOrderDetailReport_Display_WorkOrderDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate) <br /> (@MessageResource.WorkOrderDetailReport_Display_WorkOrderDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerRegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerRegionIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ViewBag.DealerRegionId.ToString()).Enable(ViewBag.DealerRegionId == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerRegionList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.CurrencyCodeList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CurrencyCodeList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CurrencyCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.MaxPrice)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.MaxPrice).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.VehicleModelList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModelList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ProcessTypeList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ProcessTypeList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ProcessTypeCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.GifCostCenterList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.GifCostCenterList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GifCostCenterList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.PartCode)</div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.PartExchangeReportIndex)
+
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.PartExchangeExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PartExchangeReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DealerId).Visible(false);
+              columns.Bound(p => p.DealerRegionId).Visible(false);
+              columns.Bound(p => p.ProcessType).Visible(false);
+              columns.Bound(p => p.Category).Visible(false);
+              columns.Bound(p => p.PartId).Visible(false);
+              columns.Bound(p => p.DealerRegionName).Sortable(true).Width(200);
+              columns.Bound(p => p.DealerName).Sortable(true).Width(300);
+              columns.Bound(p => p.PartCode).HtmlAttributes(new { style = "text-align:center;" }).ClientTemplate("<a class='k-link' onclick='OpenPartInfo(#=DealerId#,#=DealerRegionId#,\"#= Currency #\",\"#=VehicleModel#\",#=PartId#)'>#=PartCode#</a>").Sortable(true).Width(150);
+              columns.Bound(p => p.PartName).Sortable(true).Width(200);
+              columns.Bound(p => p.FreePartQuantity).Sortable(true).Width(150);
+              columns.Bound(p => p.NonFreePartQuantity).Sortable(true).Width(150);
+              columns.Bound(p => p.TotalQuantity).Sortable(true).Width(150);
+              columns.Bound(p => p.TotalPrice).Format("{0:N2}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.MinKM).Sortable(true).Width(150);
+              columns.Bound(p => p.MaxKM).Sortable(true).Width(150);
+              columns.Bound(p => p.AverageKM).Sortable(true).Width(150);
+              columns.Bound(p => p.Currency).Sortable(true).Width(100);
+              columns.Bound(p => p.VehicleModel).Sortable(true).Width(200);
+              columns.Bound(p => p.CampaignPrice).Sortable(true).Width(150).HtmlAttributes(new { style = "text-align:right" }).Width(150);
+              columns.Bound(p => p.AvgPrice).Sortable(true).Width(150).HtmlAttributes(new { style = "text-align:right" }).Width(100);
+
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                        .Read(read => read.Action("ListPartExchangeReport", "Reports", Model)
+                                        .Data("GetParameters")
+                                        )
+                                        )
+
+    )
+</div>
+<div id="PartInfoWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+@Html.Partial("_MultipleSelectionFunc")
+
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+        if ($("#StartDate").val() == "" || $("#EndDate").val() == "") {
+            SetErrorMessage('@MessageResource.Report_StartDate_EndDate_Required');
+            e.preventDefault();
+        } else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+
+    function OpenPartInfo(dealerId, regionId, currency, VehicleModel, PartId) {
+        debugger;
+        var startDate = $('#StartDate').val();
+        var endDate = $('#EndDate').val();
+        var maxPrice = $('#MaxPrice').val();
+
+        var processType = $("#ProcessTypeList").data('kendoMultiSelect').value().toString();
+        var category = $("#GifCostCenterList").data('kendoMultiSelect').value().toString();
+
+        $('#PartInfoWindow').kwnd('@Url.Action("PartInfo", "Reports")' + '?DealerIdList=' + dealerId + '&StartDate=' + startDate + '&EndDate=' + endDate + '&DealerRegionIdList=' + regionId + '&CurrencyCodeList=' + currency + '&MaxPrice=' + maxPrice + '&VehicleModelList=' + VehicleModel + '&ProcessTypeList=' + processType + '&GifCostCenterList=' + category + '&PartId=' + PartId, '@Html.Raw(MessageResource.PartExchangeReport_Display_PartInfo)',
+        {
+            iframe: true,
+            width: 800,
+            height: 450,
+            onClose: function () {
+                $("#PartInfoWindow").html('');
+            }
+        });
+        $('#PartInfoWindow').removeClass("hide");
+        OpenWindow($('#PartInfoWindow'));
+    }
+
+
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+
+    $(document).ready(init);
+    
+    function GetParameters() {
+        return {
+            StartDate: $("#StartDate").val(),
+            EndDate: $("#EndDate").val(),
+            FirstCall: $("#firstCall").val(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            DealerRegionIdList: $("#DealerRegionIdList").data('kendoMultiSelect').value().toString(),
+            CurrencyCodeList: GetQuotedList($("#CurrencyCodeList").data('kendoMultiSelect').value().toString()),
+            VehicleModelList: GetQuotedList($("#VehicleModelList").data('kendoMultiSelect').value().toString()),
+            ProcessTypeList: GetQuotedList($("#ProcessTypeList").data('kendoMultiSelect').value().toString()),
+            GifCostCenterList: GetQuotedList($("#GifCostCenterList").data('kendoMultiSelect').value().toString()),
+            MaxPrice: $("#MaxPrice").val(),
+            PartCode: $("#PartCode").val(),
+            ReportType: 29,
+            Columns: "DealerName,DealerRegionName,PartCode,PartName,FreePartQuantity,NonFreePartQuantity,TotalQuantity,TotalPrice,MinKM,MaxKM,AverageKM,Currency,VehicleModel,CampaignPrice"
+        };
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#VehicleModelList").data('kendoMultiSelect').value('');
+            $("#ProcessTypeList").data('kendoMultiSelect').value('');
+            $("#GifCostCenterList").data('kendoMultiSelect').value('');
+
+            $("#CurrencyCodeList").data('kendoMultiSelect').value('');
+            $("#DealerIdList").data('kendoMultiSelect').value('');
+            $("#DealerRegionIdList").data('kendoMultiSelect').value('');
+
+            //StartDate
+            //EndDate
+            //MaxPrice
+            //VehicleModelList
+            //ProcessTypeList
+            //GifCostCenterList
+            //PartCode
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            $("#firstCall").val("0");
+            grid.dataSource.page(1);
+        });
+    }
+
+
+
+</script>

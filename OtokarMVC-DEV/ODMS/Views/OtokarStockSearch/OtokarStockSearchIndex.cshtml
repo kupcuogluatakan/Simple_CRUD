@@ -1,0 +1,124 @@
+﻿@using ODMSModel.OtokarStockSearch;
+@using ODMSCommon.Resources
+
+
+@model ODMSModel.OtokarStockSearch.OtokarStockSearchViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Otokar_StockSearch_Page_Index");
+}
+@Html.AntiForgeryToken()
+
+
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                }
+                else {
+                    $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+        });
+
+        function GetParameters() {
+            return {
+                PartCode: $('#txtPartCode').val(),
+                PartCodeList: $('#PartCodeList').val(),
+                PartId: $('#PartId').val(),
+                ReportType: 23,
+                Columns: "PartCode,StockQuantityString"
+            };
+
+        }
+        function GetValues(e) {
+            CompleteConfirm();
+        };
+        function CompleteConfirm(completeFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: "@MessageResource.Gloabl_Display_Approve",
+                resizable: false,
+                modal: true
+            });
+
+            kendoWindow.data("kendoWindow")
+                .content($("#complete-confirmation").html())
+                .center().open();
+
+            kendoWindow
+                .find(".complete-confirm, .complete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("complete-confirm")) {
+                        confirm = true;
+                        if (completeFunction)
+                            completeFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+    </script>
+}
+<div id="searchDiv" style="display: block !important">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        @*<div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>*@
+        @{
+            Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartCodeList, DefaultValue = Model.PartId, CallbackFunction = "GetValues" });
+        }
+        @Html.HiddenFor(m => m.PartCodeList)
+
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockCard.StockCardSearch)
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+
+@using (Html.BeginForm("OtokarStockSearchIndex", "OtokarStockSearch", FormMethod.Post))
+{
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+            <div>
+                <a class="k-link2" href="@Url.Action("ExcelSample")">
+                    <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                </a>
+                <br />
+            </div>
+            <div class="labelDiv">@Html.LabelFor(d => d.PartCodeList) </div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+            </div>
+            <div id="divExcepUpload">
+                @ODMSHelpers.Button("StockCardSearch", CommonUtility.GetResourceValue("Global_Display_Search"), CommonValues.PermissionCodes.StockCard.StockCardSearch, "StockCardSearch")
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<OtokarStockSearchViewModel>().Name("grid")
+        .Columns(columns =>
+        {
+            columns.Bound(p => p.PartCode);
+            columns.Bound(p => p.WebServiceResult);
+        })
+        .Pageable()
+        .Sortable()
+        .Scrollable()
+        .DataSource(dataSource => dataSource.Ajax().PageSize(999).ServerOperation(true).Read(read => read.Action("ListOtokarStockSearchIndex", "OtokarStockSearch", Model).Data("GetParameters")))
+    )
+</div>

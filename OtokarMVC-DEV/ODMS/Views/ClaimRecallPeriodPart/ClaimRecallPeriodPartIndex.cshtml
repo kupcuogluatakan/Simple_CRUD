@@ -1,0 +1,179 @@
+﻿@using ODMSBusiness
+@using ODMSCommon.Resources
+@using ODMSModel.ClaimRecallPeriodPart
+@model ODMSModel.ClaimRecallPeriodPart.ClaimRecallPeriodPartListModel
+@{
+    ViewBag.Title = MessageResource.ClaimRecallPeriodPart_PageTitle_Index;
+}
+
+@*search start*@
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(c => c.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.PartName) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.PartCode) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(c => c.SearchIsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SearchIsActive).BindTo(CommonBL.ListStatus().Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All)  </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.ClaimRecallPeriodPart.ClaimRecallPeriodPartIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.ClaimRecallPeriodPart_PageTitle_Create, CommonValues.PermissionCodes.ClaimRecallPeriodPart.ClaimRecallPeriodPartCreate)
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+<br />
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ClaimRecallPeriodPartListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(b => b.PartId).ClientTemplate("<center><a class='edit modalClick' id='#=PartId#' frameTitle='" + MessageResource.ClaimRecallPeriodPart_PageTitle_Update + "' href='/ClaimRecallPeriodPart/ClaimRecallPeriodPartUpdate/#=PartId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(MessageResource.Global_Display_Update).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimRecallPeriodPart.ClaimRecallPeriodPartUpdate));
+              columns.Bound(b => b.PartId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.ClaimRecallPeriodPart_PageTitle_Delete + "' onclick='DeleteClaimRecallPeriodPart(#=PartId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimRecallPeriodPart.ClaimRecallPeriodPartDelete));
+              columns.Bound(p => p.PartCode).Width(100).Sortable(true);
+              columns.Bound(p => p.PartName).Width(100).Sortable(true);
+              columns.Bound(p => p.IsActiveString).Width(100).Sortable(true);
+              columns.Bound(p => p.CreateDate).Format("{0:dd/MM/yyyy hh:mm:ss}").Width(100).Sortable(true);
+              columns.Bound(p => p.CreateUser).Width(100).Sortable(true);
+              columns.Bound(p => p.UpdateDate).Format("{0:dd/MM/yyyy hh:mm:ss}").Width(100).Sortable(true);
+              columns.Bound(p => p.UpdateUser).Width(100).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListClaimRecallPeriodPart", "ClaimRecallPeriodPart", Model).Data("GetParameters"))
+                                        ))
+</div>
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Width(550)
+        .Height(250)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>
+
+<h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+<div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+<div>
+    <a class="k-link2" href="@Url.Action("ExcelSample")">
+        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+    </a>
+    <br />
+    @using (Html.BeginForm("ClaimRecallPeriodPartIndex", "ClaimRecallPeriodPart", FormMethod.Post))
+    {
+        @Html.Kendo().Upload().Name("partExcelFile").TemplateId("fileTemplate").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+        <div id="divExcepUpload">
+            @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+        </div>
+    }
+</div>
+
+
+<script>
+    $(function () {
+        RegisterEventHandlers();
+    });
+
+    function GetParameters() {
+        return {
+            IsActive: $("#IsActive").val(),
+            ReportType: 41,
+            Columns: "PartCode,PartName,IsActiveString,CreateDate,CreateUser,UpdateDate,UpdateUser"
+        };
+    }
+
+    function RegisterEventHandlers() {
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            } else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("ClaimRecallPeriodPartUpdate", "ClaimRecallPeriodPart", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("ClaimRecallPeriodPartCreate", "ClaimRecallPeriodPart")";
+            }
+
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    }
+
+    function Search() {
+        return {
+            Code: $("#Code").val(),
+            Name: $("#Name").val()
+        };
+    }
+
+    function DeleteClaimRecallPeriodPart(id) {
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("ClaimRecallPeriodPartDelete","ClaimRecallPeriodPart")",
+                data: { id: id },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+</script>

@@ -1,0 +1,41 @@
+﻿@model IEnumerable<BireyselCalisma2.Models.DB.Urun>
+
+@{
+    ViewBag.Title = "UrunListele";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>UrunListele</h2>
+
+<p>
+    @Html.ActionLink("Yeni Urun  Oluştur", "Add", new { }, new { @class = "btn btn-outline-primary" })
+</p>
+
+
+
+<table class="tbl table table-bordered">
+    <tr>
+        <th>
+            <h3 style="color:black">Ürünler</h3>
+        </th>
+        <th></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td style="font-size:x-large">
+                @Html.DisplayFor(modelItem => item.urunId)
+            </td>
+            <td style="text-align:right">
+                <div style="width:100px; float:right;">
+                    @Html.ActionLink("Edit", "Edit", new { id = item.urunId }, new { @class = "btn btn-block btn-outline-success" })
+
+                    @*<button class="btn btn-block btn-outline-danger" href="#" onclick="deleteKategori(this,@item.CategoryID);">Sil</button>*@ @*tıkladığımı ifade ediyor*@
+                    <input type="button" value="Sil" data-id="@item.urunId" class="delete-row btn btn-block btn-outline-danger" />
+
+                </div>
+
+            </td>
+        </tr>
+    }
+</table>

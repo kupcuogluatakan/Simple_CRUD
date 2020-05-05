@@ -1,0 +1,42 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@model VehicleInfo
+<div class="panel panel-default panel-collapse" style="width: 1000px">
+    <div class="panel-heading">
+        <a data-toggle="collapse" data-parent="#gradVehicleInfo" href="#collapseVehicleInfo">
+            <strong style="font-size: 16px;">@MessageResource.Global_Display_VehicleInfo</strong>
+        </a>
+    </div>
+    <div class="panel-body in" id="collapseVehicleInfo">
+        <div class="labelDiv">@Html.LabelFor(p=>p.VinNo)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.VinNo)</div>
+
+
+        <div class="labelDiv">@Html.LabelFor(p=>p.EngineNo)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.EngineNo)</div>
+        
+        <div class="clearDiv"></div>
+
+        <div class="labelDiv">@Html.LabelFor(p=>p.WarrantyStartDate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.WarrantyStartDate)</div>
+        
+
+        <div class="labelDiv">@Html.LabelFor(p=>p.WarrantyEndDate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.WarrantyEndDate)</div>
+        
+        <div class="clearDiv"></div>
+
+        <div class="labelDiv">@Html.LabelFor(p=>p.Code)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.Code)</div>
+        
+
+        <div class="labelDiv">@Html.LabelFor(p=>p.Plate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.Plate)</div>
+
+        <div class="clearDiv"></div>
+
+        <div class="labelDiv">@Html.LabelFor(p=>p.Note)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.Note)</div>
+
+    </div>
+</div>

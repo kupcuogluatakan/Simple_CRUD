@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Permission_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.Permission.PermissionIndexViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+<div class="shortTxtDiv">&nbsp;@Html.DisplayFor(v => v.AdminDesc) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.PermissionCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.PermissionCode) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.StatusName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.Status) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.PermissionName)</div>
+<div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = false }); } </div>
+<div class="clearDiv">&nbsp;</div>
+<br />
+

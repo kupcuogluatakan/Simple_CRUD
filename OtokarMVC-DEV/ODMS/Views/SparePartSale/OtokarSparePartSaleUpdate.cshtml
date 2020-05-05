@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = MessageResource.OtokarSparePartSale_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+@using ODMSCommon.Resources
+@model ODMSModel.SparePartSale.OtokarSparePartSaleViewModel
+@using (Html.BeginForm("OtokarSparePartSaleUpdate", "SparePartSale", FormMethod.Post, new { id = "frmSparePartSale" }))
+{
+    Html.RenderPartial("_OtokarSparePartSaleEdit", Model);
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.SparePartSale.OtokarSparePartSaleUpdate, "OtokarSparePartSaleUpdate")
+}

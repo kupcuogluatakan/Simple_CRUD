@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = MessageResource.LabourPrice_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.LabourPrice
+@model LabourPriceViewModel
+@using (Html.BeginForm("LabourPriceCreate", "LabourPrice", FormMethod.Post))
+{
+    Html.RenderPartial("_LabourPriceEdit", Model);
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.LabourPrice.LabourPriceCreate, "LabourPriceCreate")        
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        
+        $("#ValidFromDate").data("kendoDatePicker").value('');
+        $("#ValidEndDate").data("kendoDatePicker").value('');
+
+        $("#HasTSUnitPrice").data("kendoNumericTextBox").value('');
+        $("#HasNoTSUnitPrice").data("kendoNumericTextBox").value('');
+
+
+
+    });
+
+</script>

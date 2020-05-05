@@ -1,0 +1,702 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{33E51652-46F8-4E02-A526-557AC7731013}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ODMSBusiness</RootNamespace>
+    <AssemblyName>ODMSBusiness</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DocumentFormat.OpenXml">
+      <HintPath>..\..\DLL\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus">
+      <HintPath>..\..\DLL\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Kendo.Mvc">
+      <HintPath>..\..\DLL\Kendo.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject">
+      <HintPath>..\..\DLL\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="PostSharp">
+      <HintPath>..\..\DLL\PostSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DLL\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Business\ActiveAnnouncementsBL.cs" />
+    <Compile Include="Business\AppErrorsBL.cs" />
+    <Compile Include="Business\AnnouncementDealerBL.cs" />
+    <Compile Include="Business\AnnouncementRoleBL.cs" />
+    <Compile Include="Business\AppointmentBL.cs" />
+    <Compile Include="Business\AppointmentDetailsBL.cs" />
+    <Compile Include="Business\AppointmentDetailsLaboursBL.cs" />
+    <Compile Include="Business\AppointmentDetailsMaintenanceBL.cs" />
+    <Compile Include="Business\AppointmentDetailsPartsBL.cs" />
+    <Compile Include="Business\AppointmentIndicatorCategoryBL.cs" />
+    <Compile Include="Business\AppointmentIndicatorFailureCodeBL.cs" />
+    <Compile Include="Business\AppointmentIndicatorMainCategoryBL.cs" />
+    <Compile Include="Business\AppointmentIndicatorSubCategoryBL.cs" />
+    <Compile Include="Business\AppointmentTypeBL.cs" />
+    <Compile Include="Business\BusinessLogBL.cs" />
+    <Compile Include="Business\ContractBL.cs" />
+    <Compile Include="Business\ContractPartBL.cs" />
+    <Compile Include="Business\CountryBL.cs" />
+    <Compile Include="Business\OtokarSparePartSaleInvoiceSearchBL.cs" />
+    <Compile Include="Business\DefectBL.cs" />
+    <Compile Include="Business\HolidayDateBL.cs" />
+    <Compile Include="Business\SparePartSAPUnitBL.cs" />
+    <Compile Include="Business\ReportCreateBL.cs" />
+    <Compile Include="Business\BankBL.cs" />
+    <Compile Include="Business\BaseBusiness.cs" />
+    <Compile Include="Business\BaseService.cs" />
+    <Compile Include="Business\BodyworkDetailBL.cs" />
+    <Compile Include="Business\BreakdownDefinitionBL.cs" />
+    <Compile Include="Business\CampaignBL.cs" />
+    <Compile Include="Business\CampaignDismantlePartBL.cs" />
+    <Compile Include="Business\CampaignDocumentBL.cs" />
+    <Compile Include="Business\CampaignLabourBL.cs" />
+    <Compile Include="Business\CampaignPartBL.cs" />
+    <Compile Include="Business\CampaignRequestApproveBL.cs" />
+    <Compile Include="Business\CampaignRequestBL.cs" />
+    <Compile Include="Business\CampaignRequestOrdersBL.cs" />
+    <Compile Include="Business\CampaignVehicleBL.cs" />
+    <Compile Include="Business\ClaimDismantledPartDeliveryBL.cs" />
+    <Compile Include="Business\ClaimDismantledPartDeliveryDetailBL.cs" />
+    <Compile Include="Business\ClaimDismantledPartsBL.cs" />
+    <Compile Include="Business\ClaimPeriodPartListApproveBL.cs" />
+    <Compile Include="Business\ClaimRecallPeriodBL.cs" />
+    <Compile Include="Business\ClaimRecallPeriodPartBL.cs" />
+    <Compile Include="Business\ClaimSupplierBL.cs" />
+    <Compile Include="Business\ClaimSupplierPartBL.cs" />
+    <Compile Include="Business\AnnouncementBL.cs" />
+    <Compile Include="Business\ClaimWaybillListBL.cs" />
+    <Compile Include="Business\CustomerSparePartDiscountBL.cs" />
+    <Compile Include="Business\DealerAccountInfoBL.cs" />
+    <Compile Include="Business\DealerGuaranteeControlListBL.cs" />
+    <Compile Include="Business\FavoriteScreenBL.cs" />
+    <Compile Include="Business\IntegrationBL.cs" />
+    <Compile Include="Business\PartCostBL.cs" />
+    <Compile Include="Business\PartCostServiceBL.cs" />
+    <Compile Include="Business\PartWithModelPairingBL.cs" />
+    <Compile Include="Business\PasswordBL.cs" />
+    <Compile Include="Business\ProposalBL.cs" />
+    <Compile Include="Business\ProposalCardBL.cs" />
+    <Compile Include="Business\ProposalDocumentsBL.cs" />
+    <Compile Include="Business\ProposalInvoicesBL.cs" />
+    <Compile Include="Business\ReportsBL.cs" />
+    <Compile Include="Business\DealerFleetVehicleBL.cs" />
+    <Compile Include="Business\PDIGOSApproveGroupDealersBL.cs" />
+    <Compile Include="Business\PDIGOSApproveGroupIndicatorTransTypesBL.cs" />
+    <Compile Include="Business\GuaranteeBL.cs" />
+    <Compile Include="Business\PDIVehicleResultBL.cs" />
+    <Compile Include="Business\PDIGOSApproveGroupVehicleModelsBL.cs" />
+    <Compile Include="Business\DeliveryBL.cs" />
+    <Compile Include="Business\DeliveryGoodsPlacementBL.cs" />
+    <Compile Include="Business\DeliveryListBL.cs" />
+    <Compile Include="Business\DeliveryListPartBL.cs" />
+    <Compile Include="Business\GuaranteeRequestApproveBL.cs" />
+    <Compile Include="Business\GuaranteeRequestApproveDetailBL.cs" />
+    <Compile Include="Business\LabourMainGroupBL.cs" />
+    <Compile Include="Business\LabourSubGroupBL.cs" />
+    <Compile Include="Business\PDIControlPartDefinitionBL.cs" />
+    <Compile Include="Business\PdiGifApproveGroupBL.cs" />
+    <Compile Include="Business\PdiGifApproveGroupMembersBL.cs" />
+    <Compile Include="Business\PDIPartDefinitionBL.cs" />
+    <Compile Include="Business\PDIResultDefinitionBL.cs" />
+    <Compile Include="Business\PDIControlDefinitionBL.cs" />
+    <Compile Include="Business\GuaranteeCompLabourMarginBL.cs" />
+    <Compile Include="Business\PriceBL.cs" />
+    <Compile Include="Business\SaleOrderBL.cs" />
+    <Compile Include="Business\SparePartSaleInvoiceBL.cs" />
+    <Compile Include="Business\SparePartSaleOrderBL.cs" />
+    <Compile Include="Business\SparePartSaleOrderDetailBL.cs" />
+    <Compile Include="Business\SparePartSaleWaybillBL.cs" />
+    <Compile Include="Business\SpartInfoBL.cs" />
+    <Compile Include="Business\TitleBL.cs" />
+    <Compile Include="Business\UserTitleBL.cs" />
+    <Compile Include="Business\VehicleHistoryBL.cs" />
+    <Compile Include="Business\VehicleNoteProposalApproveBL.cs" />
+    <Compile Include="Business\VehicleNotesProposalBL.cs" />
+    <Compile Include="Cache\BusinessCache.cs" />
+    <Compile Include="Cache\BusinessDurationCache.cs" />
+    <Compile Include="Cache\IBusinessCache.cs" />
+    <Compile Include="Cache\BusinessVersionCache.cs" />
+    <Compile Include="Log\BusinessLog.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Business\PurchaseOrderGroupBL.cs" />
+    <Compile Include="Business\PurchaseOrderGroupRelationBL.cs" />
+    <Compile Include="Business\PurchaseOrderMatchBL.cs" />
+    <Compile Include="Business\PurchaseOrderSuggestionDetailBL.cs" />
+    <Compile Include="Business\PurchaseOrderTypeBL.cs" />
+    <Compile Include="Reports\ClaimDismantledPartCopyReport.cs" />
+    <Compile Include="Reports\ClaimDismantledPartProformaReport.cs" />
+    <Compile Include="Reports\ClaimDismantledPartRealReport.cs" />
+    <Compile Include="Reports\CycleCountReport.cs" />
+    <Compile Include="Reports\ProposalDetailReport.cs" />
+    <Compile Include="Reports\ProposalReport.cs" />
+    <Compile Include="Reports\SparePartSaleProformaReport.cs" />
+    <Compile Include="Reports\IReport.cs" />
+    <Compile Include="Reports\ReportBase.cs" />
+    <Compile Include="Reports\ReportFactory.cs" />
+    <Compile Include="Reports\ReportManager.cs" />
+    <Compile Include="Reports\ReportType.cs" />
+    <Compile Include="Reports\SparePartPickingReport.cs" />
+    <Compile Include="Reports\SparePartPositionedReport.cs" />
+    <Compile Include="Reports\SparePartSaleCopyReport.cs" />
+    <Compile Include="Reports\SparePartSaleRealReport.cs" />
+    <Compile Include="Reports\SparePartSaleWaybillCopyReport.cs" />
+    <Compile Include="Reports\SpecialWorkOrderInvoiceProformaExcelReport.cs" />
+    <Compile Include="Reports\AlternatePartReport.cs" />
+    <Compile Include="Reports\SSHReport.cs" />
+    <Compile Include="Reports\VechicleLeaveReport.cs" />
+    <Compile Include="Reports\VehicleInvoiceReport.cs" />
+    <Compile Include="Reports\ReturnSparePartPickingReport.cs" />
+    <Compile Include="Reports\Web\Dto\WebReportListBase.cs" />
+    <Compile Include="Reports\WorkOrderInvioceBreakDownProformaExcelReport.cs" />
+    <Compile Include="Reports\WorkOrderInvoiceProformaExcelReport.cs" />
+    <Compile Include="Reports\WorkOrderInvoiceWithHoldProformaExcelReport.cs" />
+    <Compile Include="Reports\WorkOrderPrintFirstPartReport.cs" />
+    <Compile Include="Reports\WorkOrderReport.cs" />
+    <Compile Include="Business\ScrapDetailBL.cs" />
+    <Compile Include="Business\ScrapBL.cs" />
+    <Compile Include="Business\GuaranteeCompPartMarginBL.cs" />
+    <Compile Include="Business\PurchaseOrderSuggestionBL.cs" />
+    <Compile Include="Service References\OtokarService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\ReportService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\tr.com.otokar.service\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Business\ServiceCallScheduleBL.cs" />
+    <Compile Include="Business\ServiceScheduleBL.cs" />
+    <Compile Include="Business\SparePartBarcodeBL.cs" />
+    <Compile Include="Business\SparePartGuaranteeAuthorityNeedBL.cs" />
+    <Compile Include="Business\GuaranteeAuthorityGroupIndicatorTransTypesBL.cs" />
+    <Compile Include="Business\DealerPurchaseOrderConfirmBL.cs" />
+    <Compile Include="Business\DealerPurchaseOrderPartConfirmBL.cs" />
+    <Compile Include="Business\GuaranteeAuthorityGroupBL.cs" />
+    <Compile Include="Business\GuaranteeAuthorityGroupDealersBL.cs" />
+    <Compile Include="Business\GuaranteeAuthorityGroupMembersBL.cs" />
+    <Compile Include="Business\GuaranteeAuthorityGroupVehicleBL.cs" />
+    <Compile Include="Business\GuaranteeAuthorityLimitationsBL.cs" />
+    <Compile Include="Business\LabourTechnicianBL.cs" />
+    <Compile Include="Business\DealerTechnicianGroupBL.cs" />
+    <Compile Include="Business\DealerTechnicianGroupTechnicianBL.cs" />
+    <Compile Include="Business\FleetPartPartialBL.cs" />
+    <Compile Include="Business\FleetRequestBL.cs" />
+    <Compile Include="Business\FleetBL.cs" />
+    <Compile Include="Business\FleetRequestConfirmBL.cs" />
+    <Compile Include="Business\FleetRequestVehicleApproveBL.cs" />
+    <Compile Include="Business\FleetRequestVehicleBL.cs" />
+    <Compile Include="Business\FleetVehicleBL.cs" />
+    <Compile Include="Business\PeriodicMaintControlListBL.cs" />
+    <Compile Include="Business\SchedulerBL.cs" />
+    <Compile Include="Business\StockBlockBL.cs" />
+    <Compile Include="Business\StockBlockDetailBL.cs" />
+    <Compile Include="Business\StockCardChangePartBL.cs" />
+    <Compile Include="Business\StockCardPurchaseOrderBL.cs" />
+    <Compile Include="Business\StockCardTransactionBL.cs" />
+    <Compile Include="Business\StockCardYearlyBL.cs" />
+    <Compile Include="Business\StockLocationBL.cs" />
+    <Compile Include="Business\SupplierDispatchPartBL.cs" />
+    <Compile Include="Business\TechnicianOperationBL.cs" />
+    <Compile Include="Business\TechnicianOperationControlBL.cs" />
+    <Compile Include="Business\VehicleBodyworkBL.cs" />
+    <Compile Include="Business\EquipmentTypeBL.cs" />
+    <Compile Include="Business\FixAssetInventoryBL.cs" />
+    <Compile Include="Business\DealerPurchaseOrderBL.cs" />
+    <Compile Include="Business\FixAssetInventoryOutputBL.cs" />
+    <Compile Include="Business\PrivateMessageBL.cs" />
+    <Compile Include="Business\PurchaseOrderBL.cs" />
+    <Compile Include="Business\PurchaseOrderDetailBL.cs" />
+    <Compile Include="Business\CountryVatRatioBL.cs" />
+    <Compile Include="Business\CriticalStockCardBL.cs" />
+    <Compile Include="Business\DealerClassBL.cs" />
+    <Compile Include="Business\DealerSaleChannelDiscountRatioBL.cs" />
+    <Compile Include="Business\LabourCountryVatRatioBL.cs" />
+    <Compile Include="Business\PriceListCountryMatchBL.cs" />
+    <Compile Include="Business\SparePartAssembleBL.cs" />
+    <Compile Include="Business\SparePartCountryVatRatioBL.cs" />
+    <Compile Include="Business\StockCardBL.cs" />
+    <Compile Include="Business\CommonBL.cs" />
+    <Compile Include="Business\CriticalStockQuantityBL.cs" />
+    <Compile Include="Business\DamagedItemDisposeBL.cs" />
+    <Compile Include="Business\CurrencyBL.cs" />
+    <Compile Include="Business\CustomerAddressBL.cs" />
+    <Compile Include="Business\CustomerContactBL.cs" />
+    <Compile Include="Business\CustomerDiscountBL.cs" />
+    <Compile Include="Business\CycleCountBL.cs" />
+    <Compile Include="Business\CycleCountPlanBL.cs" />
+    <Compile Include="Business\CycleCountResultBL.cs" />
+    <Compile Include="Business\CycleCountStockDiffBL.cs" />
+    <Compile Include="Business\DealerGuaranteeRatioBL.cs" />
+    <Compile Include="Business\DealerRegionBL.cs" />
+    <Compile Include="Business\CustomerBL.cs" />
+    <Compile Include="Business\DealerBL.cs" />
+    <Compile Include="Business\DealerRegionResponsibleBL.cs" />
+    <Compile Include="Business\DealerSaleSparepartBL.cs" />
+    <Compile Include="Business\DealerStartupInventoryLevelBL.cs" />
+    <Compile Include="Business\DealerUserBL.cs" />
+    <Compile Include="Business\DocumentBL.cs" />
+    <Compile Include="Business\EducationBL.cs" />
+    <Compile Include="Business\EducationContributersBL.cs" />
+    <Compile Include="Business\EducationDatesBL.cs" />
+    <Compile Include="Business\EducationRequestBL.cs" />
+    <Compile Include="Business\EducationRequestListBL.cs" />
+    <Compile Include="Business\EducationTypeBL.cs" />
+    <Compile Include="Business\GeneralParameterBL.cs" />
+    <Compile Include="Business\LabourBL.cs" />
+    <Compile Include="Business\LabourDurationBL.cs" />
+    <Compile Include="Business\LabourPriceBL.cs" />
+    <Compile Include="Business\LabourTypeBL.cs" />
+    <Compile Include="Business\LanguageBL.cs" />
+    <Compile Include="Business\MaintenanceAppointmentBL.cs" />
+    <Compile Include="Business\MaintenanceBL.cs" />
+    <Compile Include="Business\MaintenanceLabourBL.cs" />
+    <Compile Include="Business\MaintenancePartBL.cs" />
+    <Compile Include="Business\MenuBL.cs" />
+    <Compile Include="Business\ObjectSearchBL.cs" />
+    <Compile Include="Business\ProficiencyBL.cs" />
+    <Compile Include="Business\RackBL.cs" />
+    <Compile Include="Business\SparePartBL.cs" />
+    <Compile Include="Business\SparePartSaleBL.cs" />
+    <Compile Include="Business\SparePartSaleDetailBL.cs" />
+    <Compile Include="Business\SparePartTypeBL.cs" />
+    <Compile Include="Business\PermissionBL.cs" />
+    <Compile Include="Business\RoleBL.cs" />
+    <Compile Include="Business\RolePermissionBL.cs" />
+    <Compile Include="Business\StockCardPriceListBL.cs" />
+    <Compile Include="Business\StockRackDetailBL.cs" />
+    <Compile Include="Business\StockTypeDetailBL.cs" />
+    <Compile Include="Business\SupplierBL.cs" />
+    <Compile Include="Business\SystemAdministrationBL.cs" />
+    <Compile Include="Business\TestBL.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Business\UserBL.cs" />
+    <Compile Include="Business\UserRoleBL.cs" />
+    <Compile Include="Business\VatRatioBL.cs" />
+    <Compile Include="Business\VehicleNoteApproveBL.cs" />
+    <Compile Include="Business\VehicleNotesBL.cs" />
+    <Compile Include="Business\WebServiceErrorDisplayBL.cs" />
+    <Compile Include="Business\WebServiceLogsBL.cs" />
+    <Compile Include="Business\WorkHourBL.cs" />
+    <Compile Include="Business\WorkOrderBatchIvoiceBL.cs" />
+    <Compile Include="Business\WorkOrderBL.cs" />
+    <Compile Include="Business\WorkOrderCardBL.cs" />
+    <Compile Include="Business\WorkOrderDocumentsBL.cs" />
+    <Compile Include="Business\WorkOrderInvoiceListBL.cs" />
+    <Compile Include="Business\WorkorderInvoicePaymentsBL.cs" />
+    <Compile Include="Business\WorkOrderInvoicesBL.cs" />
+    <Compile Include="Business\WorkorderListInvoicesBL.cs" />
+    <Compile Include="Business\WorkOrderPickingBL.cs" />
+    <Compile Include="Business\WorkOrderPickingDetailBL.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ActiveClaimPeriodInfo.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ActiveClaimPeriodRequest.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\AddClaimWaybillPartCommand.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillInfo.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillInfoRequest.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillListItem.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillListRequest.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillPartListItem.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillPartListRequest.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillResponse.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillSearchPartRequest.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\ClaimWaybillSearchPartResponse.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Dtos\WaybillRequest.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\ActiveClaimPeriodRequestHandler.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\AddClaimWaybillPartCommandHandler.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\ClaimWaybillInfoRequestHandler.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\ClaimWaybillListRequestHandler.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\ClaimWaybillPartListRequestHandler.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\ClaimWaybillSearchPartRequestHandler.cs" />
+    <Compile Include="Terminal\ClaimWaybill\Handlers\CreateWaybillRequestHandler.cs" />
+    <Compile Include="Terminal\Common\GridPagingInfo.cs" />
+    <Compile Include="Terminal\Common\ICommand.cs" />
+    <Compile Include="Terminal\Common\IEnumerableResponse.cs" />
+    <Compile Include="Terminal\Common\IHandeRequest.cs" />
+    <Compile Include="Terminal\Common\IHandleCommand.cs" />
+    <Compile Include="Terminal\Common\IMediator.cs" />
+    <Compile Include="Terminal\Common\IRequest.cs" />
+    <Compile Include="Terminal\Common\IResponse.cs" />
+    <Compile Include="Terminal\Common\IUnitOfWork.cs" />
+    <Compile Include="Terminal\Common\ListResponse.cs" />
+    <Compile Include="Terminal\Common\UnitOfWork.cs" />
+    <Compile Include="Terminal\Common\Utility.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\CompleteDeliveryDetailCommand.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryDetailInfo.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryDetailInfoRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryDetailInfoResponse.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryDetailListItem.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryDetailListRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryGoodsPlacementBL.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryInfo.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryInfoRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryListItem.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryListRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryPlacePartCommand.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\DeliveryPlacePartDeleteCommand.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\FindDeliveryDetailRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\PartsPlacementLisRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\PartsPlacementListItem.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\PutawayRackSearchRequest.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Dtos\PutawayRackSearchResponse.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\CompleteDeliveryDetailCommandHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\DeliveryDetailInfoHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\DeliveryDetailListHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\DeliveryInfoHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\DeliveryPlacePartCommandHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\DeliveryPlacePartDeleteCommandHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\FindDeliveryDetailRequestHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\ListDeliveryHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\PlacementListHandler.cs" />
+    <Compile Include="Terminal\DeliveryGoodsPlacement\Handlers\PutawayRackSearchRequestHandler.cs" />
+    <Compile Include="Terminal\OldRackQuery\Dtos\OldRackQueryInfo.cs" />
+    <Compile Include="Terminal\OldRackQuery\Dtos\OldRackQueryInfoRequest.cs" />
+    <Compile Include="Terminal\OldRackQuery\Dtos\OldRackQueryListItem.cs" />
+    <Compile Include="Terminal\OldRackQuery\Dtos\OldRackQueryListRequest.cs" />
+    <Compile Include="Terminal\OldRackQuery\Handlers\OldRackQueryInfoHandler.cs" />
+    <Compile Include="Terminal\OldRackQuery\Handlers\OldRackQueryListHandler.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\ChangePickingUserCommand.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingCompleteCommand.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingDetailInfo.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingDetailInfoRequest.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingInfo.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingInfoRequest.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingListItem.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingListRequest.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingPartsListItem.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickingPartsRequest.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\PickPartsCommand.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\StockRackListItem.cs" />
+    <Compile Include="Terminal\PickingList\Dtos\StockRackListRequest.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\ChangePickingUserCommandHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\PickingCompleteCommandHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\PickingDetailInfoHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\PickingInfoHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\PickingListHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\PickingPartsListHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\PickPartsCommandHandler.cs" />
+    <Compile Include="Terminal\PickingList\Handlers\StockRackListHandler.cs" />
+    <Compile Include="Terminal\RackQuery\Dtos\RackQueryListItem.cs" />
+    <Compile Include="Terminal\RackQuery\Dtos\RackQueryListRequest.cs" />
+    <Compile Include="Terminal\RackQuery\Handlers\RackQueryListHandler.cs" />
+    <Compile Include="Terminal\StockCardQuery\Dtos\StockCardDetailListItem.cs" />
+    <Compile Include="Terminal\StockCardQuery\Dtos\StockCardDetailListRequest.cs" />
+    <Compile Include="Terminal\StockCardQuery\Dtos\StockCardInfo.cs" />
+    <Compile Include="Terminal\StockCardQuery\Dtos\StockCardInfoRequest.cs" />
+    <Compile Include="Terminal\StockCardQuery\Dtos\StockCardMainListItem.cs" />
+    <Compile Include="Terminal\StockCardQuery\Dtos\StockCardMainListRequest.cs" />
+    <Compile Include="Terminal\StockCardQuery\Handlers\StockCardDetailListHandler.cs" />
+    <Compile Include="Terminal\StockCardQuery\Handlers\StockCardInfoHandler.cs" />
+    <Compile Include="Terminal\StockCardQuery\Handlers\StockCardMainListHandler.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\DealerRackListItem.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\DealerRackListRequest.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\DealerWareHouseListItem.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\DealerWareHouseListRequest.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\PartSearchInfo.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\PartSearchRequest.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\StockMovementCommand.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\StockRackDetailInfo.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\StockRackDetailInfoRequest.cs" />
+    <Compile Include="Terminal\StockMovement\Dtos\StockTypeListRequest.cs" />
+    <Compile Include="Terminal\StockMovement\Handlers\DealerRackListHandler.cs" />
+    <Compile Include="Terminal\StockMovement\Handlers\DealerWarehouseListHandler.cs" />
+    <Compile Include="Terminal\StockMovement\Handlers\PartSearchHandler.cs" />
+    <Compile Include="Terminal\StockMovement\Handlers\StockMovementCommandHandler.cs" />
+    <Compile Include="Terminal\StockMovement\Handlers\StockTypeDetailInfoGetHandler.cs" />
+    <Compile Include="Terminal\StockMovement\Handlers\StockTypeListHandler.cs" />
+    <Compile Include="WorkOrder\DokumluFatura.cs" />
+    <Compile Include="WorkOrder\InvoiceBase.cs" />
+    <Compile Include="WorkOrder\InvoiceFactory.cs" />
+    <Compile Include="WorkOrder\InvoiceType.cs" />
+    <Compile Include="WorkOrder\OzelFatura.cs" />
+    <Compile Include="WorkOrder\UcKirilimliFatura.cs" />
+    <Compile Include="Business\WorkshopTypeBL.cs" />
+    <Compile Include="Business\WorkshopWorkerBL.cs" />
+    <Compile Include="Business\VehicleBL.cs" />
+    <Compile Include="Business\VehicleCodeBL.cs" />
+    <Compile Include="Business\VehicleGroupBL.cs" />
+    <Compile Include="Business\VehicleModelBL.cs" />
+    <Compile Include="Business\VehicleTypeBL.cs" />
+    <Compile Include="Business\WarehouseBL.cs" />
+    <Compile Include="Business\WorkshopBL.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ODMSCommon\ODMSCommon.csproj">
+      <Project>{4dc1c8cf-146a-4703-a404-efc05c7318e9}</Project>
+      <Name>ODMSCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSData\ODMSData.csproj">
+      <Project>{b5081646-3912-40d1-bdb2-0b870ad13565}</Project>
+      <Name>ODMSData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSModel\ODMSModel.csproj">
+      <Project>{9ce95b96-f4c1-4642-a31c-55448673ba1e}</Project>
+      <Name>ODMSModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Business\DealerSaleChannelBL.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Properties\DataSources\System.Data.DataSet.datasource" />
+    <None Include="Properties\DataSources\System.Xml.XmlNode.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\OtokarService\Project_dms.wsdl" />
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.ClaimDismantledPartProformaReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.ClaimDismantledPartReportCopyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.ClaimDismantledPartReportRealResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.CycleCountPlanReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.ReturnSparePartPositionedReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SaleOrderPrintReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartPickingReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartPositionedReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartSaleDeliveryReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartSaleProformaReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartSaleReportCopyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartSaleReportRealResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartSaleWaybillCopyReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SparePartSaleWaybillRealReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SpecialWorkOrderInvoiceProformaExcelReportResponse.datasource" />
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SpecialWorkOrderInvoiceProformaExcelReportResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SpecialWorkOrderInvoiceProformaReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SpecialWorkOrderInvoiceReportCopyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.SpecialWorkOrderInvoiceReportRealResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.VehicleDeliveryVoucherReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvioceBreakDownProformaExcelReportResponse.datasource" />
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvioceBreakDownProformaExcelReportResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvioceBreakDownProformaReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvioceBreakDownReportCopyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvioceBreakDownReportRealResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceProformaExcelReportResponse.datasource" />
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceProformaExcelReportResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceProformaReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceReportCopyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceReportRealResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceWithHoldProformaExcelReportResponse.datasource" />
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceWithHoldProformaExcelReportResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceWithHoldProformaReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceWithHoldReportCopyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderInvoiceWithHoldReportRealResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderPrintFirstPartResponse.datasource" />
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderPrintFirstPartResponse1.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ODMSBusiness.ReportService.WorkOrderReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ReportService\ReportService.wsdl" />
+    <None Include="Service References\ReportService\ReportService1.wsdl" />
+    <None Include="Service References\tr.com.otokar.service\Project_dms.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\OtokarService\" />
+    <WCFMetadataStorage Include="Service References\ReportService\" />
+    <WCFMetadataStorage Include="Service References\tr.com.otokar.service\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ReportService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ReportService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ReportService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Reports\Web\Service\" />
+    <Folder Include="Terminal\User\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\Project_dms.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\Project_dms.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ReportService\ReportService.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ReportService\ReportService1.disco" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,47 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.LabourDuration.LabourDurationDetailModel
+@{
+    ViewBag.Title = MessageResource.LabourDuration_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("LabourDurationDetails", "LabourDuration", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(d => d.LabourCode)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.LabourCode)&nbsp;</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.LabourName)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.LabourName)&nbsp;</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.LabourDesc)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.LabourDesc)&nbsp;</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.VehicleModelName)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.VehicleModelName)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.VehicleTypeName)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.VehicleTypeName)&nbsp;</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.DurationString)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(b => b.DurationString)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.IsActiveString)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(d => d.IsActiveString)&nbsp;</div>
+}
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 500);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 350);
+        $("#popupContentWrapper").css("width", 500);
+    }
+</script>

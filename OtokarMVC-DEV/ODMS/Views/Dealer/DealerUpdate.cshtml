@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Title = MessageResource.Dealer_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using ODMSCommon.Resources
+@model ODMSModel.Dealer.DealerViewModel
+@using (Html.BeginForm("DealerUpdate", "Dealer", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    Html.RenderPartial("_DealerEdit", Model);
+    <input type="hidden" name="DealerId" id="DealerId" value="@Model.DealerId"/>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Dealer.DealerUpdate,"DealerUpdate")
+    <div class="clearDiv">&nbsp;</div>
+
+}

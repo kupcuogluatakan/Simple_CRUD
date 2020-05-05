@@ -1,0 +1,48 @@
+﻿@model ODMSModel.StockBlock.StockBlockViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.StockBlock_PageTitle_Create;
+}
+
+
+@using (Html.BeginForm("StockBlockCreate", "StockBlock", FormMethod.Post, new { id = "stockBlockForm" }))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.BlockDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.BlockDate).Enable(false).Value(DateTime.Now).Min(DateTime.Now).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.BlockReasonDesc)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.BlockReasonDesc,new {@maxlength="100"})</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.BlockedStatusId)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.BlockedStatusId).Enable(false).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockBlockStatus as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+    <div class="clearDiv">&nbsp;</div>
+ 
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.StockBlock.StockBlockCreate)
+   
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+
+</script>
+
+

@@ -1,0 +1,12 @@
+﻿@using ODMSCommon.Resources
+ @{
+     Layout = null;
+ }
+<a style="color:#ffffff;" href="@Url.Action("Index","ActiveAnnouncements")">
+    @MessageResource.ActiveAnnouncements_PageTitle_Index <span class="label label-danger">@Model</span>
+</a>
+<a style="color:#ffffff;" href="@Url.Action("PrivateMessageIndex","PrivateMessage")">
+    @MessageResource.PrivateMessage_PageTitle_Index <span class="label label-danger">@((int)ViewBag.NewMessageCount)</span>
+</a>
+
+@model int

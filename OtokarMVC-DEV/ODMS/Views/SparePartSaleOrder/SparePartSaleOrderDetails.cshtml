@@ -1,0 +1,38 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SparePartSaleOrder.SparePartSaleOrderViewModel
+@{
+    ViewBag.Title = MessageResource.SparePartSaleOrder_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<script>
+    $('body').css('overflow', 'hidden');
+</script>
+<link href="~/Style/Content.css" rel="stylesheet" />
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+<div class="shortTxtDivObjectSearch">@Html.DisplayFor(v => v.CustomerName) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.DealerName)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.SoTypeName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.SoTypeName)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.StockTypeName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.StockTypeName)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.OrderDate)</div>
+<div class="shortTxtDiv">@Model.OrderDate</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsFixedPriceName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsFixedPriceName) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsProposalName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsProposalName) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.StatusName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.StatusName) </div>
+<div class="clearDiv">&nbsp;</div>
+
+

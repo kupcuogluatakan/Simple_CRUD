@@ -1,0 +1,15 @@
+ODMSCommon.Exception.ODMSDatabaseConnectionException: Veritabanına bağlantı hatası
+   at ODMSData.AppErrorsData.Add(AppErrorViewModel model) in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSData\AppErrorsData.cs:line 34
+   at ODMSBusiness.AppErrorsBL.<>c__DisplayClass2_0.<AddAsync>b__0() in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSBusiness\Business\AppErrorsBL.cs:line 58 7.09.2018 17:08:49
+ODMSCommon.Exception.ODMSDatabaseConnectionException: Veritabanına bağlantı hatası
+   at ODMSData.AppErrorsData.Add(AppErrorViewModel model) in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSData\AppErrorsData.cs:line 34
+   at ODMSBusiness.AppErrorsBL.<>c__DisplayClass2_0.<AddAsync>b__0() in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSBusiness\Business\AppErrorsBL.cs:line 58 7.09.2018 17:11:01
+ODMSCommon.Exception.ODMSDatabaseConnectionException: Veritabanına bağlantı hatası
+   at ODMSData.AppErrorsData.Add(AppErrorViewModel model) in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSData\AppErrorsData.cs:line 34
+   at ODMSBusiness.AppErrorsBL.<>c__DisplayClass2_0.<AddAsync>b__0() in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSBusiness\Business\AppErrorsBL.cs:line 58 7.09.2018 17:37:01
+ODMSCommon.Exception.ODMSDatabaseConnectionException: Veritabanına bağlantı hatası
+   at ODMSData.AppErrorsData.Add(AppErrorViewModel model) in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSData\AppErrorsData.cs:line 34
+   at ODMSBusiness.AppErrorsBL.<>c__DisplayClass2_0.<AddAsync>b__0() in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSBusiness\Business\AppErrorsBL.cs:line 58 7.09.2018 17:39:14
+ODMSCommon.Exception.ODMSDatabaseConnectionException: Veritabanına bağlantı hatası
+   at ODMSData.AppErrorsData.Add(AppErrorViewModel model) in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSData\AppErrorsData.cs:line 34
+   at ODMSBusiness.AppErrorsBL.<>c__DisplayClass2_0.<AddAsync>b__0() in C:\Projects\Otokar\OtokarMVC\OtokarMVC-LIVE\ODMSBusiness\Business\AppErrorsBL.cs:line 58 7.09.2018 17:41:14

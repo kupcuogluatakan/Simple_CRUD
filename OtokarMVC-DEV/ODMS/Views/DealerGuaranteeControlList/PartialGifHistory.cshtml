@@ -1,0 +1,92 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@model GRADMstViewModel
+<div class="panel-group"  style="margin-bottom: 5px;">
+    <div class="panel panel-default panel-collapse">
+        <div class="panel-heading">
+            <a data-toggle="collapse" data-parent="#gradGifHistoryInfo" href="#collapseGifHistoryInfo">
+                <strong style="font-size: 16px;">@MessageResource.GRADGif_Title_GifHistoryInfo</strong>
+            </a>
+        </div>
+        <div class="panel-body collapse" id="collapseGifHistoryInfo">
+            <div class="kendoGridDiv" id="grdGifHistory">
+                @(Html.Kendo().Grid<GRADGifHistoryModel>()
+                      .Name("grdGRADGifHistory")
+                      .Columns(columns =>
+                      {
+                          columns.Bound(p => p.WarrantyStatusName).Sortable(true);
+                          columns.Bound(p => p.DealerName).Sortable(true);
+                          columns.Bound(p => p.VinNo).Sortable(true);
+                          columns.Bound(p => p.WorkOrderId).ClientTemplate("<center><a class='' id='#=WorkOrderId#' href='" + Url.Action("WorkOrderCardIndex", "WorkOrderCard") + "/#=WorkOrderId#'>#=WorkOrderId#</a></center>").Sortable(true);
+                          columns.Bound(p => p.WorkOrderDetId).Sortable(true);
+                          columns.Bound(p => p.VehicleKm).Sortable(true);
+                          columns.Bound(p => p.IndicatorName).ClientTemplate("<span title=\"#=CampaignName#\">#=IndicatorName#</span>").Sortable(true);
+                          columns.Bound(p => p.ProcessName).Sortable(true);
+                          columns.Bound(p => p.VehicleLeaveDate).Format("{0:dd/MM/yyyy}").Sortable(true);
+                          columns.Bound(p => p.ApprovedUserCode).ClientTemplate("<span title=\"#=ConfirmDesc#\">#=ApprovedUserCode#</span>").Sortable(true);
+
+                      })
+                      .Pageable()
+                      .Sortable()
+                      .ClientDetailTemplateId("template")
+                      .DataSource(dataSource => dataSource
+                          .Ajax()
+                          .PageSize(10)
+                          .ServerOperation(true)
+                          .Read(read => read.Action("ListGRADGifHistory", "GuaranteeRequestApproveDetail").Data("GRADGifHistorySearch")))
+
+                      )
+            </div>
+        </div>
+    </div>
+</div>
+<script id="template" type="text/kendo-tmpl">
+    <div class="clearfix"></div>
+    @(Html.Kendo().Grid<GRADGifHistoryDetModel>()
+          .Name("grdGRADGifHistoryDetail_#=GuaranteeId#")
+          //.HtmlAttributes(new { style = "width: 480px;" })
+          .Columns(columns =>
+          {
+              columns.Bound(b => b.Type);
+              columns.Bound(o => o.Code);
+              columns.Bound(p => p.Name);
+              columns.Bound(o => o.Ratio);
+          })
+          .Events(e=>e.DataBound("HistoryDetailExpand"))
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(CommonValues.GridPageSize.Short)
+              .Read(read => read.Action("ListGRADGifHistoryDet", "GuaranteeRequestApproveDetail", new { guaranteeId = "#=GuaranteeId#" }))
+          )
+          .Sortable()
+          .ToClientTemplate()
+          )
+
+</script>
+<script>
+    function HistoryDetailExpand(arg) {
+        var gridId = arg.sender.element[0].id;
+        var grid = $("#" + gridId).data("kendoGrid");
+        var data = grid.dataSource.data();
+        
+        $.each(data, function (i, row) {
+            if (parseInt(row.Ratio) == 100) {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#7cfc00");
+            } else if (parseInt(row.Ratio) == 0 || !row.Ratio) {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#f08080");
+            } else {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#daa520");
+            }
+            
+            
+        });
+    }
+    //
+    function GRADGifHistorySearch() {
+        return {
+            GuaranteeId: '@Model.GuaranteeId',
+            GuaranteeSeq: '@Model.GuaranteeSeq'
+        };
+    }
+
+</script>

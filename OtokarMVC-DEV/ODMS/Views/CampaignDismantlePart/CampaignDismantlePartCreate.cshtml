@@ -1,0 +1,53 @@
+﻿@model ODMSModel.CampaignDismantlePart.CampaignDismantlePartViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignDismantlePart_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CampaignDismantlePartCreate", "CampaignDismantlePart", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.CampaignCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(p => p.CampaignCode)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.PartTypeDesc)</div>
+    <div class="shortTxtDiv">
+        @{
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });
+        }
+        @Html.ValidationMessageFor(c => c.PartId)
+    </div>
+   
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(b => b.Note)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(b => b.Note, new { style = "width: 500px; height: 50px" })
+        @Html.ValidationMessageFor(v => v.Note)
+    </div>
+    @Html.HiddenFor(p => p.CampaignCode)
+    
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.CampaignDismantlePart.CampaignDismantlePartCreate, "CampaignDismantlePartCreate")      
+}
+
+
+<script type="text/javascript">
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+    $(document).ready(function () {
+        
+        kendo.culture("tr-TR");
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+

@@ -1,0 +1,37 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Warehouse.WarehouseDetailModel
+@{
+    ViewBag.Title = MessageResource.Warehouse_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("WarehouseDetails", "Warehouse", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(w => w.Code)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(b => b.Code)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(w => w.IsActiveString)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(w => w.IsActiveString)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(w => w.DealerName)&nbsp;</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(w => w.DealerName)&nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    
+}
+
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 480);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 250);
+        $("#popupContentWrapper").css("width", 500);
+    }
+</script>

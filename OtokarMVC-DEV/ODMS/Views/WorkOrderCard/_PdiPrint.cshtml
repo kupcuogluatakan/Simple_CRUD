@@ -1,0 +1,101 @@
+﻿@using ODMSCommon.Resources
+@model Int64
+<style type="text/css" media="all">
+    body {
+        font-family: arial;
+        font-size: 12px;
+    }
+
+    .labelDiv {
+        float: left;
+        width: 150px;
+        font-weight: bold;
+    }
+
+    .shortTxtDiv {
+        float: left;
+        width: 150px;
+    }
+
+    .clearDiv {
+        clear: both;
+        height: 6px;
+    }
+
+    .mw100 {
+        width: 70% !important;
+    }
+
+    table {
+        width: 100%;
+        border: 0 none;
+        padding: 0;
+        margin: 0;
+        font-family: arial;
+        font-size: 12px;
+    }
+
+    .msheader {
+        text-align: left;
+        padding-left: 6px;
+        background-color: #f0f0f0;
+    }
+
+    table th, table td {
+        border: 1px solid #bcbcbc;
+        font-family: arial;
+        font-size: 12px;
+    }
+
+    #pdiPackageDetails h4 {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+    .printVisible {
+        display: none;
+    }
+    #tblDesc th,#tblDesc td {
+        border: none;
+        text-align: left;
+        padding-right: 20px; 
+        vertical-align: top; 
+    }
+    #tblDesc th {
+        min-width: 120px; 
+    }
+
+    @@media print {
+        button {
+            display: none;
+        }
+        .printVisible {
+            display: block !important;
+        }
+    }
+</style>
+<button class="btn btn-default" onclick="PrintDetails();">@MessageResource.Global_Display_Print</button>
+@Html.Action("GetPdiPackageDetails", new { id = Model })
+
+
+<script>
+    function PrintDetails() {
+        window.print();
+        //Popup($('#pdiPackageDetails').html());
+    }
+    function Popup(data) {
+        @* var mywindow = window.open('', 'my div', 'height=600,width=1024');
+        mywindow.document.write('<html><head><title>' + @MessageResource.WorkOrderCard_Pdi_Title + '</title>');
+        /*optional stylesheet*/
+        mywindow.document.write('<link rel="stylesheet" href="'+@Url.Content("~/Scripts/print.css")+'" type="text/css" />');
+        mywindow.document.write('</head><body >');
+        mywindow.document.write(data);
+        mywindow.document.write('</body></html>');
+
+        mywindow.print();
+        mywindow.close();
+
+        return true;*@
+    }
+
+</script>

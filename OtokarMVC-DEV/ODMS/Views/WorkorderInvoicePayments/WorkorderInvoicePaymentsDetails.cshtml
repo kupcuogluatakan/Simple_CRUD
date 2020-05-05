@@ -1,0 +1,38 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.WorkorderInvoicePayments.WorkorderInvoicePaymentsDetailModel
+@{
+    ViewBag.Title = MessageResource.WorkorderInvoicePayments_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("WorkorderInvoicePaymentsDetails", "WorkorderInvoicePayments", FormMethod.Post))
+{
+    <div id="tagPaymentTypeName" class="labelDiv" style="width: 120px">@Html.LabelFor(d => d.PaymentTypeName)</div>
+    <div id="cmbPaymentTypeName" class="shortTxtDiv" style="width: 250px">@Html.DisplayFor(d => d.PaymentTypeName)&nbsp;</div>
+
+    <div id="tagBankName" class="labelDiv" style="position: absolute; width: 120px; margin-top: 30px">@Html.LabelFor(d => d.BankName)</div>
+    <div id="cmbBankName" class="shortTxtDiv" style="position: absolute; width: 250px; margin-top: 30px; margin-left: 120px;">@Html.DisplayFor(d => d.BankName)&nbsp;</div>
+    
+    <div id="tagInstalmentNumberDiv" class="labelDiv" style="position: absolute; width: 120px; margin-top: 60px">@Html.LabelFor(d => d.InstalmentNumber)</div>
+    <div id="txtInstalmentNumberDiv" class="shortTxtDiv" style="position: absolute; width: 205px; margin-top: 60px; margin-left: 120px;">@Html.DisplayFor(d => d.InstalmentNumber)&nbsp;</div>
+    
+    <div id="tagPayAmountDiv" class="labelDiv" style="position: absolute; width: 120px; margin-top: 90px">@Html.LabelFor(d => d.PayAmount)</div>
+    <div id="txtPayAmountDiv" class="shortTxtDiv" style="position: absolute; width: 205px; margin-top: 90px; margin-left: 120px;">@Html.DisplayFor(d => d.PayAmount)&nbsp;</div>
+
+    <div id="tagTransmitNumberDiv" class="labelDiv" style="position: absolute; width: 120px; margin-top: 120px;">@Html.LabelFor(d => d.TransmitNumber)</div>
+    <div id="txtTransmitNumberDiv" class="shortTxtDiv" style="position: absolute; width: 100px; margin-top: 120px; margin-left: 120px;">@Html.DisplayFor(d => d.TransmitNumber)&nbsp;</div>
+}
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 370);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 320);
+        $("#popupContentWrapper").css("width", 380);
+    }
+</script>

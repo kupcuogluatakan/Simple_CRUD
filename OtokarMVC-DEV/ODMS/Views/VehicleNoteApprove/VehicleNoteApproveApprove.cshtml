@@ -1,0 +1,78 @@
+﻿@using ODMSModel.VehicleNoteApprove
+@model VehicleNoteApproveModel
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.VehicleNoteApprove_PageTitle_Approve;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+
+}
+ 
+@Html.AntiForgeryToken()
+@using (Html.BeginForm("VehicleNoteApproveApprove", "VehicleNoteApprove", FormMethod.Post))
+{
+    @Html.HiddenFor(d => d.DealerId)
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Note)</div>
+    <div class="textarea">
+        @Html.TextAreaFor(v => v.Note, new
+        {          
+            style = "width: 200px; height: 100px;"
+        })
+        @Html.ValidationMessageFor(v => v.Note)
+    </div>
+
+     <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleKm)</div>
+        
+    <div class="textarea">@Html.TextBoxFor(v => v.VehicleKm)@Html.ValidationMessageFor(v => v.VehicleKm)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    @Html.HiddenFor(d => d.VehicleNotesId)
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Save", CommonUtility.GetResourceValue("VehicleNoteApprove_Display_btnApprove"), CommonValues.PermissionCodes.VehicleNoteApprove.VehicleNoteApproveApprove, "VehicleNoteApproveApprove")
+}
+<div class="clearDiv">&nbsp;</div>
+
+@Html.HiddenFor(d => d.VehicleNotesId)
+@*@ODMSHelpers.Button("VehicleNoteDelete", CommonUtility.GetResourceValue("VehicleNote_PageTitle_Delete"), CommonValues.PermissionCodes.VehicleNoteApprove.VehicleNoteApproveDelete, "VehicleNoteApproveDelete")*@
+
+
+<style>
+    #VehicleNoteDelete {
+        float: right;
+        margin-top: -4.6%;
+        margin-right: 79%;
+    }
+</style>
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#VehicleNoteDelete").click(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            var parameter = {
+                VehicleNotesId: $("#VehicleNotesId").val(), "__RequestVerificationToken": token
+            };
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeleteVehicleNoteApprove", "VehicleNoteApprove")',
+                data: parameter,
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 1) {
+                        SetSuccessMessage(result.Message);
+                    }
+                    else {
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    });
+
+</script>

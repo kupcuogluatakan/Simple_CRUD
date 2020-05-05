@@ -1,0 +1,111 @@
+﻿@{
+    ViewBag.Title = MessageResource.WorkOrder_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+    #popupContent {
+        width: 1380px !important;
+        overflow: hidden;
+    }
+</style>
+
+@model ODMSModel.WorkOrderCard.WorkOrderCardModel
+@using ODMSCommon.Resources
+@{ Html.RenderPartial("_WorkOrderDisplay", Model); }
+@* İş Emri Diğer Bilgileri *@
+<div class="panel panel-default ">
+        <div class="panel-heading">
+
+            <a class="k-link">
+                <strong style="font-size: 16px;">
+                    @MessageResource.GuaranteeRequestApprove_Category_Other
+                </strong>
+            </a>
+        </div>
+        <div class="panel-body " id="collapseCustomer">
+            <table class="table table-bordered table-zipped">
+            <tbody>
+                <tr>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Appointment_Display_AppointmentType :</th>
+                    <td class="col-md-3">@Model.AppointmentType</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.Appointment_Display_AppointmentDate :</th>
+                    <td class="col-md-3">@(Model.AppointmentDate.GetValueOrDefault()==new DateTime(1900,1,1,0,0,0) ? Html.Raw("-") :Html.Raw(Model.AppointmentDate) )</td>
+                    <th class="col-md-1 teksatir t-customhead"><i class="glyphicon glyphicon-chevron-right"></i>@MessageResource.WorkOrder_Display_ResponsibleConsultant :</th>
+                    <td class="col-md-3">@Model.Customer.Staff</td>
+                </tr>
+            </tbody>
+           </table>
+        </div>   
+    </div>
+
+
+
+
+@if (Model.WorkOderId > 0)
+{
+    <a class="k-button" onclick=" ClosePopupAndGotoUrl(this); " data-href="@Url.Action("WorkOrderCardIndex", "WorkOrderCard", new {id = Model.WorkOderId})">@MessageResource.WorkOrder_Goto_WorkOrder <img class="arrow-btn"  style="width: 22px;"src="@Url.Content("~/Images/select.png")"></a>
+    <script type="text/javascript">
+        function ClosePopupAndGotoUrl(obj) {
+            var $obj = $(obj);
+            var url = $obj.data("href");
+            if (url) {
+                parent.document.location = url;
+            }
+        }
+    </script>
+}
+
+@*@using ODMSCommon.Resources
+@using ODMSModel.WorkOrder
+@model WorkOrderViewModel
+<style>
+    #popupContent {
+        width: 1400px !important;
+        overflow: hidden;
+    }
+</style>
+@{
+    ViewBag.Title = MessageResource.WorkOrder_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<div class="labelDiv">@Html.LabelFor(c => c.DealerName)</div>
+<div class="shortTxtDiv">@Model.DealerName &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.AppointmentId)</div>
+<div class="shortTxtDiv">@if(Model.AppointmentDate.HasValue){@Model.AppointmentDate} &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.CustomerId)</div>
+<div class="shortTxtDiv">@Model.CustomerFullName &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.VehicleId)</div>
+<div class="shortTxtDiv">@Model.VinNo &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.AppointmentTypeId)</div>
+<div class="shortTxtDiv">@Model.AppointmentType &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.CustomerPhone)</div>
+<div class="shortTxtDiv">@Model.CustomerPhone &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.VehiclePlate)</div>
+<div class="shortTxtDiv">@Model.VehiclePlate &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.VehicleModel)</div>
+<div class="shortTxtDiv">@Model.VehicleModel &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.VehicleTypeName)</div>
+<div class="shortTxtDiv">@Model.VehicleTypeName &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.Stuff)</div>
+<div class="shortTxtDiv">@Model.Stuff &nbsp;</div>         
+<div class="labelDiv">@Html.LabelFor(c=>c.Note)</div>
+<div class="shortTxtDiv">@Model.Note &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+@if (Model.WorkOrderId > 0)
+{
+    <a class="k-button" onclick=" ClosePopupAndGotoUrl(this); " data-href="@Url.Action("WorkOrderCardIndex", "WorkOrderCard", new {id = Model.WorkOrderId})">@MessageResource.WorkOrder_Display_WorkOrder <img class="arrow-btn"  style="width: 16px;"src="@Url.Content("~/Images/select.png")"></a>
+    <script type="text/javascript">
+        function ClosePopupAndGotoUrl(obj) {
+            var $obj = $(obj);
+            var url = $obj.data("href");
+            if (url) {
+                parent.document.location = url;
+            }
+        }
+    </script>
+}*@

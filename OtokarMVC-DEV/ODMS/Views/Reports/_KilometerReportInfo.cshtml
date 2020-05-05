@@ -1,0 +1,48 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+@using Kendo.Mvc.UI
+@using System.Web.Mvc.Html
+@model WorkOrderDetailKilometerRequest
+
+@{
+    Layout = null;
+}
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<KilometerReportInfoModel>()
+          .Name("PartInfoGrid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DEALER_NAME).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_DealerName);
+              columns.Bound(p => p.DEALER_REGION_NAME).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_DealerRegion);
+              columns.Bound(p => p.MODEL_KOD).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_ModelCode);
+              columns.Bound(p => p.ID_WORK_ORDER).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}/#=ID_WORK_ORDER#'>#=ID_WORK_ORDER#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard"))).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_WorkOrderId);
+              columns.Bound(p => p.ID_WORK_ORDER_DETAIL).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_WorkOrderDetailId);
+              columns.Bound(p => p.SSID_GUARANTEE).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_Guarantee);
+              columns.Bound(p => p.VIN_NO).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_VinNo);
+              //columns.Bound(p => p.ID_VEHICLE).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_VehicleId);
+              columns.Bound(p => p.ENGINE_NO).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_EngineNo);
+              columns.Bound(p => p.VEHICLE_WARRANTY_START_DATE).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_WarrantyStartDate);
+              columns.Bound(p => p.CREATE_DATE).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_CreateDate);
+              columns.Bound(p => p.VEHICLE_KM).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_VehicleKM);
+              //columns.Bound(p => p.ID_DEALER).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_DealerId);
+              //columns.Bound(p => p.ID_DEALER_REGION).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_DealerRegionId);
+              columns.Bound(p => p.CUSTOMER_ID).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_CustomerId);
+              columns.Bound(p => p.ID_TYPE).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_IdType);
+              columns.Bound(p => p.PartPrice).Format("{0:n}").Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_PartPrice);
+              columns.Bound(p => p.LaborPrice).Format("{0:n}").Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_LabourPrice);
+              columns.Bound(p => p.CurrencyCode).Sortable(true).Width(70).Title(MessageResource.KilometerReportInfo_Display_CurrencyCode);
+
+          })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                                .Read(read => read.Action("ListKilometerReportInfo", "Reports", new { GroupType = Model.GroupType, GroupCode = Model.GroupCode, VehicleModelList = Model.VehicleModelList, ProcessTypeList = Model.ProcessTypeList, CustTypeList = Model.CustTypeList, CustomerIdList = Model.CustomerIdList }))
+                                        )
+
+    )
+</div>

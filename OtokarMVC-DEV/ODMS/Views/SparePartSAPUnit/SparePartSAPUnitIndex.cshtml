@@ -1,0 +1,163 @@
+﻿@using ODMSBusiness
+@using ODMSCommon.Resources
+@using ODMSModel.SparePartSAPUnit
+@model SparePartSAPUnitListModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Index");
+}
+
+
+<script>
+
+    function Search() {
+        return {
+            IsActive: $("#IsActive").val(),
+            SparePartCode: $("#SparePartCode").val()
+        };
+    }
+
+    //SearchScript
+    $(document).ready(function () {
+
+        $("#IsActive").val(1);
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#SparePartSAPUnitGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        //Popup
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("SparePartSAPUnitDetail", "SparePartSAPUnit", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("SparePartSAPUnitUpdate", "SparePartSAPUnit", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("SparePartSAPUnitCreate", "SparePartSAPUnit")";
+            }
+
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+    });
+
+function Delete(Id) {
+    DeleteConfirm(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SparePartSAPUnitDelete", "SparePartSAPUnit")",
+                data: { id: Id },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#SparePartSAPUnitGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+</script>
+
+
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.SearchIsActive)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(c => c.IsActive).BindTo(CommonBL.ListStatus().Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All)
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.SparePartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.SparePartCode)</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", null)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Create"), CommonValues.PermissionCodes.SparePartSAPUnit.SparePartSAPUnitCreate)
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<SparePartSAPUnitListModel>()
+          .Name("SparePartSAPUnitGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.PartId).ClientTemplate("<center><a class='details modalClick' id='#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Detail") + "' href='./SparePartSAPUnitDetail/#=PartId#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSAPUnit.SparePartSAPUnitDetail)).Width(10);
+              columns.Bound(p => p.PartId).ClientTemplate("<center><a class='edit modalClick' id='#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Update") + "' href='./PurchaseOrderUpdate/#=PartId#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSAPUnit.SparePartSAPUnitUpdate)).Width(10);
+              columns.Bound(o => o.PartId).ClientTemplate("<center><a onclick='Delete(#=PartId#)' href='javascript:void(0);' id='#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Delete") + "' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSAPUnit.SparePartSAPUnitDelete)).Width(10);
+              columns.Bound(p => p.SparePartCode).Width(50).Sortable(true);
+              columns.Bound(p => p.SparePartName).Width(50).Sortable(true);
+              columns.Bound(p => p.UnitName).Width(50).Sortable(true);
+              columns.Bound(p => p.ShipQuantity).Width(10).Sortable(true);
+              columns.Bound(p => p.StateName).Width(10).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("Read", "SparePartSAPUnit", Model).Data("Search"))
+              .Model(model => model.Field(o => o.PartId).DefaultValue(-1)))
+
+    )
+</div>
+
+
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Title("SparePartSAPUnit")
+        .Draggable()
+        .Resizable()
+        .Width(950)
+        .Height(500)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){var grid = $('#SparePartSAPUnitGrid').data('kendoGrid');grid.dataSource.page(1);}"))
+    )
+</div>

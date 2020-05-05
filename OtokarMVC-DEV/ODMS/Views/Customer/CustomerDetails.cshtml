@@ -1,0 +1,67 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Customer_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.Customer.CustomerIndexViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerTypeName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerTypeName) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerName) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+@if (Model.CustomerTypeId == 1)
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.TaxOffice)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TaxOffice) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.TaxNo)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TaxNo) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CompanyTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CompanyTypeName) &nbsp;</div>
+}
+@if (Model.CustomerTypeId == 2)
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerLastName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerLastName) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.TcIdentityNo)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TcIdentityNo) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PassportNo)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PassportNo) &nbsp;</div>
+}
+@if (Model.CustomerTypeId == 3)
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.GovernmentTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.GovernmentTypeName) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.TaxOffice)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TaxOffice) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.TaxNo)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.TaxNo) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CompanyTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CompanyTypeName) &nbsp;</div>
+}
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CountryName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CountryName) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.WitholdingStatusName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.WitholdingStatusName) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.MobileNo)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.MobileNo) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActiveName) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.WitholdingId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.WitholdingName)</div>
+<br />
+
+
+
+
+

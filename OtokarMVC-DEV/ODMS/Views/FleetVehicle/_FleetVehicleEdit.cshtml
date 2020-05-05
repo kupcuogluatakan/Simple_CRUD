@@ -1,0 +1,44 @@
+﻿ 
+<style type="text/css">
+    #popupContentWrapper {
+        min-height: 250px !important;
+    }   
+    #popupContent {
+        width: auto !important;
+    }
+</style>
+<script src="~/Scripts/odms.objectsearch.js"></script>
+@Html.AntiForgeryToken()
+@using ODMSCommon.Resources
+@using ODMSModel.FleetVehicle
+@model FleetVehicleViewModel
+<div class="labelDiv">@Html.LabelFor(c => c.VehicleId)</div>
+<div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel { ObjectSearchType = CommonValues.ObjectSearchType.Vehicle, WindowTitle = MessageResource.ObjectSearch_WindowTitle_Vehicle, ReferenceObjectId = "VehicleId", ReferenceObjectValue = Model != null ? Model.VehicleId : 0, ParentWindowId = "modelWindowMaintLabour", Required = true, ReferenceObjectText = Model != null ? Model.VehicleName : string.Empty, SelectCallBackFunction = "GetCustomerInfo", ClearCallBackFunction = null }) @*@Html.ValidationMessageFor(c => c.VehicleId)*@</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.CustomerId)</div>
+<div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel { ObjectSearchType = CommonValues.ObjectSearchType.Customer, WindowTitle = MessageResource.ObjectSearch_WindowTitle_Customer, ReferenceObjectId = "CustomerId", ReferenceObjectValue = Model != null ? Model.CustomerId : 0, ParentWindowId = "modelWindowMaintLabour", Required = false, ReferenceObjectText = Model != null ? Model.CustomerName : string.Empty, SelectCallBackFunction = null, ClearCallBackFunction = null })@* @Html.ValidationMessageFor(c => c.CustomerId)*@</div>
+<div class="clearDiv">&nbsp;</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+            $('form').each(function() {
+                var validator = $(this).data('validator');
+                if (validator && validator.settings) {
+                    validator.settings.ignore = "";
+                }
+            });
+    });
+
+    function GetCustomerInfo() {
+        debugger;
+        $("#VehicleIdTextContainer").val($("#VehicleIdTextContainer").val().replace(" - ", ""));
+        $("#CustomerId").val('');
+        
+        var vehicleId = $('#VehicleId').val();
+        mvc.build('@Url.Action("GetWorkOrderData","WorkOrder")', null, null, { id: $('#VehicleId').val(), type: 'Vehicle' }, false, "json");
+        mvc.post(null, function (json) {
+            $('#CustomerId').val(json.CustomerId)
+            $("#CustomerIdTextContainer").val(json.CustomerName + ' ' + json.CustomerSurName)
+        }, null);
+    }
+
+</script>

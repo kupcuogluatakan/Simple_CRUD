@@ -1,0 +1,127 @@
+﻿@model ODMSModel.ObjectSearch.VehicleSearchViewModel
+
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@helper DynamicBodySize()
+{
+    @Html.Raw(string.Format("<style> #bodyContainer {{ height: {0}px; width: {1}px; }}</style>", "490", "1330"))
+}
+
+@DynamicBodySize()
+
+
+<div id="bodyContainer">
+    <div id="searchCriterias">
+        <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VinNo)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EngineNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.EngineNo)</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.Plate)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Plate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.ModelYear)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.ModelYear).Decimals(0).Min(1900).Max(2100).Format("####").Spinners(false).HtmlAttributes(new { type = "text" })</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerFullName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CustomerFullName)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.WarrantyDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.WarrantyDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleModel)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleModel).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleModelList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleType)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(c => c.VehicleType).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListVehicleTypes", "Vehicle")
+                .Data("GetVehicleModel").Type(HttpVerbs.Post)).ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("VehicleModel")
+        </div>
+
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+    @ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.VehicleSearch.VehicleSearchIndex)
+    @ODMSHelpers.LinkButton("btnClear", ODMSCommon.Resources.MessageResource.Global_Display_Clear, "", "", "", "")
+
+    <div class="kendoGridDivObjectSearch" id="grd">
+        @(Html.Kendo().Grid<ODMSModel.ObjectSearch.VehicleSearchListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(v => v.VehicleId).ClientTemplate("<center><a class='loadTab' onclick='selectVehicle(#=VehicleId#, \"#=VinNo#\",\"#=Plate#\")' id='#=VehicleId#'><img class=iconLink src='" + Url.Content("~/Images/choose.ico") + "'/></a></center>").Title(ODMSCommon.Resources.MessageResource.Global_Display_Select).Width(50).Sortable(false);
+                  columns.Bound(v => v.EngineNo).Width(100).Sortable(true);
+                  columns.Bound(v => v.VinNo).Width(120).Sortable(true);
+                  columns.Bound(v => v.Plate).Width(80).Sortable(true);
+                  columns.Bound(v => v.VehicleCodeDesc).Width(180).Sortable(true);
+                  columns.Bound(v => v.CustomerFullName).Width(120).Sortable(true);
+                  columns.Bound(v => v.Mobile).Width(80).Sortable(true);
+                  columns.Bound(v => v.Color).Width(50).Sortable(true);
+                  columns.Bound(v => v.WarrantyStartDate).Width(100).ClientTemplate("#= WarrantyStartDate == null ? \"\" : kendo.toString(WarrantyStartDate, \"dd.MM.yyyy\") #").Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(ODMSCommon.CommonValues.GridPageSize.Short)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("SearchVehicle", "ObjectSearch", Model).Data("VehicleSearch"))
+                                        .Model(model => model.Field(o => o.VehicleId).DefaultValue(-1)))
+          )
+    </div>
+</div>
+
+<script type="text/javascript">
+    function GetVehicleModel() {
+        return {
+            vehicleModel: $('#VehicleModel').val()
+        };
+    }
+    function VehicleSearch() {
+        return {
+            CustomerFullName: $('#CustomerFullName').val(),
+            VinNo: $('#VinNo').val(),
+            EngineNo: $('#EngineNo').val(),
+            Plate: $('#Plate').val(),
+            ModelYear: $('#ModelYear').val(),
+            WarrantyDate: $("#WarrantyDate").val(),
+            VehicleModel: $("#VehicleModel").val(),
+            VehicleType: $("#VehicleType").val()
+        };
+    }
+
+    function selectVehicle(vehicleId, vinNo, plate) {
+        if (window.parent != "undefined") {
+            var currentWindowState = window.parent.getWindowState("@Model.ReferenceObjectId" + "SearchWindow", false);
+            var parentSetterFunctionName = "setFoundValuesFor" + "@Model.ReferenceObjectId";
+            window.parent[parentSetterFunctionName]("@Model.ReferenceObjectId", vehicleId, vinNo, "@Model.SelectCallBackFunction", currentWindowState);
+        }
+
+    }
+
+    $(document).ready(function () {
+        $("#btnSearch").on("click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("#btnClear").on("click", function (e) {
+            $('#searchCriterias').find('input:text').val('');
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    });
+
+</script>
+<style>
+    body
+    {
+        background-color: #EDF1F4 !important;
+        overflow-x: hidden;
+    }
+
+    .kendoGridDivObjectSearch
+    {
+        width: 1300px;
+        padding-bottom: 30px;
+    }
+</style>

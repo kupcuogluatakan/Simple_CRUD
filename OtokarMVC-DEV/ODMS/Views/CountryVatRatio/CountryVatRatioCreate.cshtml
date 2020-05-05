@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = MessageResource.CountryVatRatio_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@model ODMSModel.CountryVatRatio.CountryVatRatioViewModel
+@using (Html.BeginForm("CountryVatRatioCreate", "CountryVatRatio", FormMethod.Post))
+{
+     Html.RenderPartial("_CountryVatRatioEdit", Model);
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.CountryVatRatio.CountryVatRatioCreate,"CountryVatRatioCreate")        
+}

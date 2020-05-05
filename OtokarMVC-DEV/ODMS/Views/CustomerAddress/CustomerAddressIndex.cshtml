@@ -1,0 +1,115 @@
+﻿@model ODMSModel.CustomerAddress.CustomerAddressListModel
+@if (Model.CustomerId != 0)
+{
+    @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickCustomerAddress createNewCustomerAddress", CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Create"), CommonValues.PermissionCodes.CustomerAddress.CustomerAddressCreate)
+}
+<br />
+@Html.AntiForgeryToken()
+<div id="CustomerAddressModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("CustomerAddressModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#CustomerAddressGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    function Search() {
+        return {
+            CustomerName: $('#CustomerName').val()
+        };
+    }
+    $(document).ready(function () {
+
+        $("body").delegate(".modalClickCustomerAddress", "click", function (e) {
+            $('#CustomerAddressModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("CustomerAddressDetails", "CustomerAddress", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("CustomerAddressUpdate", "CustomerAddress", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNewCustomerAddress")) {
+                link = "@Url.Action("CustomerAddressCreate", "CustomerAddress", new { customerId = Model.CustomerId, customerName = Model.CustomerName })";
+            }
+            $("#CustomerAddressModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#CustomerAddressModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+    });
+    function DeleteCustomerAddress(aId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+    DeleteConfirm(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DeleteCustomerAddress", "CustomerAddress")",
+            data: { addressId: aId, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    var grid = $('#CustomerAddressGrid').data('kendoGrid');
+                    grid.dataSource.read();
+                    SetSuccessMessage(result.Message);
+                }
+            },
+            dataType: "json"
+        });
+    });
+}
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.CustomerAddress.CustomerAddressListModel>()
+          .Name("CustomerAddressGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.AddressId).ClientTemplate("<center><a class='details modalClickCustomerAddress' id='#=AddressId#' frameTitle='" + @CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Details") + "' href='/CustomerAddress/CustomerAddressDetails/#=AddressId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CustomerAddress.CustomerAddressDetails));
+                  columns.Bound(p => p.AddressId).ClientTemplate("<center><a class='edit modalClickCustomerAddress' id='#=AddressId#' frameTitle='" + @CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Update") + "' href='/CustomerAddress/CustomerAddressUpdate/#=AddressId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CustomerAddress.CustomerAddressUpdate));
+                  columns.Bound(o => o.AddressId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Delete") + "' onclick='DeleteCustomerAddress(#=AddressId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CustomerAddress.CustomerAddressDelete));
+                  columns.Bound(p => p.AddressTypeName).Width(100).Sortable(true);
+                  columns.Bound(p => p.CityName).Width(100).Sortable(true);
+                  columns.Bound(p => p.CountryName).Width(100).Sortable(true);
+                  columns.Bound(p => p.TownName).Width(100).Sortable(true);
+                  columns.Bound(p => p.ZipCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.IsActiveName).Width(100).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCustomerAddress", "CustomerAddress", Model))
+                                        .Model(model => model.Field(o => o.CustomerId).DefaultValue(-1)))
+
+          )
+</div>

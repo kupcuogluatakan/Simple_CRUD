@@ -1,0 +1,173 @@
+﻿@model ODMSModel.CampaignVehicle.CampaignVehicleListModel
+@using ODMSCommon.Resources
+<div id="showSearch2" class="showSearch btn btn-default">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv2" class="searchDiv" style="margin-top:10px;margin-bottom:10px;">
+    <div id="searchFields">
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(x => x.VinNo)</div>
+        <div class="clearfix"></div>
+        @ODMSHelpers.LinkButton("btnSearch3", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleIndex)
+        @Html.HiddenFor(x => x.VinNo)
+    </div>
+</div>
+<div class="clearfix"></div>
+
+
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickCampaignVehicle createNewCampaignVehicle", CommonUtility.GetResourceValue("CampaignVehicle_PageTitle_Create"), CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleCreate)
+@Html.ExportExcelButton(new ExcelExportDto("CampaignVehicle", "ListCampaignVehicleForDealer", "GetCampaignCode", "Taner").Build<ODMSModel.CampaignVehicle.CampaignVehicleListModel, object>(c => c.VinNo, c => c.IsActiveName, c => c.IsUtilizedName, c=>c.IsCompleteString, c => c.DealerName, c => c.Customer, c => c.LastWorkOrderId))
+@Html.AntiForgeryToken()
+<br />
+<div id="CampaignVehicleModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("CampaignVehicleModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#CampaignVehicleGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+    @Html.HiddenFor(v => v.CampaignCode)
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+
+        $("#btnSearch3").click(function (e) {
+            var grid = $('#CampaignVehicleGrid').data('kendoGrid');
+            grid.dataSource.read();
+        });
+
+        $("#showSearch2").click(function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (IsVisible == false) {
+                $(this).html("@MessageResource.Global_Display_Hide_Search_Criteria");
+                $(this).addClass("searchVisible");
+                $("#searchDiv2").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv2").hide("slow");
+            }
+        });
+
+
+
+
+        $("body").delegate(".modalClickCampaignVehicle", "click", function (e) {
+            $('#CampaignVehicleModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var idList = clickedId.split("$");
+            var campaignCodeParam = idList[0];
+            var vehicleIdParam = idList[1];
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("CampaignVehicleDetails", "CampaignVehicle", new { campaignCode = -1, vehicleId = -2 })";
+                link = link.replace("-1", campaignCodeParam);
+                link = link.replace("-2", vehicleIdParam);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("CampaignVehicleUpdate", "CampaignVehicle", new { campaignCode = -1, vehicleId = -2 })";
+                link = link.replace("-1", campaignCodeParam);
+                link = link.replace("-2", vehicleIdParam);
+            }
+            else if ($(this).hasClass("createNewCampaignVehicle")) {
+                link = "@Url.Action("CampaignVehicleCreate", "CampaignVehicle", new { campaignCode = @Model.CampaignCode})";
+            }
+            $("#CampaignVehicleModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#CampaignVehicleModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+        
+    });
+
+    function DeleteCampaignVehicle(cCode, vId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteCampaignVehicle", "CampaignVehicle")",
+                data: { campaignCode: cCode, vehicleId: vId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#CampaignVehicleGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    function CampaignVehicleSearch() {
+
+        return {
+            CampaignCode: '@Model.CampaignCode',
+            VinNo: $('#VinNo').val()
+        };
+    }
+
+    function GetCampaignCode() {
+        return { CampaignCode: '@Model.CampaignCode' };
+    }
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.CampaignVehicle.CampaignVehicleListModel>()
+          .Name("CampaignVehicleGrid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.VehicleId).ClientTemplate("<center><a class='details modalClickCampaignVehicle' id=" + Model.CampaignCode + "$" + "#=VehicleId# frameTitle='" + @CommonUtility.GetResourceValue("CampaignVehicle_PageTitle_Details") + "' href='/CampaignVehicle/CampaignVehicleDetails/#=VehicleId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleDetails));
+              columns.Bound(p => p.VehicleId).ClientTemplate("<center><a class='edit modalClickCampaignVehicle' id=" + Model.CampaignCode + "$" + "#=VehicleId# frameTitle='" + @CommonUtility.GetResourceValue("CampaignVehicle_PageTitle_Update") + "' href='/CampaignVehicle/CampaignVehicleUpdate/#=VehicleId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleUpdate));
+              columns.Bound(o => o.VehicleId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("CampaignVehicle_PageTitle_Delete") + "' onclick='DeleteCampaignVehicle(\"#=CampaignCode#\",#=VehicleId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleDelete));
+              columns.Bound(p => p.VinNo).Width(100).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+              columns.Bound(p => p.IsActiveName).Width(50).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+              //columns.Bound(p => p.IsUtilizedName).Width(100).Sortable(true).HtmlAttributes(new { style = "text-align:center;" }).ClientTemplate("\\ #if(IsUtilizedName != 'EVET'){##}\\#" );
+              columns.Bound(c => c.IsUtilizedName).ClientTemplate("#if(IsUtilizedName != 'EVET'){#" + String.Format("<center><a class='k-link' target='_blank' href='{0}/#=IsUtilizedName#'>#=IsUtilizedName#</a></center>", Url.Action("WorkOrderCardIndex", "WorkOrderCard")) + "#}else{#<center>#=IsUtilizedName#</center>#}#").Width(50);
+              columns.Bound(p => p.IsCompleteString).Width(100).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+              columns.Bound(p => p.DealerName).Width(150).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+              columns.Bound(p => p.Customer).Width(150).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+              columns.Bound(p => p.LastWorkOrderId).Width(80).Sortable(true).HtmlAttributes(new { style = "text-align:center;" }).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}/#=LastWorkOrderId#'>#=LastWorkOrderId#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard")));
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCampaignVehicleForDealer", "CampaignVehicle").Data("CampaignVehicleSearch"))
+                                        .Model(model => model.Field(o => o.VehicleId).DefaultValue(-1)))
+
+    )
+</div>

@@ -1,0 +1,63 @@
+﻿@{
+    ViewBag.Title = "AddLabourPrice";
+    Layout = null;
+}
+@using ODMSCommon.Resources
+@model ODMSModel.WorkOrderCard.AddLabourPrice
+<style>
+    .m10 {
+        margin: 10px;
+    }
+</style>
+<div id="warning-wrap" class="alert alert-warning" style="display:none">
+    <strong>
+
+    </strong>
+</div>
+<div>
+    @Html.HiddenFor(c => c.Type)
+    @Html.HiddenFor(c => c.WorkOrderId)
+    @Html.HiddenFor(c => c.WorkOrderDetailId)
+    @Html.HiddenFor(c => c.ItemId)
+    <div class="labelDiv">
+        @MessageResource.PDIInvoiceList_Display_UnitPrice
+    </div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(c => c.UnitPrice).Decimals(2).Format("{0:N}").Spinners(true).HtmlAttributes(new { type = "text", style = "width:205px;" })
+    </div>
+    <div class="clearfix"></div>
+    @ODMSHelpers.Button("Save", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.WorkOrderCard.WorkOrderCardUpdate, "AddLabourPrice", "SavePrice()")
+</div>
+<script type="text/javascript">
+    function SavePrice() {
+        debugger;
+        var data = GetData();
+        $.post(
+            "@Url.Action("AddLabourPrice")",
+            data,
+            function(json) {
+                HandleResult(json);
+            }, "JSON");
+
+    }
+    function GetData() {
+        return {
+            Type: $('#Type').val(),
+            WorkOrderId: $('#WorkOrderId').val(),
+            ItemId: $('#ItemId').val(),
+            WorkOrderDetailId: $('#WorkOrderDetailId').val(),
+            UnitPrice: $('#UnitPrice').val()
+        };
+    }
+    function HandleResult(json) {
+        if (json.Result == false) {
+            $("#warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+            $("#warning-wrap  strong").html(json.Message);
+        } else {
+            $("#warning-wrap").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+            $("#warning-wrap  strong").html(json.Message);
+        }
+        $("#warning-wrap").fadeIn();
+        setTimeout(function () { $("#warning-wrap").fadeOut(1000); }, 3000);
+    }
+</script>

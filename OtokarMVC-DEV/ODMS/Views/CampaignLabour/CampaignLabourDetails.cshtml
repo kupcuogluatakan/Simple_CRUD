@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignLabour_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.CampaignLabour.CampaignLabourViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.LabourCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourCode) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.LabourTypeDesc)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourTypeDesc) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.Quantity) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<br />
+
+
+
+

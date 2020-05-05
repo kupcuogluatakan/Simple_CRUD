@@ -1,0 +1,54 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.ListModel
+
+@model VehicleHistoryDetailListModel
+@{
+    ViewBag.Title = MessageResource.Display_VehicleHistoryDetail_Title;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleHistory.VehicleHistoryExcelExport))
+{
+    @Html.ExportExcelButton(new ExcelExportDto("VehicleHistory", "ListVehicleHistoryDetailForVehicleHistoryScreen", "SearchVehicleHistoryDet", "asad", filterId: "searchFields", reportName: MessageResource.Display_VehicleHistoryDetail_Title).Build<VehicleHistoryDetailListModel, object>(
+        c => c.DetailCode,
+        c => c.DetailDescription,
+        c => c.ListPrice,
+        c => c.WarratyRatio,
+        c => c.WarrantyPrice,
+        c => c.Quantity
+      ))
+}
+@Html.HiddenFor(x => x.VehicleHistoryId, new { id = "_VhID" })
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<VehicleHistoryDetailListModel>().Name("VehicleHistoryDetailScreenGrid")
+        .Columns(columns =>
+        {
+
+            columns.Bound(b => b.DetailCode).Width(100).Sortable(true);
+            columns.Bound(b => b.DetailDescription).Width(150);
+            columns.Bound(b => b.ListPrice).Width(100).Sortable(true);
+            columns.Bound(b => b.WarratyRatio).Width(100).Sortable(true);
+            columns.Bound(b => b.WarrantyPrice).Width(100).Sortable(true);
+            columns.Bound(p => p.Quantity).Width(60).Sortable(true);
+        })
+        .Sortable()
+        .Scrollable()
+        .Pageable()
+        //.Events(e => e.DataBound("onDataBound"))
+        .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(10)
+        .ServerOperation(true)
+        .Read(read => read.Action("ListVehicleHistoryDetailForVehicleHistoryScreen", "VehicleHistory", Model))))
+
+</div>
+<script>
+    $("body").delegate("#btnSearch", "click", function (e) {
+        var grid = $('#VehicleHistoryDetailScreenGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    });
+    function SearchVehicleHistoryDet() {
+        return {
+            VehicleHistoryId: $("#_VhID").val()
+        };
+    }
+</script>

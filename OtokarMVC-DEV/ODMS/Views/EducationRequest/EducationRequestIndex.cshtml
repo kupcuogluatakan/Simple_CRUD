@@ -1,0 +1,164 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.EducationRequest
+
+@model EducationRequestIndexModel
+@{
+    ViewBag.Title = @MessageResource.EducationRequest_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div id="tagSelectLabourDiv" class="labelDiv" style="width: 120px">@Html.LabelFor(d => d.EducationList)</div>
+        <div id="cmbSelectLabourDiv" class="shortTxtDiv">
+            @(Html.Kendo().ComboBox()
+                  .Name("cmbEducation")
+                  .Placeholder(@MessageResource.EducationRequest_Display_SelectEducation)
+                  .BindTo(Model.EducationList)
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+                  )
+        </div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.EducationRequest.EducationRequestIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.EducationRequest_PageTitle_Create, CommonValues.PermissionCodes.EducationRequest.EducationRequestCreate)
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<EducationRequestListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(d => d.Id).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.EducationRequest_PageTitle_Details + "' onclick='WorkerEducationRequestDetails(this,#=Id#);'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.EducationRequest.EducationRequestDetails));
+                  columns.Bound(b => b.Id).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.EducationRequest_PageTitle_Delete + "' onclick='DeleteWorkerEducationRequest(this,#=Id#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.EducationRequest.EducationRequestDelete));
+                  columns.Bound(d => d.EducationCode).Width(200).Sortable(true);
+                  columns.Bound(d => d.EducationName).Width(200).Sortable(true);
+                  columns.Bound(d => d.WorkerName).Width(200).Sortable(true);
+                  columns.Bound(d => d.CreateDate).Width(200).Format("{0:dd/MM/yyyy}").Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListEducationRequests", "EducationRequest").Data("Search"))
+          ))
+
+</div>
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("EducationRequest")
+          .Draggable()
+          .Resizable()
+          .Width(680)
+          .Height(400)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+          )
+</div>
+@section Scripts
+{
+    <script>
+        $(function() {
+            RegisterEventHandlers();
+        });
+
+        function Search() {
+            return {
+                EducationCode : $("#cmbEducation").val()
+            };
+        }
+        
+        function RegisterEventHandlers() {
+            $("body").delegate("#showSearch", "click", function(e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            
+            $("body").delegate("#btnSearch", "click", function () {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+            });
+            
+            $("body").delegate("#btnCreate", "click", function () {
+                $('#modelWindow').html('');
+                
+                var frameTitle = $(this).attr("frameTitle");
+                var link = "@Url.Action("EducationRequestCreate", "EducationRequest")";
+
+                ShowPopup(frameTitle, link);
+            });
+        }
+        
+        function ShowPopup(frameTitle, link) {
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        }
+        
+        function WorkerEducationRequestDetails(obj, id) {
+            $('#modelWindow').html('');
+
+            var frameTitle = $(obj).attr("frameTitle");
+
+            var link = "@Url.Action("EducationRequestDetails", "EducationRequest", new { id = "p1" })";
+            link = link.replace("p1", id);
+
+            ShowPopup(frameTitle, link);
+        }
+        
+        function DeleteWorkerEducationRequest(obj, id) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("EducationRequestDelete","EducationRequest")",
+                    data: { Id: id, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+
+}

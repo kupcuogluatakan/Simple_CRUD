@@ -1,0 +1,342 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{98F77DE1-6E89-4D98-85CA-DA98B0815F85}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ODMSService</RootNamespace>
+    <AssemblyName>ODMSService</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <PublishUrl>C:\syswintest\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>4742ADC35835254B444272A2C66EFC301AF0DA37</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>ODMSService_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Quartz">
+      <HintPath>..\..\DLL\Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.EnterpriseServices">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Management" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Runtime.Serialization">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Services">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ServiceProcess">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Helpers\GosErrorEmailSender.cs" />
+    <Compile Include="Helpers\Logger.cs" />
+    <Compile Include="JobScheduler.cs" />
+    <Compile Include="Jobs\WorkOrderDetailReportHourControlJob.cs" />
+    <Compile Include="LoggingHelper.cs" />
+    <Compile Include="OtokarDataServ.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="OtokarDataServ.Designer.cs">
+      <DependentUpon>OtokarDataServ.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="ProjectInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ProjectInstaller.Designer.cs">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Report\AlternatePartReport.cs" />
+    <Compile Include="Report\AppointmentIndicatorCategoryReport.cs" />
+    <Compile Include="Report\AppointmentIndicatorFailureCodeReport.cs" />
+    <Compile Include="Report\AppointmentIndicatorMainCategoryReport.cs" />
+    <Compile Include="Report\AppointmentIndicatorSubCategoryReport.cs" />
+    <Compile Include="Report\BreakdownDefinitionReport.cs" />
+    <Compile Include="Report\CampaignRequestApproveReport.cs" />
+    <Compile Include="Report\CampaignSummaryReport.cs" />
+    <Compile Include="Report\CarServiceDurationReport.cs" />
+    <Compile Include="Report\ChargePerCarReport.cs" />
+    <Compile Include="Report\ClaimSupplierReport.cs" />
+    <Compile Include="Report\CriticalStockCardReport.cs" />
+    <Compile Include="Report\CustomerReport.cs" />
+    <Compile Include="Report\CycleCountResultReport.cs" />
+    <Compile Include="Report\CycleCountStockDiffSearchReport.cs" />
+    <Compile Include="Report\DealerStartupInventoryLevelReport.cs" />
+    <Compile Include="Report\FixAssetInventoryReport.cs" />
+    <Compile Include="Report\FleetWorkOrderReport.cs" />
+    <Compile Include="Report\GuaranteeReport.cs" />
+    <Compile Include="Report\InvoiceInfoReport.cs" />
+    <Compile Include="Report\KilometerDistributionReport.cs" />
+    <Compile Include="Report\LaborCostPerVehicleReport.cs" />
+    <Compile Include="Report\LabourDetailReport.cs" />
+    <Compile Include="Report\LabourPriceIndexReport.cs" />
+    <Compile Include="Report\LabourReport.cs" />
+    <Compile Include="Report\LabourSubGroupReport.cs" />
+    <Compile Include="Report\LabourTechnicianReport.cs" />
+    <Compile Include="Report\MaintenanceReport.cs" />
+    <Compile Include="Report\OtokarSparePartSaleInvoiceReport.cs" />
+    <Compile Include="Report\OtokarStockSearchReport.cs" />
+    <Compile Include="Report\PartExchangeReport.cs" />
+    <Compile Include="Report\PartStockActivityReport.cs" />
+    <Compile Include="Report\PartStockReport.cs" />
+    <Compile Include="Report\PDIControlDefinitionReport.cs" />
+    <Compile Include="Report\PDIControlPartDefinitionReport.cs" />
+    <Compile Include="Report\PDIPartDefinitionReport.cs" />
+    <Compile Include="Report\PDIResultDefinitionReport.cs" />
+    <Compile Include="Report\PersonnelInfoReport.cs" />
+    <Compile Include="Report\PriceReport.cs" />
+    <Compile Include="Report\ProposalReport.cs" />
+    <Compile Include="Report\PurchaseOrderReport.cs" />
+    <Compile Include="Report\RackReport.cs" />
+    <Compile Include="Report\ReportBase.cs" />
+    <Compile Include="Report\ReportCreator.cs" />
+    <Compile Include="Report\SaleReport.cs" />
+    <Compile Include="Report\SentPartUsageReport.cs" />
+    <Compile Include="Report\SparePartControlReport.cs" />
+    <Compile Include="Report\SparePartGuaranteeAuthorityNeedReport.cs" />
+    <Compile Include="Report\SSHReport.cs" />
+    <Compile Include="Report\StockSearchReport.cs" />
+    <Compile Include="Report\StockTypeDetailReport.cs" />
+    <Compile Include="Report\UserReport.cs" />
+    <Compile Include="Report\VehicleHistoryListWithDetailsReport.cs" />
+    <Compile Include="Report\VehicleHistoryDetailsReport.cs" />
+    <Compile Include="Report\VehicleHistoryReport.cs" />
+    <Compile Include="Report\WorkOrderDetailReport.cs" />
+    <Compile Include="Report\WorkOrderMainReport.cs" />
+    <Compile Include="Report\WorkOrderPartHistoryReport.cs" />
+    <Compile Include="Report\WorkOrderPartsTotalReport.cs" />
+    <Compile Include="Report\WorkOrderPerformanceReport.cs" />
+    <Compile Include="Report\WorkOrderProcessTypesTotalReport.cs" />
+    <Compile Include="Report\WorkOrderReport.cs" />
+    <Compile Include="Service References\OtokarService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\tr.com.otokar.service\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Jobs\RunImmediatelyJob.cs" />
+    <Compile Include="Jobs\ControlMrpJob.cs" />
+    <Compile Include="Jobs\ControlClaimPeriodLastDayJob.cs" />
+    <Compile Include="Jobs\ControlClaimPeriodPartListApproveJob.cs" />
+    <Compile Include="Jobs\DenyReasonJob.cs" />
+    <Compile Include="Jobs\FreePurchaseOrderJob.cs" />
+    <Compile Include="Jobs\GetGifNoJob.cs" />
+    <Compile Include="Jobs\GuaranteeCampaignPartPriceJob.cs" />
+    <Compile Include="Jobs\RetailPriceJob.cs" />
+    <Compile Include="Jobs\JobBase.cs" />
+    <Compile Include="Jobs\SparePartJob.cs" />
+    <Compile Include="Jobs\SparePartSplittingJob.cs" />
+    <Compile Include="Jobs\SparePartSupplyDiscountRatioJob.cs" />
+    <Compile Include="Jobs\VehicleCodeJob.cs" />
+    <Compile Include="Jobs\VehicleGroupJob.cs" />
+    <Compile Include="Jobs\VehicleModelJob.cs" />
+    <Compile Include="Jobs\VehicleSalesJob.cs" />
+    <Compile Include="Jobs\ReportCreatorJob.cs" />
+    <Compile Include="Jobs\VehicleJob.cs" />
+    <Compile Include="Jobs\VehicleTypeJob.cs" />
+    <Compile Include="Jobs\VehicleWarrantyEndControlJob.cs" />
+    <Compile Include="Jobs\WorkOrderDetailReportDayControlJob.cs" />
+    <Compile Include="Jobs\PartClassInfoJob.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ODMSService_TemporaryKey.pfx" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\OtokarService\Project_dms.wsdl" />
+    <None Include="Service References\tr.com.otokar.service\Project_dms.wsdl" />
+    <None Include="System.Data.DataSet4.datasource" />
+    <None Include="System.Xml.XmlNode.datasource" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="OtokarDataServ.resx">
+      <DependentUpon>OtokarDataServ.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProjectInstaller.resx">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\OtokarService\" />
+    <WCFMetadataStorage Include="Service References\tr.com.otokar.service\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\Project_dms.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\OtokarService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\Project_dms.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\tr.com.otokar.service\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ODMSBusiness\ODMSBusiness.csproj">
+      <Project>{33e51652-46f8-4e02-a526-557ac7731013}</Project>
+      <Name>ODMSBusiness</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSCommon\ODMSCommon.csproj">
+      <Project>{4dc1c8cf-146a-4703-a404-efc05c7318e9}</Project>
+      <Name>ODMSCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSData\ODMSData.csproj">
+      <Project>{b5081646-3912-40d1-bdb2-0b870ad13565}</Project>
+      <Name>ODMSData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSModel\ODMSModel.csproj">
+      <Project>{9ce95b96-f4c1-4642-a31c-55448673ba1e}</Project>
+      <Name>ODMSModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

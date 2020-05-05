@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Currency_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.Currency.CurrencyIndexViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.CurrencyCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CurrencyCode) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CurrencyName)</div>
+<div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = false }); }</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.DecimalPartName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.DecimalPartName) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ListOrder)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.ListOrder) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.AdminName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.AdminName) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActiveName) &nbsp;</div>
+<br />
+
+
+
+

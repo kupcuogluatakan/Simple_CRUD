@@ -1,0 +1,33 @@
+﻿@model ODMSModel.GuaranteeCompLabourMargin.GuaranteeCompLabourMarginViewModel
+@Html.AntiForgeryToken()
+
+<div class="labelDiv">@Html.LabelFor(v => v.CountryName)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.CountryId).BindTo(ViewBag.CountryList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) 
+    @Html.ValidationMessageFor(v => v.CountryId)  </div>
+<div class="labelDiv">@Html.LabelFor(v => v.MaxPrice)</div>
+<div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.MaxPrice).Spinners(false).Decimals(0).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "4", data_val_min = "0", style = "width:200px" })
+
+    @Html.ValidationMessageFor(v => v.MaxPrice)
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.GrntRatio)</div>
+<div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.GrntRatio).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "7", data_val_min = "0", style = "width:200px" })
+
+</div>
+<div class="labelDiv">@Html.LabelFor(v => v.GrntPrice)</div>
+<div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.GrntPrice).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "7", data_val_min = "0", style = "width:200px" })
+
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+ 
+<script type="text/javascript">
+    $(document).ready(function () {
+        if ($('#CountryId').data('kendoComboBox').value() == '') {
+            $('#CountryId').data('kendoComboBox').text('');
+        }
+    });
+</script>

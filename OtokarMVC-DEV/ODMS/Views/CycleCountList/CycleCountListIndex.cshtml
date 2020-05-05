@@ -1,0 +1,96 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.CycleCount.CycleCountViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CycleCount_PageTitle_List");
+}
+
+<script>
+    $("body").delegate("#showSearch", "click", function (e) {
+        var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+        if (!IsVisible) {
+            $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+            $(this).addClass("searchVisible");
+            $("#searchDiv").show("slow");
+        }
+        else {
+            $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+            $(this).removeClass("searchVisible");
+            $("#searchDiv").hide("slow");
+        }
+    });
+
+    $("body").delegate("#btnSearch", "click", function (e) {
+        var grid = $('#CycleCountListGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+
+    });
+
+
+    $("body").delegate("#btnCreate", "click", function (e) {
+        window.location = '@Url.Action("CycleCountIndex","CycleCount")';
+    });
+
+    function Search() {
+        return {
+            CycleCountName: $('#CycleCountName').val(),
+            CycleCountStatus: $('#CycleCountStatus').val(),
+            CycleCountId: $('#CycleCountId').val()
+        };
+    }
+
+</script>
+
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.CycleCountName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CycleCountName) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CycleCountStatusName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.CycleCountStatus).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StockTypeName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StockTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CycleCountId)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CycleCountId) </div>
+    </div>
+    <br /><br />
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.CycleCount.CycleCountIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.Fleet_PageTitle_Create, CommonValues.PermissionCodes.CycleCount.CycleCountIndex)
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.CycleCount.CycleCountListModel>()
+          .Name("CycleCountListGrid")
+          .Columns(columns =>
+    {
+        columns.Bound(p => p.CycleCountId).ClientTemplate("<center><a  href='../CycleCount/CycleCountIndex/?cycleCountId=#=encryptedId#&isClosedApprovedTab=true' class='loadTab' onclick='' id='#=CycleCountId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(80).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CycleCount.CycleCountIndex));
+        columns.Bound(p => p.CycleCountId).Sortable(true).Width(150);
+        columns.Bound(p => p.CycleCountName).Sortable(true);
+        columns.Bound(p => p.StockTypeName).Sortable(true);
+        columns.Bound(p => p.CycleCountStatusName).Sortable(true);
+        columns.Bound(p => p.StartDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+        columns.Bound(p => p.EndDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+        columns.Bound(p => p.ConfirmDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+    })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCycleCount", "CycleCountList", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.CycleCountId).DefaultValue(-1)))
+
+    )
+</div>

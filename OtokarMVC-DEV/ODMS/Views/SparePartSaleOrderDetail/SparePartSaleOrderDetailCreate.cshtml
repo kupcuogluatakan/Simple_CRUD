@@ -1,0 +1,463 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.SparePartSaleOrderDetail.SparePartSaleOrderDetailDetailModel
+@{
+    ViewBag.Title = MessageResource.SparePartSaleOrderDetail_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    var currencyCode = "";
+    var unitName = "";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+<style>
+    #popupContent {
+        width: 1490px;
+        height: 690px;
+        padding-top: 10px;
+        padding-left: 10px;
+        margin: 0;
+        background-color: #EDF1F4 !important;
+    }
+
+    #showExcelUpload {
+        color: #428BCA;
+        cursor: pointer;
+        display: table;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .locked {
+        margin: 0 auto;
+        z-index: 100011; /*because you could set some z-indexes in your code before, so lets make sure that this will be over every elements in html*/
+        height: 100%;
+        top: 50%;
+        position: absolute;
+        left: 45%;
+    }
+
+    .lockedwrapper {
+        background-color: black;
+        opacity: 0.5;
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 100012;
+    }
+    .k-numerictextbox {
+        width: 204px;
+    }
+</style>
+<link href="~/Style/Content.css" rel="stylesheet" />
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<div class="lockedwrapper">
+    <div class="locked">
+        <div class="conteneur_78390">
+            <div class="decalage_pers_78390">
+                <div class="cercle_rouge_78390"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+@using (Html.BeginForm("SparePartSaleOrderDetailCreate", "SparePartSaleOrderDetail", FormMethod.Post, new {enctype = "multipart/form-data"}))
+{
+
+    <div id="showExcelUpload">@MessageResource.SparePartSaleOrderDetail_Display_FileUpload</div>
+    <div id="divExcelUpload">
+        <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+        <div>
+            <a class="k-link2" href="@Url.Action("ExcelSample")">
+                <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+            </a>
+            <br/>
+        </div>
+
+        @Html.Kendo().Upload().Messages(m => m.Select(MessageResource.SparePartSaleOrderDetail_Display_FileUpload)).Name("excelFile").Multiple(false).HtmlAttributes(new {title = MessageResource.SparePartSaleOrderDetail_Display_FileUpload})
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div id="divSave">
+        <div class="labelDiv">@Html.Label(@MessageResource.SparePartSaleOrderDetail_Display_SparePartList)</div>
+        <div class="shortTxtDiv">
+            @{
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "AllSparePart", CallbackFunction = "GetValues", ControlId = "SparePartId", Title1 = "", Title2 = "", DefaultText = Model.SparePartName, DefaultValue = Model.SparePartId });
+            }
+            @Html.ValidationMessageFor(d => d.SparePartId)
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div id="divPartDetails">
+            <div class="clearDiv">&nbsp;</div>
+
+            <div class="labelDiv">@Html.LabelFor(d => d.OrderQuantity)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.OrderQuantity).Events(ev => ev.Change(@"function(e){OrderPriceChanged();}")).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:204px" })
+                @Html.ValidationMessageFor(v => v.OrderQuantity)
+            </div>
+            <div class="labelDiv">@Html.LabelFor(d => d.PlannedQuantity)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.PlannedQuantity).Enable(false).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:204px"})
+                @Html.ValidationMessageFor(v => v.PlannedQuantity)
+            </div>
+
+            <div class="clearDiv">&nbsp;</div>
+
+            <div class="labelDiv">@Html.LabelFor(d => d.ShippedQuantity)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.ShippedQuantity).Enable(false).Spinners(false).Decimals(2).HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:204px" })
+                @Html.ValidationMessageFor(v => v.ShippedQuantity)
+            </div>
+
+            <div class="labelDiv">@Html.LabelFor(d => d.ListPrice)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.ListPrice).Enable(false).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:204px"})
+                @Html.ValidationMessageFor(v => v.ListPrice)
+            </div>
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(d => d.ListDiscountRatio)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.ListDiscountRatio).Enable(false).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:204px" })
+                @Html.ValidationMessageFor(v => v.ListDiscountRatio)
+            </div>
+            
+            <div class="labelDiv">@Html.LabelFor(d => d.OrderPrice)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.OrderPrice).Enable(!(Model.PoDetailSequenceNo != null && Model.MasterIsPriceFixed.GetValue<bool>())).Events(ev => ev.Change(@"function(e){OrderPriceChanged();}")).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:204px" })
+
+                @Html.ValidationMessageFor(v => v.OrderPrice)
+            </div>
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(d => d.AppliedDiscountRatio)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.AppliedDiscountRatio).Events(ev => ev.Change(@"function(e){AppliedDiscountRatioChanged();}")).Min(0).Max(100).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", style = "width:204px" })
+                @Html.ValidationMessageFor(v => v.AppliedDiscountRatio)
+            </div>
+
+            <div class="labelDiv">@Html.LabelFor(d => d.ConfirmPrice)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.ConfirmPrice).Enable(false).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:204px"})
+                @Html.ValidationMessageFor(v => v.ConfirmPrice)
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(d => d.SpecialExplanation)</div>
+            <div class="shortTxtDiv">
+                @Html.TextAreaFor(v => v.SpecialExplanation, new { style = "width: 450px; height: 150px" })
+                @Html.ValidationMessageFor(v => v.SpecialExplanation)
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+        </div>
+    </div>
+    @Html.HiddenFor(d => d.SoNumber)
+    @Html.HiddenFor(d => d.StatusId)
+
+    @ODMSHelpers.Button("Create", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.SparePartSaleOrderDetail.SparePartSaleOrderDetailCreate, "SparePartSaleOrderDetailCreate")
+    }
+<div class="kendoGridDiv" id="grd2" style="width: 1450px">
+    @(Html.Kendo().Grid<ODMSModel.SparePartSaleOrderDetail.SparePartSaleOrderDetailListModel>()
+          .Name("grid2")
+          .Columns(columns =>
+          {
+              columns.Bound(d => d.SparePartSaleOrderDetailId).ClientTemplate("#if((PurchaseOrderDetailSeqNo == null || PurchaseOrderDetailSeqNo == '') && StatusId == 0 && (MasterStatusId == 1 || MasterStatusId == 2 || MasterStatusId == 3)){#<center><a href='javascript:void(0);' frameTitle='" + MessageResource.SparePartSaleOrderDetail_PageTitle_Delete + "' onclick='DeleteSparePartSaleOrderDetail(#=SparePartSaleOrderDetailId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Delete).Width(40).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSaleOrderDetail.SparePartSaleOrderDetailDelete));
+
+              columns.Bound(d => d.SparePartCode).Width(100).Sortable(true);
+              columns.Bound(d => d.SparePartName).Width(170).Sortable(true);
+              columns.Bound(d => d.PoNumber).Width(100).Sortable(true);
+              columns.Bound(d => d.OrderQuantity).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.PlannedQuantity).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.ShippedQuantity).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.ListPrice).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.OrderPrice).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.ConfirmPrice).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.CurrencyCode).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.ListDiscountRatio).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.AppliedDiscountRatio).HtmlAttributes(new {style = "text-align:right"}).Width(50).Sortable(true);
+              columns.Bound(d => d.StatusName).Width(150).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListSparePartSaleOrderDetails", "SparePartSaleOrderDetail", Model)))
+          )
+
+</div>
+<script id="add-confirmation" type="text/x-kendo-template">
+    <p class="add-message">@MessageResource.PurchaseOrderDetail_Confirm_InsertionTopPartMessage</p>
+    <p style="text-align:right">
+        <button class="add-confirm k-button">@MessageResource.Global_Display_Yes</button> 
+        <button class="add-confirm no-btn k-button">@MessageResource.Global_Display_No</button>
+    </p>
+</script>
+<script type="text/javascript">
+    function AddConfirm(addFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_AddConfirmTitle",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#add-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".add-confirm")
+            .click(function () {
+                if ($(this).hasClass("add-confirm") && !$(this).hasClass("no-btn")) {
+                    confirm = true;
+                    if (addFunction) {
+                        addFunction();
+                        $("#DesireQuantity").prev().focus();
+                    }
+                }
+                else if ($(this).hasClass("no-btn")) {
+                    kendoWindow.data("kendoWindow").close();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+    function GetValues() {
+        $('.lockedwrapper').css('display', 'block');
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        $.post("@Url.Action("GetSparePartChangeInfo", "SparePartSaleOrderDetail")", {
+            partId: $('#SparePartId').val(),
+            "__RequestVerificationToken": token
+        }, function(json) {
+            var message = "";
+            if (json.MessageChange != "") {
+                message = json.MessageChange;
+            }
+            if (json.MessageSplit != "") {
+                message += " ";
+                message += json.MessageSplit;
+            }
+            if (message != "") {
+                SetErrorMessage(message);
+            }
+            if (message != "") {
+
+                AddConfirm(function() {
+                    if (json.NewPartId != $('#PartId').val()) {
+
+                        $('.lockedwrapper').css('display', 'block');
+                        $("#PartId").val(json.NewPartId);
+                        $("#txtSparePartId").val(json.PartName);
+                        SetPartDetail(json.PartName, json.NewPartId, token);
+                        $('.lockedwrapper').css('display', 'none');
+                    }
+                });
+
+            } else {
+                //SetPartDetail(json.PartName, json.NewPartId, token);
+            }
+
+            $('.lockedwrapper').css('display', 'none');
+        }, "JSON");
+
+    }
+
+    function SetPartDetail(partName, partId, token) {
+
+        $.ajax({
+            url: '@Url.Action("AutocompleteSearch", "AutocompleteSearch")',
+            dataType: 'html',
+            data: { SearchType: "AllSparePart", ControlId: "SparePartId", Title1: "", Title2: "", DefaultText: partName, DefaultValue: partId },
+            traditional: true,
+            type: 'POST',
+            success: function(content) {
+                $("#divPart").html(content);
+                GetPartQuantityPriceDetails(token);
+            }
+        });
+    }
+
+    function GetPartQuantityPriceDetails(token) {
+
+        $('.lockedwrapper').css('display', 'block');
+
+        $.post("@Url.Action("GetValues", "SparePartSaleOrderDetail")", {
+            partId: $('#SparePartId').val(),
+            soNumber: '@Model.SoNumber',
+            "__RequestVerificationToken": token
+        }, function(json) {
+            if (json) {
+                currencyCode = json.CurrencyCode;
+                unitName = json.UnitName;
+                $("#ShippedQuantity").kendoNumericTextBox({
+                    value: json.shipmentQuantity,
+                    spinners: false,
+                    width:204,
+                    format: "#.00 " + unitName
+                });
+                $("#ListPrice").kendoNumericTextBox({
+                    value: json.ListPrice,
+                    spinners: false,
+                    width: 204,
+                    format: "#.00 " + currencyCode
+                });
+                $("#ListDiscountRatio").kendoNumericTextBox({
+                    value: json.ListDiscountRatio,
+                    spinners: false,
+                    width: 204,
+                    format: "#.00 "
+                });
+                $("#AppliedDiscountRatio").kendoNumericTextBox({
+                    value: json.ListDiscountRatio,
+                    width: 204,
+                    spinners: false,
+                    format: "#.00 "
+                });
+                $("#OrderPrice").kendoNumericTextBox({
+                    value: json.OrderPrice,
+                    spinners: false,
+                    width: 204,
+                    format: "#.00 " + currencyCode
+                });
+                $("#ConfirmPrice").kendoNumericTextBox({
+                    value: json.OrderPrice,
+                    spinners: false,
+                    width: 204,
+                    enable: false,
+                    format: "#.00 " + currencyCode
+                });
+
+                $('.lockedwrapper').css('display', 'none');
+            }
+        }, "JSON");
+        $('.lockedwrapper').css('display', 'none');
+        $('#divPartDetails').show();
+    }
+
+    $(document).ready(function() {
+        
+        if ('@ViewBag.IsExcelUpload' != 'True') {
+            $("#divExcelUpload").hide();
+            if('@ViewBag.IsSuccess' != 'True')
+                $('#divPartDetails').show();
+            else
+                $('#divPartDetails').hide();
+            $('#divSave').show();
+        } else {
+            $('#divSave').hide();
+        }
+
+        $("body").delegate("#showExcelUpload", "click", function(e) {
+            var IsVisible = Boolean($(this).hasClass("excelUploadVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.SparePartSaleOrderDetail_Display_FileUpload');
+                $(this).addClass("excelUploadVisible");
+                $("#divExcelUpload").show("slow");
+                $('#divSave').hide("slow");
+            } else {
+                $(this).html('@MessageResource.SparePartSaleOrderDetail_Display_FileUpload');
+                $(this).removeClass("excelUploadVisible");
+                $("#divExcelUpload").hide("slow");
+                $('#divSave').show("slow");
+                $('#divPartDetails').hide();
+            }
+        });
+    });
+    function DeleteSparePartSaleOrderDetail(SparePartSaleOrderDetailId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SparePartSaleOrderDetailDelete", "SparePartSaleOrderDetail")",
+                data: { SparePartSaleOrderDetailId: SparePartSaleOrderDetailId , SoNumber:'@Model.SoNumber', "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid2').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+    function OrderQuantityChanged() {
+        var plannedQuantity = $("#PlannedQuantity").val().replace(',', '.');
+        var orderQuantity = $("#OrderQuantity").val().replace(',', '.');
+
+        if (parseFloat(orderQuantity) < parseFloat(plannedQuantity)) {
+            document.getElementById("orderQuantity").style.backgroundColor = "red";
+            SetErrorMessage('@MessageResource.SparePartSaleOrderDetail_Warning_PlannedQtyOrderQtyControl');
+        } else {
+            document.getElementById("orderQuantity").style.backgroundColor = "white";
+        }
+        
+    }
+    function OrderPriceChanged() {
+
+        var orderPrice = $("#OrderPrice").val().replace(',', '.');
+        console.log("orderprice",orderPrice)
+
+        var listPrice = $("#ListPrice").val().replace(',', '.');
+
+        if (parseFloat(listPrice) < parseFloat(orderPrice)) {
+            document.getElementById("OrderPrice").style.backgroundColor = "red";
+            SetErrorMessage('@MessageResource.SparePartSaleOrderDetail_Warning_OrderPriceListPriceControl');
+        } else {
+            document.getElementById("OrderPrice").style.backgroundColor = "white";
+
+            var discountRatio =  ((parseFloat(listPrice) - parseFloat(orderPrice)) * 100) / parseFloat(listPrice);
+            $("#AppliedDiscountRatio").kendoNumericTextBox({
+                value: discountRatio,
+                spinners: false,
+                width: 204,
+                format: "#.00 "
+            });
+        }
+        @*$("#ConfirmPrice").kendoNumericTextBox({
+            value:orderPrice,
+            spinners: false,
+            decimals:2,
+            enable: false,
+            culture:'@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()',
+            format: "{0:N2} " + currencyCode
+        });*@
+    }
+    function AppliedDiscountRatioChanged() {
+        
+        var discountRatio = $("#AppliedDiscountRatio").val().replace(',', '.');
+        var listPrice = $("#ListPrice").val().replace(',', '.');
+
+        var orderPrice =  parseFloat(listPrice) * ((100 - parseFloat(discountRatio)) / 100);
+        $("#OrderPrice").kendoNumericTextBox({
+            value: orderPrice,
+            spinners: false,
+            width: 204,
+            format: "#.00 " + currencyCode
+        });
+        $("#ConfirmPrice").kendoNumericTextBox({
+            value:orderPrice,
+            spinners: false,
+            width: 204,
+            enable: false,
+            format: "#.00 " + currencyCode
+        });
+    }
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+</script>

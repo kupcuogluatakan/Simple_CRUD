@@ -1,0 +1,335 @@
+﻿
+
+
+
+@using ODMSCommon.Resources
+@using ODMSModel.WorkOrderInvoice
+@model WorkOrderInvoicesViewModel
+@{ 
+    var x = @Model;
+}
+<style type="text/css">
+    #popupContentWrapper {
+        /* height: 480px !important;*/
+    }
+
+    #popupContent {
+        width: 99% !important;
+    }
+
+        #popupContent:after {
+            clear: both;
+        }
+
+    body {
+        overflow-y: auto !important;
+    }
+</style>
+
+<div id="CustomerAddressModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("CustomerAddressModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(910)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+        RefreshAddressCombo();
+    }"))
+    )
+</div>
+
+
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@Html.AntiForgeryToken()
+@Html.HiddenFor(c => c.WorkOrderInvoiceId)
+@Html.HiddenFor(c => c.IsFromProposalWitholding)
+<div class="labelDiv">@Html.LabelFor(c => c.CustomerId)</div>
+<div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel { ObjectSearchType = CommonValues.ObjectSearchType.Customer, WindowTitle = MessageResource.ObjectSearch_WindowTitle_Customer, ReferenceObjectId = "CustomerId", ReferenceObjectValue = Model.CustomerId, ParentWindowId = "InvoiceWindow", Required = true, SelectCallBackFunction = "RefreshAddressCombo" }) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.AddressId)</div>
+<div class="shortTxtDiv">
+    <table>
+        <tr>
+            <td>
+                @Html.Kendo().ComboBoxFor(c => c.AddressId).DataValueField("Value").DataTextField("Text").HtmlAttributes(new { style = "width:650px;" }).DataSource(source => source.Read(read => read.Action("ListCustomerAddresses", "WorkOrderInvoice")
+                    .Data("GetCustomerId")
+                    .Type(HttpVerbs.Post)
+                    )
+                             .ServerFiltering(true)).Events(c => c.DataBound("SetCustomerAddress")).Enable(true).AutoBind(true).CascadeFrom("CustomerId")
+            </td>
+            <td>  @Html.ValidationMessageFor(v => v.AddressId)</td>
+            <td>
+                @ODMSHelpers.LinkButton("btnCreateBillingAddress", CommonUtility.GetResourceValue("Global_Display_NewAddress"), "Create", "modalClickCustomerAddress createNewCustomerBillingAddress", CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Create"), CommonValues.PermissionCodes.CustomerAddress.CustomerAddressCreate)
+            </td>
+        </tr>
+    </table>
+
+</div>
+<div class="clearDiv">&nbsp;</div>
+@*@if (Model.IsFromProposalWitholding == true)
+{
+    Model.HasWitholding = true;
+    <div>
+        <div class="labelDiv">@Html.LabelFor(c => c.HasWitholding)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(Model => Model.HasWitholding, new { onclick = "SetWitholdIdEnable(this);" })</div>
+        <div class="labelDiv">@Html.LabelFor(c => c.WitholdId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(Model => Model.WitholdId).CascadeFrom("CustomerId").AutoBind(true).DataTextField("Text").DataValueField("Value").DataSource(d => d.Read(r => r.Type(HttpVerbs.Post).Action("ListWitholdings", "WorkOrderInvoice").Data("GetCustomerId")).ServerFiltering(true)).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+     </div>
+}*@
+
+<div id="witholdwrap" style="display:none">
+    <div class="labelDiv">@Html.LabelFor(c => c.HasWitholding)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(Model => Model.HasWitholding,new { onclick="SetWitholdIdEnable(this);"})</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.WitholdId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.WitholdId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListWitholdings", "WorkOrderInvoice")
+                                 .Data("GetCustomerId")
+                                 .Type(HttpVerbs.Post)
+                                 )
+                                 .ServerFiltering(true)).AutoBind(true).CascadeFrom("CustomerId") </div>
+</div>
+
+
+<div class="clearDiv">&nbsp;</div>
+
+@*<div class="labelDiv">@Html.LabelFor(v => v.DueDuration) </div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBoxFor(c => c.DueDuration)
+                .DataValueField("Value").DataTextField("Text")
+                .Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                .BindTo(ViewBag.DueDurationList as List<SelectListItem>)
+                .AutoBind(true))
+        @Html.ValidationMessageFor(v => v.DueDuration)
+    </div>*@
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceSerialNo)</div>
+<div class="shortTxtDiv">
+    @Html.TextBoxFor(c => c.InvoiceSerialNo) @Html.ValidationMessageFor(c => c.InvoiceSerialNo)
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceNo)</div>
+<div class="shortTxtDiv">
+    @Html.TextBoxFor(c => c.InvoiceNo)   @Html.ValidationMessageFor(c => c.InvoiceNo)
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceDate)</div>
+<div class="shortTxtDiv">@Html.Kendo().DateTimePickerFor(v => v.InvoiceDate).Format("dd/MM/yyyy HH:mm").ParseFormats(new string[] { "dd.MM.yyyy HH:mm" }).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(v => v.InvoiceDate) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.InvoiceTypeId) </div>
+<div class="shortTxtDiv">
+    @(Html.Kendo().ComboBoxFor(c => c.InvoiceTypeId)
+          .DataValueField("Value").DataTextField("Text")
+          .Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+          .BindTo(ViewBag.InvoiceTypeList as List<SelectListItem>)
+          .Events(c => c.Change("OnInVoiceTypeChange"))
+          .AutoBind(true)
+          .Value(Model.InvoiceTypeId == 0 ? "" : Model.InvoiceTypeId.ToString())
+    )
+    @Html.ValidationMessageFor(v => v.InvoiceTypeId)
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.InvoiceAmount)</div>
+<div class="shortTxtDiv">
+    <span id="InvoiceAmount"> @(Math.Round((Model.InvoiceRatio * Model.InvoiceAmount / 100) ?? 0, 2))</span> &nbsp; @Model.Currrency
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div id="SpecialInvoice" class="hide">
+
+    <div class="labelDiv">@Html.LabelFor(c => c.SpecialInvoiceAmount)</div>
+    <div style="width:300px; float:left;">
+        @Html.Kendo().NumericTextBoxFor(c => c.SpecialInvoiceAmount).Decimals(2).Format("{0:N2}").Spinners(true).HtmlAttributes(new { type = "text", maxlength = "9", style = "width:204px" }).Placeholder(MessageResource.Global_Display_Select)
+    @Html.ValidationMessageFor(v => v.SpecialInvoiceAmount)
+</div>
+<div class="labelDiv">@Html.LabelFor(c => c.SpecialInvoiceVatAmount)</div>
+<div style="width:300px; float:left;">
+    @Html.Kendo().NumericTextBoxFor(c => c.SpecialInvoiceVatAmount).Decimals(2).Min(0).Format("{0:N2}").Spinners(true).HtmlAttributes(new { type = "text", maxlength = "9", style = "width:204px" })
+@Html.ValidationMessageFor(v => v.SpecialInvoiceVatAmount)
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.SpecialInvoiceDescription)</div>
+<div class="shortTxtDiv">@Html.TextAreaFor(c => c.SpecialInvoiceDescription, new { style = "resize:none" })  @Html.ValidationMessageFor(v => v.SpecialInvoiceDescription)</div>
+<div class="clearDiv">&nbsp;</div>
+</div>
+
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script src="~/Scripts/custom.js"></script>
+<script type="text/javascript">
+    var customerId=@Model.CustomerId;
+    function GetCustomerId() {
+        return {
+            CustomerId: $('#CustomerId').val()
+        };
+    }
+
+    function SetCustomerAddress() {
+        var combo = $("#AddressId").data("kendoComboBox");
+        if('@Model.AddressId.HasValue'=='True')
+            combo.select(function(dataItem) {
+                return dataItem.Value == @Model.AddressId.GetValueOrDefault();
+            });
+        else {
+            combo.select(0);
+        }
+    }
+
+    function PrintInvoice(type) {
+        $("#invoiceType").val(type);
+        if ($(".invoice-item:checked").length == 0) {
+            SetErrorMessage('@MessageResource.WorkOrderCard_Warning_MustSelectDetailForInvoice');
+            return;
+        }
+        $("#frmPrintInvoice").submit();
+        OnTabChange(2,this);
+    }
+
+    function PrintInvoice2(type) {
+        $("#invoiceType").val(type);
+        $("#frmPrintInvoice").submit();
+    }
+
+    function SetSelectedItems() {
+        var str = '';
+        $(".invoice-item:checked:not(:disabled)").each(function(i, e) {
+            str += $(this).data("id") + ",";
+        });
+        $("#WorkOrderIds").val(str);
+    }
+    function OnInVoiceTypeChange(e) {
+
+        if ($("#InvoiceTypeId").val() == 3) {
+            $("#SpecialInvoice").removeClass("hide");
+            $("#SpecialInvoice textarea").removeAttr("disabled");
+            $("#SpecialInvoiceAmount").data("kendoNumericTextBox").enable(true);
+            $("#SpecialInvoiceVatAmount").data("kendoNumericTextBox").enable(true);
+        } else {
+            $("#SpecialInvoice").addClass("hide");
+            $("#SpecialInvoice textarea").attr("disabled", "disabled");
+            $("#SpecialInvoiceAmount").data("kendoNumericTextBox").enable(false);
+            $("#SpecialInvoiceVatAmount").data("kendoNumericTextBox").enable(false);
+
+        }
+    }
+
+    var invoiceAmount = parseFloat(@Model.InvoiceAmount.ToString().Replace(",",".")).toFixed(2);
+    var minWitholdingAmount = 0;
+    $(document).ready(function () {
+
+        $("body").delegate(".modalClickCustomerAddress", "click", function (e) {
+
+            $('#CustomerAddressModelWindow').html('');
+            e.preventDefault();
+            var customerId = $('#CustomerId').val();
+            var link;
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("createNewCustomerBillingAddress")) {
+                link = "@Url.Action("CustomerAddressCreate", "CustomerAddress", new { customerId = -1,
+                       customerName = Model.CustomerName,
+                       addressTypeId = 3 })";
+                link = link.replace("-1", customerId);
+            }
+
+            $("#CustomerAddressModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#CustomerAddressModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+        OnInVoiceTypeChange();
+        GetWorkOrderInvoiceDTO();
+
+
+        @*var ratio=parseFloat($(this).val().replace(",",".")).toFixed(2);
+            if (ratio == 0 || ratio == undefined || !ratio || ratio > parseFloat(@Model.InvoiceRatio.ToString().Replace(",",".")).toFixed(2)) ratio = parseFloat(@Model.InvoiceRatio.ToString().Replace(",",".")).toFixed(2);
+            var amount = invoiceAmount * ratio / 100;
+            $('#InvoiceAmount').html(parseFloat(amount).toFixed(2).replace(".",","));
+            console.log("amount:"+amount)
+            var wrap = $('#witholdwrap');
+            if (amount >= minWitholdingAmount)
+                wrap.slideDown();
+            else {
+                wrap.slideUp();
+            }*@
+    });
+    function SetWitholdIdEnable(e) {
+        var cmb = $("#WitholdId").data("kendoComboBox");
+        if ($('#HasWitholding').is(":checked") == true) {
+            cmb.enable(true);
+            return;
+        }
+        cmb.enable(false);
+    }
+    function RefreshAddressCombo() {
+        $("#AddressId").data("kendoComboBox").dataSource.read();
+        GetWorkOrderInvoiceDTO();
+    }
+
+    function GetWorkOrderInvoiceDTO() {
+        //debugger;
+        var wrap = "";
+        var customerId = $('#CustomerId').val();
+        var combo = $("#WitholdId").data("kendoComboBox");
+        var workOrderId = @Model.WorkOrderId;
+        //if ('@Model.IsFromProposalWitholding' != 'True') {
+            mvc.build('@Url.Action("GetWorkOrderInvoiceDTO","WorkOrderInvoice")', "", "", { workOrderId: workOrderId, customerId: customerId,invoiceId:'@Model.WorkOrderInvoiceId', workOrderIds:'@Model.WorkOrderIds'},false,"json");
+            mvc.post(null,function(obj) {
+                if (obj) {
+                    wrap = $('#witholdwrap');
+                    if (obj.HasWitholding == true) {
+                        $('#HasWitholding').prop('checked', true);
+                        combo.value(obj.WitholdId);
+                        //min amounttan büyük mü
+                        var ratio = parseFloat(100).toFixed(2);
+                        if (ratio == 0 ||
+                            ratio == undefined ||
+                            !ratio ||
+                            ratio > parseFloat(@Model.InvoiceRatio.ToString().Replace(",", ".")).toFixed(2))
+                            ratio = parseFloat(@Model.InvoiceRatio.ToString().Replace(",", ".")).toFixed(2);
+                        //var amount = obj.InvoiceAmount * ratio / 100;
+                        // Oya & Mert Tevkifatlı fatura için KDV dahil değer üzerinden kontrol yapılması istendi.
+                        var amount = obj.InvoiceAmountWithVat * ratio / 100;
+                        minWitholdingAmount = obj.WitholdingMinAmount;
+
+                        if(amount>=minWitholdingAmount)
+                            wrap.slideDown();
+                    } else {
+                        wrap.hide();
+                        //temizle
+                        $("#WitholdId").val("");
+                        
+                    }
+                }
+
+
+            }, null);
+        //}
+
+    }
+
+    var currentRatio = parseFloat(@Model.InvoiceRatio.ToString().Replace(",",".")).toFixed(2);
+    jQuery.validator.addMethod("checkInvoiceRatio", function (value) {
+        var total = parseFloat(value.replace(",", ".")).toFixed(2);
+        //console.log(value);
+        //console.log(currentRatio);
+        if (parseFloat(total) > parseFloat(currentRatio))
+            return false;
+        return true;
+    }, "@(string.Format(MessageResource.Validation_WorkOrderInvoice_InvoiceRatioExceedError,Model.InvoiceRatio))");
+    jQuery.validator.classRuleSettings.checkInvoiceRatio = { checkInvoiceRatio: true };
+
+
+</script>

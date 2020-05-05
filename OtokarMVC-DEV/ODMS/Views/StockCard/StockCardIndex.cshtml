@@ -1,0 +1,461 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.StockCard.StockCardViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("StockCard_PageTitle_Index");
+    var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.ToString();
+}
+
+<script id="complete-confirmation" type="text/x-kendo-template">
+    <p class="complete-message">@Html.Raw(MessageResource.Global_Display_NewStockCardConfirmQuestion)</p>
+    <p style="text-align:right">
+        <button class="complete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="complete-cancel k-button">@MessageResource.Global_Display_No</button>
+    </p>
+</script>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+    .Name("modelWindow")
+    .Title("Customer")
+    .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(550)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+    var grid = $('#grid').data('kendoGrid');
+    grid.dataSource.read();
+    }"))
+    )
+</div>
+@*<meta charset="utf-8" />
+    <link href="~/Style/default.css" rel="stylesheet" />
+    <link href="~/Style/Site.css" rel="stylesheet" />
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+        @Scripts.Render("~/bundles/modernizr")
+        @Styles.Render("~/bundles/odms/css/commons")
+        @Styles.Render("~/Content/kendo/css")
+
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/kendo")
+    <link href="~/Style/bootstrap-theme.css" rel="stylesheet" />
+    <link href="~/Style/bootstrap.css" rel="stylesheet" />
+    <script src="~/Scripts/JSONProblemSolver.js"></script>
+        @{
+            var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.ToString();
+        }
+    <script src="@Url.Content(" ~/Scripts/kendo/cultures/kendo.culture." + culture + ".min.js")"></script>
+    <script src="@Url.Content(" ~/Scripts/kendo/languages/kendo." + culture + ".js")"></script>
+    <script src="@Url.Content(" ~/Scripts/kendo/globalize.js")"></script>
+    <script src="@Url.Content(" ~/Scripts/kendo/cultures/globalize.culture.tr-TR.js")"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/messages_tr.js"></script>*@
+<script>
+    function CompleteConfirm(completeFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Gloabl_Display_Approve",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#complete-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".complete-confirm, .complete-cancel")
+            .click(function () {
+                if ($(this).hasClass("complete-confirm")) {
+                    confirm = true;
+                    if (completeFunction)
+                        completeFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+
+    function pageLoad() {
+        CheckAlertBox();
+    }
+    (function ($) {
+
+        var pr = 0, bgWidth = true, bgResize;
+
+
+
+        $(document).ready(function () {
+            $.validator.methods.date = function (value, element) {
+                return this.optional(element) || Globalize.parseDate(value, "dd/MM/yyyy", "tr-TR") || Globalize.parseDate(value, "dd/MM/yyyy HH:mm", "tr-TR") || Globalize.parseDate(value, "HH:mm", "tr-TR");
+                ;
+            };
+            $(".ScreenName").html("@ViewBag.Title");
+            kendo.culture("@culture");
+            CheckAlertBox();
+            $(".close").on("click", function () {
+                $(".messageDiv").fadeOut("slow");
+            });
+
+            Globalize.culture('tr-TR');
+        });
+    })(jQuery);
+
+    function SetPageTitle(pageTitle) {
+        $(".ScreenName").html(pageTitle);
+    }
+    function CheckAlertBox() {
+        $('div[id="successDiv"]:visible').each(function () {
+
+            $(this).css("display", "none");
+            $(this).fadeIn(2000, function () {
+            });
+        });
+        $('div[id="errorDiv"]:visible').each(function () {
+            $(this).css("display", "none");
+            $(this).fadeIn(2000, function () {
+            });
+        });
+    }
+
+</script>
+<script>
+
+
+    function GetWarehouseId() {
+        return {
+            id: $('#WarehouseId').val()
+        };
+    }
+
+    var PartId = 0;
+    var DealerId = 0;
+
+    function ShowTabs(partIdParam, dealerIdParam) {
+        PartId = partIdParam;
+        DealerId = dealerIdParam;
+        $('#TabContent').html('');
+        $("#Tabs").data("kendoTabStrip").select(0);
+        $('#divDetails').show();
+        LoadTabContent('@Url.Action("CountryVatRatioList", "CountryVatRatio")');
+    }
+
+    function LoadTabContent(url) {
+        $('#TabContent').html('');
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: {},
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $('#TabContent').html(result);
+            },
+            error: function (request, status, err) {
+                //console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+
+    function Search() {
+        return {
+            DealerId: $("#DealerId").val(),
+            PartId: $("#PartId").val()
+        };
+    }
+</script>
+
+<div style="margin:20px">
+    <div class="labelDiv">@MessageResource.Global_Display_Action</div>
+    <div class="shortTxtDiv">@Html.Raw(Model.StockCardId > 0 ? "<span style='background-color:yellow'>" + MessageResource.Global_Display_Update + "</span>" : "<span style='color:white;background-color:green'>" + MessageResource.Global_Display_New + "</span>")</div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.ValidationSummary()
+
+
+    @using (Html.BeginForm("StockCardIndex", "StockCard", FormMethod.Post, new { id = "frmStockCard" }))
+    {
+        @Html.HiddenFor(c => c.IsOriginalPart)
+
+
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+        <div class="shortTxtDiv">
+            @Html.DisplayFor(v => v.DealerName)
+        </div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+        <div class="shortTxtDiv">
+            @{
+                Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "StockCardPartsWithDealer", ControlId = "PartId", Title1 = "", Title2 = "", Required = true, DefaultText = Model.StockCardId > 0 ? Model.PartCode : Model.PartCode == null ? "" : Model.PartCode + " / " + Model.PartName, DefaultValue = Model.PartId, CallbackFunction = "GetValues" });
+            }
+            @Html.HiddenFor(v => v.PartCode)
+        </div>
+
+
+
+        @Html.HiddenFor(v => v.PartName)
+
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.Weight)</div>
+                <div class="shortTxtDiv">
+                    <label style="width:200px"> @Html.DisplayFor(v => v.Weight)</label>
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.Volume)</div>
+                <div class="shortTxtDiv">
+                    <label style="width:200px">  @Html.DisplayFor(v => v.Volume)</label>
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>
+                <div class="shortTxtDiv">
+                    <label style="width:200px"> @Html.DisplayFor(v => v.VatRatio)</label>
+                </div>
+
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.SaleChannelDiscountRatio)</div>
+                <div class="shortTxtDiv">
+                    <label style="width:200px"> @Html.DisplayFor(v => v.SaleChannelDiscountRatio)</label>
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.LeadTime)</div>
+                <div class="shortTxtDiv">
+                    <label style="width:200px"> @Html.DisplayFor(v => v.LeadTime)</label>
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.AutoOrderName)</div>
+                <div class="shortTxtDiv">
+                    <label style="width:200px"> @Html.CheckBoxFor(c => c.AutoOrder, new { @disabled = "disabled" })</label>
+                </div>
+
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.StartupStockQty)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().NumericTextBoxFor(v => v.StartupStockQty).Spinners(false).Enable(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" })
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.MinSaleQuantity)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().NumericTextBoxFor(v => v.MinSaleQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" })
+                    @Html.ValidationMessageFor(v => v.MinSaleQuantity)
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.WarehouseName)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(v => v.WarehouseId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.WarehouseList as List<SelectListItem>
+            ).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                    @Html.ValidationMessageFor(v => v.WarehouseId)
+                </div>
+                @Html.HiddenFor(v => v.WarehouseId)
+
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.MinStockQuantity)</div>
+                <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.MinStockQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) @Html.ValidationMessageFor(v => v.MinStockQuantity) </div>
+
+
+                <div class="labelDiv">@Html.LabelFor(v => v.AvgDealerPrice)</div>
+
+                <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.AvgDealerPrice).Spinners(false).Enable(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "10", data_val_min = "0", data_val_max = "1000", style = "width:200px" }) </div>
+                @Html.HiddenFor(c => c.AvgDealerPrice)
+                <div class="labelDiv">@Html.LabelFor(v => v.RackName)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().ComboBoxFor(c => c.RackId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListRacks", "StockCard").Data("GetWarehouseId")).ServerFiltering(true)).Enable(true).AutoBind(false).CascadeFrom("WarehouseId").SelectedIndex(0)
+                    @Html.ValidationMessageFor(v => v.RackId)
+                </div>
+
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.CriticalStockQuantity)</div>
+
+                <div class="shortTxtDiv">
+                    @Html.Kendo().NumericTextBoxFor(v => v.CriticalStockQuantity).Spinners(false).Enable(false).Value(!Model.IsOriginalPart ? 0 : Model.CriticalStockQuantity).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", style = "width:200px" })
+                </div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.ProfitMarginRatio)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().NumericTextBoxFor(v => v.ProfitMarginRatio).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", style = "width:200px" })
+                    @Html.ValidationMessageFor(v => v.ProfitMarginRatio)
+                </div>
+                if (Model.StockCardId > 0)
+                {
+                    <div class="labelDiv">@Html.LabelFor(v => v.StockQuantity)</div>
+                    <div class="shortTxtDiv">
+                        <span class="txtStockQuantity">
+                            @Html.DisplayFor(v => v.StockQuantity)
+                        </span>
+                        <span class="txtUnitName">
+                            @Html.DisplayFor(model => model.UnitName)
+                        </span>
+                    </div>
+                    @Html.HiddenFor(v => v.StockQuantity)
+                }
+
+                <div class="clearDiv">&nbsp;</div>
+
+                <div class="labelDiv">@Html.LabelFor(v => v.MaxStockQuantity)</div>
+                <div class="shortTxtDiv">
+                    @Html.Kendo().NumericTextBoxFor(v => v.MaxStockQuantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", style = "width:200px" })
+                    @Html.ValidationMessageFor(v => v.MaxStockQuantity)
+                </div>
+
+                if (Model.IsOriginalPart == false)
+                {
+
+                    <div class="labelDiv">@Html.LabelFor(v => v.SalePrice)</div>
+
+                    <div class="shortTxtDiv">
+                        @Html.Kendo().NumericTextBoxFor(v => v.SalePrice).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", style = "width:200px" })
+                        @Html.ValidationMessageFor(v => v.SalePrice)
+                        @Html.ValidationMessageFor(v => v.CalculatedPrice)
+                    </div>
+                }
+                if (Model.StockCardId > 0)
+                {
+                    <div class="labelDiv">@Html.LabelFor(v => v.LastPrice)</div>
+                    <div class="shortTxtDiv">
+                        <label style="width:200px"> @Html.DisplayFor(v => v.LastPrice)</label>
+                    </div>
+                    @Html.HiddenFor(v => v.LastPrice)
+                }
+
+                if (Model.IsOriginalPart == true)
+                {
+                    <div class="labelDiv">@Html.LabelFor(v => v.StockServiceValue)</div>
+                    <div class="shortTxtDiv">
+                        <label style="width:200px"> @Html.DisplayFor(v => v.StockServiceValue)</label>
+                    </div>
+                }
+                <div class="clearDiv">&nbsp;</div>
+
+                if (Model.IsOriginalPart == true)
+                {
+                    <div class="redLabelDiv">@Html.LabelFor(v => v.AlternatePart)</div>
+                    <div class="redShortTxtDiv">
+                        <label style="width:200px"><span style='background-color:yellow'> @Html.DisplayFor(v => v.AlternatePart) </span></label>
+                    </div>
+                    <div class="redLabelDiv">@Html.LabelFor(v => v.CostPrice)</div>
+                    <div class="redShortTxtDiv">
+                        <label style="width:200px"><span style='background-color:yellow'> @Html.DisplayFor(v => v.CostPrice) </span></label>
+                    </div>
+                }
+
+
+                @Html.HiddenFor(v => v.StockCardId)
+                @Html.HiddenFor(v => v.DealerId)
+                @Html.HiddenFor(v => v.DealerName)
+                @Html.HiddenFor(v => v.Weight)
+                @Html.HiddenFor(v => v.Volume)
+                @Html.HiddenFor(v => v.VatRatio)
+                @Html.HiddenFor(v => v.LeadTime)
+                // @Html.HiddenFor(v => v.SaleChannelDiscountRatio)
+                @Html.HiddenFor(v => v.UnitName)
+                <div class="clearDiv">&nbsp;</div>
+                @ODMSHelpers.Button("btnUpdate", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.StockCard.StockCardUpdate, "StockCardUpdate")
+                @ODMSHelpers.Button("btnCreate", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.StockCard.StockCardUpdate, "StockCardCreate")
+                }
+    <div class="clearDiv">&nbsp;</div>
+    <div id="divDetails" style="display: none;">
+        @(Html.Kendo().TabStrip()
+        .Name("Tabs")
+        .Items(tabstrip => tabstrip.Add().Text(MessageResource.SparePart_Display_VatRatio).Selected(true).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("CountryVatRatioList", "CountryVatRatio", new { dealerId = Model.DealerId, id = Model.PartId }) + "');" }).Selected(true))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockRackDetail_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockRackDetailIndex", "StockRackDetail", new { dealerId = Model.DealerId, id = Model.PartId }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockRackTypeDetail_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockRackTypeDetailIndex", "StockRackDetail", new { dealerId = Model.DealerId, id = Model.PartId }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockTypeDetail_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockTypeDetailIndex", "StockTypeDetail", new { dealerId = Model.DealerId, id = Model.PartId }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockCardPriceList_PageTitle_Index).Visible(@Model.IsOriginalPart).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("Index", "StockCardPricePartial", new { stockId = Model.StockCardId }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockCardYearly_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockCardYearlyIndex", "StockCardYearly", new { IdDealer = Model.DealerId, IdPart = Model.PartId, Year = DateTime.Now.Year }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockCardTransaction_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockCardTransactionIndex", "StockCardTransaction", new { dealerId = Model.DealerId, partId = Model.PartId }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockCardChangePart_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockCardChangePartIndex", "StockCardChangePart", new { partId = Model.PartId }) + "');" }))
+        .Items(tabStrip => tabStrip.Add().Text(MessageResource.StockCardPurchaseOrder_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockCardPurchaseOrderIndex", "StockCardPurchaseOrder", new { dealerId = Model.DealerId, partId = Model.PartId }) + "');" }))
+        )
+        <div id="TabContent" style="padding: 10px 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+    </div>
+</div>
+<script>
+    function GetValues(e) {
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("CheckStockCard", "StockCard")",
+            data: { partId: $('#PartId').val(), dealerId: $('#DealerId').val() },
+            traditional: true,
+            success: function (result) {
+                if (result.Id > 0) {
+                    window.location = '@Url.Action("StockCardIndex", "StockCard")?partId=' + $('#PartId').val() + '&dealerId=' + @Model.DealerId + '';
+                }
+                else {
+                    CompleteConfirm(function () {
+                        window.location = '@Url.Action("StockCardIndex", "StockCard")?partId=' + $('#PartId').val() + '&dealerId=' + @Model.DealerId + '';
+                    });
+                }
+            },
+            dataType: "json"
+        });
+
+    }
+
+    $(document).ready(function () {
+
+        $("#txtPartId").css("width", "400");
+        var partId = $("#PartId").val();
+        var stockCardId = $("#StockCardId").val();
+        HideShowButton(stockCardId);
+
+        $(function () {
+            $('.k-widget').addClass('input-validation-valid');
+            $(".k-widget").removeClass("input-validation-error");
+        });
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+    function HideShowButton(stockCardId) {
+
+        if (stockCardId > 0) {
+            //stok kartı var güncelleme işlemleri ile açılacak
+            //$("#frmStockCard").attr('action', '@Url.Action("StockCardUpdate", "StockCard")');
+            $("#divDetails").show();
+            LoadTabContent('@Url.Action("CountryVatRatioList", "CountryVatRatio", new { dealerId = Model.DealerId, id = Model.PartId })');
+            $("#btnCreate").hide();
+            $("#btnUpdate").show();
+
+        } else {
+            //stcok kartı yok yeni kayı olarak açıkacak.
+            //$("#frmStockCard").attr('action', '@Url.Action("StockCardExternalCreate", "StockCard")');
+            $("#divDetails").hide();
+            $("#btnUpdate").hide();
+            $("#btnCreate").show();
+
+        }
+    }
+
+    $(document).ready(function () {
+        $("#frmStockCard").submit(function (event) {
+            if ($("#PartId").val() > 0 && $("#AvgDealerPrice").val()) {
+                if (!$("#WarehouseId").val()) {
+                    $("#RackId").val(null);
+                    $("#WarehouseId").val(null);
+                }
+                return true;
+            } else
+                return false;
+        });
+        if (!$("#WarehouseId").val()) {
+            $("#RackId").val(null);
+            $("#WarehouseId").val(null);
+        }
+    })
+</script>

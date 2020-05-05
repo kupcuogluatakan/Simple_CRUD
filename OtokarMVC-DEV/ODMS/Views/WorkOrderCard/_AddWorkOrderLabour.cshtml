@@ -1,0 +1,80 @@
+﻿@{
+    var indicator = ViewBag.Indicator as AppointmentDetailsViewModel;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.AppointmentDetails
+@using ODMSModel.AppointmentDetailsLabours
+@model AppointmentDetailsLaboursViewModel
+<style type="text/css">
+    #popupContentWrapper{ min-height: 280px !important;}
+     .special input[type=text] {
+        width: 250px !important;
+    }
+</style>
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+@using (Html.BeginForm("AddWorkOrderLabour", "WorkOrderCard", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="vehicleId" id="vehicleId" value="@ViewBag.VehicleId"/>
+    
+    
+    <div class="labelDiv">@MessageResource.Global_Display_MainCategory</div>
+    <div class="shortTxtDiv">@indicator.MainCategoryName
+    </div>
+    <div class="labelDiv">@MessageResource.Global_Display_Category</div>
+    <div class="shortTxtDiv">@indicator.CategoryName
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@MessageResource.Global_Display_SubCategory</div>
+    <div class="shortTxtDiv">@indicator.SubCategoryName
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourId)</div>
+    <div class="shortTxtDiv special">
+          @Html.Action("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "WorkOrderLabourName", ControlId = "LabourId", Title1 = "", Title2 = "", DefaultText = Model.txtLabourId, DefaultValue = Model.LabourId, ExtraParameter = ViewBag.VehicleId.ToString(), CallbackFunction = "GetLabourData" })
+    @Html.ValidationMessageFor(c => c.LabourId)
+    </div>
+       
+    
+    @Html.ValidationMessageFor(c => c.LabourId)
+<div style="clear: left">&nbsp;</div>
+<div class="labelDiv">@MessageResource.LabourDuration_Display_Duration</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Duration) @Html.ValidationMessageFor(c => c.Duration)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@MessageResource.CampaignLabour_Display_Quantity</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.Quantity).Min(1).Value(1).Max(99).HtmlAttributes(new{ type = "text", style ="width:204px"}) @Html.ValidationMessageFor(c => c.Quantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(c => c.AppointmentId) @Html.HiddenFor(c => c.AppointmentIndicatorId)
+    
+     @ODMSHelpers.Button("Add", CommonUtility.GetResourceValue("Global_Display_Add"), CommonValues.PermissionCodes.WorkOrderCard.WorkOrderCardUpdate, "AppointmentDetailsPartsCreate")
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+    function GetLabourData() {
+        mvc.build("@Url.Action("GetLabourData")", "", "", { labourId: $('#LabourId').val(), vehicleId: $('#vehicleId').val() }, false, "json");
+        mvc.post(null, function(json) {
+            $('#Duration').val(json.Duration);
+            if (json.Editable==false) {
+                $("#Duration").attr("readonly", "readonly");
+            } else {
+                $("#Duration").removeAttr("readonly");
+            }
+        }, null);
+    }
+</script>

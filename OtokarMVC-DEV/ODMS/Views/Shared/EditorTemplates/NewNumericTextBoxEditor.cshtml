@@ -1,0 +1,2 @@
+﻿@model decimal
+@Html.Kendo().NumericTextBox().Format("{0:N}").Decimals(2).Min(0.01).Events(e=>e.Change("onNumChange")).Enable(Convert.ToDecimal(ViewBag.AllowQuantityEdit) > 0).HtmlAttributes(new { maxlength ="5"})

@@ -1,0 +1,77 @@
+﻿@model ServiceCallScheduleViewModel
+@using ODMSCommon.Resources
+@using ODMSModel.ServiceCallSchedule
+
+@{
+    ViewBag.Title = MessageResource.ServiceCallScheduleViewModel_PageTitle_Index;
+}
+
+<script>
+    $("body").delegate(".modalClick", "click", function (e) {
+        $('#modelWindow').html('');
+        e.preventDefault();
+        var url = document.URL.substr(0, document.URL.lastIndexOf('/'));
+
+        var frameTitle = $(this).attr("frameTitle");
+        var serviceId = $(this).attr("id");
+        var link = url + "/ServiceCallScheduleUpdate/?serviceId=" + serviceId;
+
+        $("#modelWindow_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#modelWindow").data("kendoWindow");
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+        
+    });
+</script>
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Title("ServiceCallSchedule")
+        .Draggable()
+        .Resizable()
+        .Width(475)
+        .Height(475)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+            var grid = $('#ServiceCallScheduleGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+
+    @(Html.Kendo().Grid<ServiceCallScheduleListModel>()
+          .Name("ServiceCallScheduleGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.ServiceId).ClientTemplate("<center><a class='modalClick' id='#=ServiceId#' frameTitle='" + @CommonUtility.GetResourceValue("ServiceCallScheduleViewModel_PageTitle_Update") + "' href='javascript:void(0);'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Width(10);
+                  columns.Bound(p => p.ServiceDescription).Width(20).Sortable(true);
+                  columns.Bound(p => p.CallIntervalMinute).Width(20).Sortable(true);
+                  columns.Bound(p => p.LastCallDate).Width(20).Sortable(true);
+                  columns.Bound(p => p.NextCallDate).Width(20).Sortable(true);
+                  columns.Bound(p => p.TriggerServiceName).Width(20).Sortable(true);               
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read("Read", "ServiceCallSchedule")
+              .Model(model => model.Field(o => o.ServiceId).DefaultValue(-1)))
+
+    )
+</div>
+

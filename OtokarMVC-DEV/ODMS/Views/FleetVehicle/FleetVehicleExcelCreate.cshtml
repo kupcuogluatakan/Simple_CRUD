@@ -1,0 +1,25 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.FleetVehicle.FleetVehicleViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("FleetPartPartial_PageTitle_ExcelCreate");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using (Html.BeginForm("FleetVehicleExcelCreate", "FleetVehicle", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{       
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+    </div>
+
+    @Html.Kendo().Upload().Messages(m => m.Select(MessageResource.FleetPartPartial_Display_FileUpload)).Name("file").Multiple(false).HtmlAttributes(new { title = ODMSCommon.Resources.MessageResource.FleetPartPartial_Display_FileUpload })
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.FleetId) 
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), ODMSCommon.CommonValues.PermissionCodes.FleetVehicle.FleetVehicleCreate, "FleetVehicleExcelCreate")           
+    
+}

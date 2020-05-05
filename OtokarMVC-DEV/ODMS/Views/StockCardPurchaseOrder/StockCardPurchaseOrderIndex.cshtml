@@ -1,0 +1,111 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.StockCardPurchaseOrder
+
+@model StockCardPurchaseOrderListModel
+@{
+    ViewBag.Title = @MessageResource.Bank_PageTitle_Index;
+}
+
+<script>
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    function SearchStockCardPurchaseOrder() {
+        return {
+            DealerId  : @Model.DealerId,
+            PartId    : @Model.PartId,
+            PoNumber  : $("#PoNumber").val(),
+            StatusId  : $("#StatusId").val(),
+            StartDate : $("#StartDate").val(),
+            EndDate   : $("#EndDate").val(),
+        };
+    }
+    function DisplayPoNumber(poNumber) {
+        if (poNumber) {
+            return "<center><a target='_blank' href='" + "@Url.Action("PurchaseOrderIndex", "PurchaseOrder")" + "/?poNumber=" + poNumber + "'>" + poNumber + "</a></center>";
+        } else {
+            return "";
+        }
+    }
+</script>
+<div id="searchDiv20">
+    <div id="searchFields20">
+        <div class="labelDiv">@Html.LabelFor(b => b.Status)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLStatus as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.PoNumber)</div>
+        @Html.Kendo().NumericTextBoxFor(p=>p.PoNumber).Decimals(0).Format("#").Min(0).Spinners(false).HtmlAttributes(new { type = "text"})
+
+        <div class="clearfix"></div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e=>e.Open("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e=>e.Open("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+    </div>
+</div>
+<div class="clearfix"></div>
+<button class="k-button" onclick="ClearSearch()"><i class="glyphicon glyphicon-remove"></i>@MessageResource.Global_Display_Clear</button>
+@ODMSHelpers.LinkButton("btnSearchStockCardPurchaseOrder", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockCardPurchaseOrder.StockCardPurchaseOrderIndex)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<StockCardPurchaseOrderListModel>()
+          .Name("gridStockCardPurchaseOrder")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.PoNumber).ClientTemplate("#=DisplayPoNumber(PoNumber)#").Width(150).Sortable(true);
+                  columns.Bound(b => b.Status).Width(150).Sortable(true);
+                  columns.Bound(b => b.Supplier).Width(150).Sortable(true);
+                  columns.Bound(b => b.OrderQuantity).Width(150).Sortable(true);
+                  columns.Bound(b => b.ShipQuantity).Width(150).Sortable(true);
+                  columns.Bound(b => b.OrderType).Width(150).Sortable(true);
+                  columns.Bound(b => b.StockType).Width(150).Sortable(true);
+                  columns.Bound(b => b.CreateDateS).Width(150).Sortable(true).HtmlAttributes(new { style = "text-align:center" });
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListStockCardPurchaseOrder", "StockCardPurchaseOrder", Model).Data("SearchStockCardPurchaseOrder"))
+                                        .Model(model => model.Field(b => b.PartId).DefaultValue(-1)))
+          )
+
+</div>
+
+
+    <script>
+  
+        $(function () {
+            $("body").delegate("#btnSearchStockCardPurchaseOrder", "click", function (e) {
+                var grid = $('#gridStockCardPurchaseOrder').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+        });
+        function ClearSearch() {
+            $("input", "#searchDiv20").val('');
+            OpenStartDate();
+            OpenEndDate();
+        }
+    </script>
+

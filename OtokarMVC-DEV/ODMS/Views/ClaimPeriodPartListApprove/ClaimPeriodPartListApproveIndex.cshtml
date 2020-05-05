@@ -1,0 +1,132 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.ClaimPartListApprove
+@using ODMSModel.Common
+@using ODMSModel.VatRatio
+@{
+    ViewBag.Title = MessageResource.ClaimPartListApprove_PageTitle_Index;
+    var list = ViewBag.ClaimPeriods as List<SelectListItem>;
+}
+
+<div class="panel panel-primary">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-1">
+                <label class="bold" for="ClaimPeriodId">
+                    @MessageResource.ClaimRecallPeriod_Display_ClaimRecallPeriodId
+            </label>
+        </div>
+        <div class="col-xs-7">
+            @Html.Kendo().ComboBox().Name("ClaimPeriodId").BindTo(list).DataTextField("Text").DataValueField("Value").Events(e=>e.Change("RefreshGrid")).SelectedIndex(list.FindIndex(c => c.Selected))
+        </div>
+    </div>
+        <div class="row">
+            <div class="col-xs-12" style="margin-top: 10px; ">
+           <button class="k-button" onclick="SelectAll();">@MessageResource.Global_Display_SelectAll</button>
+                <button class="k-button" onclick=" SelectNone(); ">@MessageResource.Global_Display_SelectNone</button>
+                <button class="k-button" onclick="Save();">@MessageResource.Global_Display_Save</button>
+            </div>
+        </div>
+            <div class="kendoGridDiv" id="grd">
+                @(Html.Kendo().Grid<ClaimPartListApproveListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+
+                  columns.Bound(b => b.PartId).Visible(false).Sortable(true);
+                  columns.Bound(b => b.IsSelected).HtmlAttributes(new { style = "text-align:center" }).ClientTemplate("<input type='checkbox' id='#=PartId#' data-partid='#=PartId#'  #if(IsSelected){# checked #}# />").Sortable(false);
+                  columns.Bound(b => b.Status).HtmlAttributes(new {style="text-align:center"}).ClientTemplate("<input type='checkbox' disabled  #if(Status){# checked #}# />").Sortable(false);
+                  columns.Bound(b => b.PartCode).Sortable(true);
+                  columns.Bound(b => b.PartName).Sortable(true);
+                  columns.Bound(b => b.Quantity).ClientTemplate("#if(Quantity>0){# <a href='javascript:;' onclick='OpenInfoWindow(#=PartId#);' class='k-link'>#=Quantity#</a> #}else{# #=Quantity# #}#").HtmlAttributes(new { style = "text-align:right" }).Sortable(true);
+              })
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .ServerOperation(false)
+                                                .Read(read => read.Action("List", "ClaimPeriodPartListApprove").Data("Search"))
+
+                    ))
+
+            </div>
+
+        </div>
+
+    </div>
+
+<div id="InfoWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+
+<script>
+    function Search() {
+        return {
+            id:$("#ClaimPeriodId").val()
+        }
+    }
+    function SelectAll() {
+        var grid = $("#grid").data("kendoGrid");
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) 
+        {
+            $("#" + list[i].PartId).prop("checked", true);
+        }
+    }
+    function SelectNone() {
+        var grid = $("#grid").data("kendoGrid");
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) {
+            $("#" + list[i].PartId).prop("checked",false);
+        }
+    }
+
+    function OpenInfoWindow(partId) {
+        $('#InfoWindow').kwnd('@Url.Action("ClaimDismantlePartInfo")' + '?partId=' + partId + '&claimPeriodId=' + $("#ClaimPeriodId").val(), '@Html.Raw(MessageResource.ClaimPeriodPartListApprove_Display_ClaimDismantledPartInfo)',
+                    {
+                        iframe: false,
+                        width: 800,
+                        height: 300,
+                        onClose: function () {
+                            $("#InfoWindow").html('');  
+                        }
+                    });
+        $('#InfoWindow').removeClass("hide");
+        OpenWindow($('#InfoWindow'));
+    }
+    function RefreshGrid() {
+        var grid = $("#grid").data("kendoGrid");
+        grid.dataSource.read();
+    }
+
+    function Save() {
+        var selectedParts = [];
+        var notSelectedParts = [];
+        var grid = $("#grid").data("kendoGrid");
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) {
+            if ($("#" + list[i].PartId).prop("checked") == true)
+                selectedParts.push(list[i].PartId);
+            else {
+                notSelectedParts.push(list[i].PartId);
+            }
+
+        }
+        $.ajax({
+            method: "POST",
+            traditional:true,
+            url: "@Url.Action("Save")",
+            dataType: "json",
+            data: { selectedParts: selectedParts, notSelectedParts: notSelectedParts, claimPeriodId: $("#ClaimPeriodId").val() }        ,
+            success:function(json) {
+                if (json.Status == 1) {
+                    SetSuccessMessage(json.Message);
+                    RefreshGrid();
+                } else {
+                    SetErrorMessage(json.Message);
+                }
+            }
+        });
+
+
+    }
+
+</script>

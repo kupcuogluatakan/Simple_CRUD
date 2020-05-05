@@ -1,0 +1,87 @@
+﻿@model ODMSModel.SparePart.SparePartIndexViewModel
+
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.9.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/jQuery.print.js"></script>
+
+<style>
+    @@media print {
+        button {
+            display: none !important;
+        }
+    }
+
+    #printLabelWrapper {
+        padding-left: 30px;
+        margin-top: 10px;
+    }
+
+    .leftDiv {
+        width: 70px;
+        float: left;
+    }
+
+    .bottomDiv {
+        float: left;
+        width: 125px;
+        font-size: 13px;
+        margin-left: 7px;
+    }
+
+    .bottomDiv .boldCode {
+        font-weight: 700;
+        font-size: 120%;
+    }
+
+    .btn {
+        float: right;
+    }
+
+    .package > label {
+        color: inherit;
+        font-family: inherit;
+        font-weight: 700;
+    }
+
+    p {
+        margin-left:7px;
+        font-weight: 700;
+    }
+</style>
+
+@if (Model.PartId != 0)
+{
+    <button class="btn btn-default" onclick=" PrintDetails(); ">@ODMSCommon.Resources.MessageResource.Global_Display_Print</button>
+    <br />
+    <div id="printLabelWrapper">
+        <p>Otokar</p>
+        <div class="leftDiv">
+            <img style="height: 70px;" src='@Url.Action("Image", "SparePartBarcode", new { barcode = Model.Barcode })' />
+        </div>
+        <div class="bottomDiv">
+            <div class="boldCode">@Model.PartCode</div>
+            <div>@Model.PartNameInLanguage</div>
+            <div class="package">
+                @Html.LabelFor(p => p.ShipQuantity)
+                @Html.DisplayFor(p => p.ShipQuantity)
+            </div>
+        </div>
+    </div>   
+}
+else
+{
+    <div style="margin: 10px;" id="warning-wrap655646sd" class="alert alert-info">
+        <a class="close" onclick=" $('.alert').fadeOut(); ">&times;</a>
+        <strong>
+            @ODMSCommon.Resources.MessageResource.Global_Display_PrintNotFound
+        </strong>
+    </div>
+}
+
+
+<script>
+    function PrintDetails() {
+        jQuery.print("printLabelWrapper");
+    }
+</script>

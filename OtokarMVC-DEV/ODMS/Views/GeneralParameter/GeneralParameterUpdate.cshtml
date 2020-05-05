@@ -1,0 +1,50 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.GeneralParameter.GeneralParameterViewModel
+@{
+    ViewBag.Title = MessageResource.GeneralParameter_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+    #popupContentWrapper{ min-height: 250px !important;}
+    #popupContent{ width: 480px !important;}
+</style>
+ 
+@using (Html.BeginForm("GeneralParameterUpdate", "GeneralParameter", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(c=>c.Type)
+    @Html.HiddenFor(c=>c.ParameterId)
+    <div class="labelDiv">@Html.LabelFor(v => v.Value)</div>
+    switch (Model.Type)
+    {
+        case "I":
+        case "N":
+        case "T":
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Value) @Html.ValidationMessageFor(v => v.Value) </div>
+        break;
+        case "D":
+             <div class="shortTxtDiv">@(Html.Kendo()
+                                        .DatePicker()
+                                        .Name("DateValue")
+                                        .Value(DateTime.Parse(Model.Value))
+                                        ) @Html.ValidationMessageFor(v => v.Value) </div>
+        break;
+        case "B":
+             <div class="shortTxtDiv">@Html.CheckBox("BoolValue", bool.Parse(Model.Value)) @Html.ValidationMessageFor(v => v.Value) </div>
+        break;
+    }
+   
+    <div class="clear"></div>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.GeneralParameter.GeneralParameterUpdate, "GeneralParameterUpdate")        
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

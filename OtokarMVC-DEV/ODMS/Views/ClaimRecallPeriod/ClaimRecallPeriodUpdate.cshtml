@@ -1,0 +1,36 @@
+﻿@model ODMSModel.ClaimRecallPeriod.ClaimRecallPeriodViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("ClaimRecallPeriod_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("ClaimRecallPeriodUpdate", "ClaimRecallPeriod", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.ClaimRecallPeriodId)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ClaimRecallPeriodId)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ValidLastDay)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ValidLastDay).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(v => v.ValidLastDay)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipFirstDay)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ShipFirstDay).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(v => v.ShipFirstDay)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipLastDay)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.ShipLastDay).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(v => v.ShipLastDay)</div>
+           <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+<div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.ClaimRecallPeriod.ClaimRecallPeriodUpdate, "ClaimRecallPeriodUpdate")
+    @Html.HiddenFor(v => v.ClaimRecallPeriodId)
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

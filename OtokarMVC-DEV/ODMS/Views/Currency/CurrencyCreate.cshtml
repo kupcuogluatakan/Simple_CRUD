@@ -1,0 +1,38 @@
+﻿@model ODMSModel.Currency.CurrencyIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Currency_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CurrencyCreate", "Currency", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.CurrencyCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CurrencyCode) @Html.ValidationMessageFor(v => v.CurrencyCode) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CurrencyName)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage",
+                                                  new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = true }); }
+        @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DecimalPartName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.DecimalPartName) @Html.ValidationMessageFor(v => v.DecimalPartName) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ListOrder)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ListOrder) @Html.ValidationMessageFor(v => v.ListOrder) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminName) @Html.ValidationMessageFor(v => v.AdminName) </div>
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Currency.CurrencyCreate, "CurrencyCreate")        
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

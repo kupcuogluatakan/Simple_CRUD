@@ -1,0 +1,155 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.VehicleType
+@model VehicleTypeIndexViewModel
+@{
+    ViewBag.Title =  CommonUtility.GetResourceValue("VehicleType_PageTitle_Index");
+}
+  
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleGroupId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleGroupId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VGSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.ModelName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.ModelKod).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VMSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv" >&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TypeId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.TypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VTSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActiveSearch).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.IASelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="clearDiv" >&nbsp;</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "",ODMSCommon.CommonValues.PermissionCodes.VehicleType.VehicleTypeIndex)
+<script>
+
+    function Search() {
+        return {
+            IsActiveSearch: $("#IsActiveSearch").val(),
+            ModelKod: $('#ModelKod').val(),
+            VehicleGroupId: $('#VehicleGroupId').val(),
+            TypeId: $('#TypeId').val()
+        };
+    }
+    $(document).ready(function () {
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("VehicleTypeUpdate", "VehicleType", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("VehicleTypeDetails", "VehicleType", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+
+    });
+    function DeleteVehicleType(vehicleTypeId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("VehicleTypeDelete", "VehicleType")",
+                data: { typeId: vehicleTypeId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.page(1);
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<VehicleTypeListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.TypeId).ClientTemplate("<center><a class='details modalClick' id='#=TypeId#' frameTitle='" + @CommonUtility.GetResourceValue("VehicleType_PageTitle_Details") + "' href='/VehicleType/VehicleTypeDetails/#=TypeId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleType.VehicleTypeDetails));
+                  columns.Bound(p => p.TypeId).ClientTemplate("<center><a class='edit modalClick' id='#=TypeId#' frameTitle='" + @CommonUtility.GetResourceValue("VehicleType_PageTitle_Update") + "' href='/VehicleType/VehicleTypeUpdate/#=TypeId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleType.VehicleTypeUpdate));
+                  columns.Bound(o => o.TypeId).ClientTemplate("<center><a onclick='DeleteVehicleType(#=TypeId#)' href='javascript:void(0);' id='#=TypeId#' frameTitle='" + @CommonUtility.GetResourceValue("VehicleType_PageTitle_Delete") + "'><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleType.VehicleTypeDelete));
+                  columns.Bound(p => p.VehicleGroup).Width(150).Sortable(true);
+                  columns.Bound(p => p.ModelName).Width(180).Sortable(true);
+                  columns.Bound(p => p.TypeName).Width(300).Sortable(true);
+                 columns.Bound(p => p.IsActiveS).Width(120).Sortable(true);
+
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListVehicleType", "VehicleType", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.TypeId).DefaultValue(-1)))
+
+          )
+</div>

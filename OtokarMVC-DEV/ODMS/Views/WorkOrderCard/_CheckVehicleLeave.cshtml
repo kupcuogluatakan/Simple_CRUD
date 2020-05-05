@@ -1,0 +1,33 @@
+﻿@using ODMSCommon.Resources 
+@model List<ODMSModel.WorkOrderCard.MandatoryRemovalPart>
+<div class="alert alert-danger">
+    <p>
+        <strong>
+            @MessageResource.WorkOrderCard_Warning_MustRemovedParts
+        </strong>
+    </p>
+</div>
+<div class="panel panel-info">
+    <div class="panel-body">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <td class="bold">@MessageResource.WorkOrderCard_Display_Indicator</td>
+                    <td class="bold">@MessageResource.StockTypeDetail_Display_PartCode</td>
+                    <td class="bold">@MessageResource.WorkOrderCard_Display_Part</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Indicator</td>
+                        <td>@item.PartCode</td>
+                        <td>@item.PartName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

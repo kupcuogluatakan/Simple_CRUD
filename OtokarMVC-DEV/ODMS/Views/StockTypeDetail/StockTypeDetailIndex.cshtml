@@ -1,0 +1,37 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.StockTypeDetail.StockTypeDetailListModel
+
+@{
+    ViewBag.Title = MessageResource.StockTypeDetail_PageTitle_Index;
+}
+
+<br />
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.StockTypeDetail.StockTypeDetailListModel>()
+          .Name("StockTypeDetailGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.WarehouseName).Sortable(true);
+                  columns.Bound(p => p.StockTypeName).Sortable(true);
+                  columns.Bound(p => p.UnitName).Sortable(true);
+                  columns.Bound(p => p.TypeQuantity).Sortable(true);
+                  columns.Bound(p => p.BlockQuantity).Sortable(true);
+                  columns.Bound(p => p.ReserveQuantity).Sortable(true);
+                  // columns.Bound(p => p.OpenQuantity).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListStockTypeDetail", "StockTypeDetail", Model))
+                                        .Model(model => model.Field(o => o.IdDealer).DefaultValue(-1)))
+
+          )
+</div>

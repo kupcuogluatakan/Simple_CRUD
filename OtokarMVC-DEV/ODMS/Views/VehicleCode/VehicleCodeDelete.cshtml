@@ -1,0 +1,38 @@
+﻿@model ODMSModel.VehicleCode.VehicleCodeIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("VehicleCode_PageTitle_Delete");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+ 
+
+@using (Html.BeginForm("VehicleCodeDelete", "VehicleCode", FormMethod.Post))
+{
+    if (!Model.HideFormElements)
+    {
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleCodeKod)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleCodeKod) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleTypeName) </div>
+    <div class="clearDiv">&nbsp;</div>  
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.AdminDesc) </div>  
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleCodeSSID)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleCodeSSID) </div> 
+    <div class="clearDiv">&nbsp;</div>  
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleCodeName)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, isEnabled = false }); }</div>    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActive) </div>
+
+    
+
+    <div class="clearDiv">&nbsp;</div>    
+    <br /> 
+    @Html.HiddenFor(v => v.VehicleCodeKod)
+    @ODMSHelpers.Button("Delete", CommonUtility.GetResourceValue("Global_Display_Delete"),  ODMSCommon.CommonValues.PermissionCodes.VehicleCode.VehicleCodeDelete, "VehicleCodeDelete")
+    }
+
+
+}

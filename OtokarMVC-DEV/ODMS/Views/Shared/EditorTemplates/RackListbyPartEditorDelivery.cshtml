@@ -1,0 +1,7 @@
+﻿@model SelectListItem
+
+@Html.Kendo().ComboBoxFor(p=>p).DataValueField("Value").DataTextField("Text").Events(e=>e.Select("onSelect")).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListRackByPart", "DeliveryGoodsPlacement")
+ .Data("ListRackByPart('#=DeliverySeqNo#')")
+ .Type(HttpVerbs.Post)
+ )
+.ServerFiltering(false)).AutoBind(true) 

@@ -1,0 +1,428 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.CycleCountStockDiff.CycleCountStockDiffListModel
+<br />
+@if (ViewBag.CycleCountStatus == (int)ODMSCommon.CommonValues.CycleCountStatus.Finished)
+{
+    @ODMSHelpers.Button("btnSave", CommonUtility.GetResourceValue("CycleCountStockDiff_Display_Save"), CommonValues.PermissionCodes.CycleCountResult.CycleCountResultSave, "CycleCountResultSave", "SaveChanges();")
+    @ODMSHelpers.Button("Approve", CommonUtility.GetResourceValue("CycleCountStockDiff_Display_Approve"), CommonValues.PermissionCodes.CycleCount.CycleCountApprove, "CycleCountApprove", "ApproveCycleCount();")
+}
+
+<div style="float: right;">
+    <table class="table table-bordered table-zipped">
+        <tr>
+
+            <th class="teksatir t-customhead">
+                <i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(v => v.CycleStockPrice)
+            </th>
+            <td rowspan="2" class="text-right cycleStock" style="min-width: 20px; font-size: 15px"></td>
+            <th class="teksatir t-customhead">
+                <i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(v => v.OverStockPrice)
+            </th>
+            <td rowspan="2" class="text-right overStock" style="min-width: 20px; font-size: 15px"></td>
+            <th class="teksatir t-customhead">
+                <i class="glyphicon glyphicon-chevron-right"></i>@Html.LabelFor(v => v.ShortageStockPrice)
+            </th>
+            <td class="text-right shortageStock" style="min-width: 20px; font-size: 15px"></td>
+        </tr>
+    </table>
+</div>
+<div class="clearfix"></div>
+
+<style>
+    .bnd0 {
+        background: lightgrey;
+        /*text-align: center;*/
+        margin: -7px;
+        padding: 5px;
+    }
+
+    .bnd1 {
+        background: red;
+        color: white;
+        font-weight: bold;
+        /*text-align: center;*/
+        margin: -7px;
+        padding: 5px;
+    }
+</style>
+
+@Html.AntiForgeryToken()
+<div id="CycleCountResultModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("CycleCountStockDiffModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(500)
+    .Height(400)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+        var grid = $('#CycleCountStockDiffResultGrid').data('kendoGrid');
+        grid.dataSource.read();}"))
+    )
+</div>
+
+<script>
+
+
+    function CycleCountSearch() {
+        return {
+            CycleCountId : "@Model.CycleCountId"
+        };
+    }
+
+    $(document).ready(function () {
+
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#CycleCountStockDiffModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+
+            var cyclecountId =$(this).attr("id");
+            var stockcardId =$(this).attr("stockcardId");
+            var warehouseId =$(this).attr("warehouseId");
+            var warehouseName = $(this).attr("warehouseName");
+            var partName =$(this).attr("partName");
+            var partId =$(this).attr("partId");
+            var expQty =$(this).attr("expQty");
+            var bfrValue = $(this).attr("bfrValue");
+
+           if ("@UserManager.UserInfo.LanguageCode" == "TR")
+            //if ("@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()" == "tr-TR")
+                expQty = expQty.toString().replace (".", ",");
+
+            var status = $(this).attr("status");
+
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit") == true) {
+
+                link = "@Url.Action("CycleCountResultAudit", "CycleCountResult")";
+                link += "/?cycleCountId=" + cyclecountId + "&stockcardId=" + stockcardId + "&warehouseId=" + warehouseId + "&warehouseName="
+                                            + warehouseName + "&partName=" + partName +"&partId="+partId + "&expQty=" + expQty +"&bfrQty=" + bfrValue+ "&status=" + status;
+
+
+            }
+
+            $("#CycleCountStockDiffModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#CycleCountStockDiffModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    });
+
+    function SaveChanges() {
+        var isValid = true;
+        var grid = $("#CycleCountStockDiffResultGrid").data("kendoGrid");
+        if (grid.dataSource.hasChanges()) {
+
+            var list = grid.dataSource.data();
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].ApprovedCountQuantity == null || list[i].ApprovedCountQuantity < 0)
+                    isValid = false;
+                if (list[i].ApprovedCountQuantity != null && list[i].ApprovedCountQuantity >= 0 ) {
+                    var truncValue = Math.floor(list[i].ApprovedCountQuantity);
+                    if (truncValue.toString().length > 4) {
+                        @{
+                            string message = string.Format(MessageResource.Validation_IntegerLength, 4);
+                         }
+                        SetErrorMessage('@message');
+                        return false;
+                    }
+                }
+            }
+
+            if (isValid) {
+                grid.saveChanges();
+                SetSuccessMessage('@MessageResource.Global_Display_Success');
+
+                var diffGrid = $('#CycleCountStockDiffResultGrid').data('kendoGrid');
+                diffGrid.dataSource.read();
+
+                location.reload();
+
+            } else {
+                SetErrorMessage('@MessageResource.CycleCountResult_Warning_EmptyAfterCountQuantity');
+            }
+        }
+    }
+
+
+    function ApproveCycleCount() {
+
+        SaveChanges();
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("ApproveCycleCount", "CycleCountStockDiff")",
+            data: { cycleCountId: @Model.CycleCountId, "__RequestVerificationToken": token  },
+            traditional: true,
+            success: function(result) {
+                if (result.Status == 0)
+                {
+                    SetErrorMessage(result.Message);
+
+                    var diffGrid = $('#CycleCountStockDiffResultGrid').data('kendoGrid');
+                    diffGrid.dataSource.read();
+                }
+                else {
+                    SetSuccessMessage(result.Message);
+
+                    location.reload(true);
+
+                    var diffGrid = $('#CycleCountStockDiffResultGrid').data('kendoGrid');
+                    diffGrid.dataSource.read();
+                }
+            },
+            dataType: "json"
+        });
+    }
+
+    function DeleteCycleCountStockDiff(ccsdId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteCycleCountStockDiff", "CycleCountStockDiff")",
+                data: { cycleCountStockDiffId: ccsdId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#CycleCountStockDiffGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        var diffgrid = $('#CycleCountDiffDetailGrid').data('kendoGrid');
+                        diffgrid.dataSource.read();
+
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    var cycleStockTotalPrice = 0;
+    var overStockTotalPrice = 0;
+    var shortageStockTotalPrice = 0;
+    var cycleStockTempValue = 0;
+    var overStockTempValue = 0;
+    var shortageStockTempValue = 0;
+  
+    var currenyCode;
+
+    function onDataBoundAppDetMaint(arg) {
+        var data = $("#CycleCountStockDiffResultGrid").data("kendoGrid").dataSource.data();
+        $.each(data, function (i, row) {
+            if (row.QtyState == 0) {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#7cfc00");
+            } else if(row.QtyState == 1) {
+                $('tr[data-uid="' + row.uid + '"]').css("background-color", "#daa520");
+            } else if(row.QtyState == 2) {
+                if(row.StockDiffQty < 0)
+                {
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#f08080");
+                }
+                else
+                {
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#0000FF");
+                }
+            }
+        });
+        cycleStockTotalPrice = 0;
+        overStockTotalPrice=0;
+        shortageStockTotalPrice = 0;
+      
+
+        $('.cycleStock').text(format(parseFloat(cycleStockTempValue).toFixed(3)) + ' ' + currenyCode);
+        $('.overStock').text(format(parseFloat(overStockTempValue).toFixed(3)) + ' ' + currenyCode);
+        $('.shortageStock').text(format(parseFloat(shortageStockTempValue).toFixed(3)) + ' ' + currenyCode);
+    }
+
+
+    function OnDatabound2(aQty) {
+        //var culture = "@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()";
+        var culture = "@UserManager.UserInfo.LanguageCode";
+        if (culture == "TR")
+            aQty = parseFloat(aQty).toFixed(2).toString().replace(".", ",");
+        else
+            aQty = parseFloat(aQty).toFixed(2);
+
+        return "<div style='text-align : right'>" + aQty + "</div>";
+    }
+
+    function OnDatabound3(aQty) {
+        var culture = "@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()";
+        if (culture == "tr-TR") aQty = aQty.toString().replace(".", ",");
+        return aQty == 0 ? ("<div class='bnd0'>" + aQty + " </div>") :
+            ("<div class='bnd1'>" + aQty + " </div>");
+    }
+
+    function OnDatabound(aQty) {
+
+        if (aQty >= 0 && aQty != null) {
+            //var culture = "@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()";
+            var culture = "@UserManager.UserInfo.LanguageCode";
+            if (culture == "TR")
+                aQty = parseFloat(aQty).toFixed(2).toString().replace(".", ",");
+            else
+                aQty = parseFloat(aQty).toFixed(2);
+            return "<div style='background: lightgray;text-align : right'>" + aQty + " </div>";
+        }
+        else
+        {
+            return "<div style='background: lightgray'>" + '@MessageResource.Global_Display_Enter' + " </div>";
+        }
+    }
+
+
+  
+
+    function CalculateTotalPrice(partCode, price, currencyCode, cyclePrice, beforePaidCountQuantity) {
+
+
+        // ibrahim // price parametresi (PRICE_STRING) string olarak bind edildigi icin replace ihtiyacı duyuluyor.
+
+        //console.log(cyclePrice);
+
+        //console.log('price', price);
+
+        var priceValue = price.toString().replace("+", " ").replace(",",".");
+
+        //console.log('priceValue', priceValue);
+
+        //console.log('parseFloat(priceValue)', parseFloat(priceValue));
+
+        //console.log('parseFloat(price)', parseFloat(price));
+
+        var isValid = true;
+        var data = $("#CycleCountStockDiffResultGrid").data("kendoGrid").dataSource.data();
+        $.each(data, function (i, row) {
+            if(row.PartCode == partCode && parseFloat(priceValue) * -1 == parseFloat(row.PriceString))
+            {
+                isValid = false;
+            }
+        });
+
+        this.currenyCode = currencyCode;
+
+
+        if(isValid)
+        {
+            if (parseFloat(priceValue) > 0) {
+                overStockTotalPrice += parseFloat(priceValue);
+                overStockTempValue = overStockTotalPrice;
+            }else {
+                shortageStockTotalPrice += parseFloat(priceValue);
+                shortageStockTempValue = shortageStockTotalPrice;
+            }
+        }
+
+        var cyclePriceValue = cyclePrice.toString().replace("+", " ");
+        cycleStockTotalPrice += parseFloat(cyclePriceValue) * beforePaidCountQuantity;
+        cycleStockTempValue = cycleStockTotalPrice;
+
+        return "<div style='text-align:right'>" + format(parseFloat(priceValue).toFixed(2)) + ' ' + currencyCode  + " </div>" ;
+    }
+
+
+    function PageSizeFlag() {
+        return {
+            PageFlag:true
+        };
+    }
+
+
+    function format(n) {
+        if ("@UserManager.UserInfo.LanguageCode" == "TR")
+            n = n.toString().replace('.', ',');
+
+        return (parseFloat(n) > 0 ? '+' : '') + n;
+    }
+
+    function Justified(value) {
+
+        value = parseFloat(value).toFixed(2);
+
+        return  "<div style='text-align:right'>" + format(value)  + " </div>" ;
+    }
+
+
+</script>
+
+@Html.ExportExcelButton(new ExcelExportDto("CycleCountResult", "ListCycleCountResult", "CycleCountSearch", "sdfsdf", "CycleCountStockDiff").Build<ODMSModel.CycleCountResult.CycleCountResultListModel, object>(c => c.WarehouseName, c => c.RackName, c => c.PartCode, c => c.StockCardName, c => c.BeforeCampaignCountQuantity, c => c.BeforeFreeOfChargeCountQuantity, c => c.BeforePaidCountQuantity, @*c => c.BeforeCountQuantity,*@ c => c.AfterCountQuantity, c => c.ApprovedCountQuantity, c => c.StockDiffQty, c => c.PriceString))
+<div class="kendoGridDiv" id="diffResultGrd">
+    @(Html.Kendo().Grid<ODMSModel.CycleCountResult.CycleCountResultListModel>()
+              .Name("CycleCountStockDiffResultGrid")
+
+              .Columns(columns =>
+              {
+                  columns.Bound(p => p.CycleCountId).ClientTemplate("<center><a  class='edit modalClick' frameTitle='" + CommonUtility.GetResourceValue("CycleCountStockDiff_PageTitle_Update") + "' " +
+                                                                    " id='#=CycleCountId#' " +
+                                                                    " stockcardId='#=RealStockCardId#' " +
+                                                                    " warehouseId='#=WarehouseId#' " +
+                                                                    " warehouseName = '#=WarehouseName#' " +
+                                                                    " partName='#=StockCardName#' " +
+                                                                    " status=  '#=CycleCountStatus# '" +
+                                                                    " partId='#=StockCardId#'" +
+                                                                    " expQty='#=TotalApprovedQty#'" +
+                                                                    " bfrValue='#=BeforeCycleCountValue#' ><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").
+                                                                    Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(60).Sortable(false).Visible(false);
+                  columns.Bound(p => p.WarehouseName).Width(100).Sortable(true);
+                  columns.Bound(p => p.RackName).Width(100).Sortable(true);
+                  columns.Bound(p => p.PartCode).Width(200).Sortable(true);
+                  columns.Bound(p => p.StockCardName).Width(200).Sortable(true);
+                  columns.Bound(p => p.Unit).Width(50).Sortable(true);
+
+                  columns.Bound(p => p.BeforeCampaignCountQuantity).Width(100).Sortable(true).Visible(ViewBag.DisplayCurrentAmount).ClientTemplate("#= OnDatabound3(BeforeCampaignCountQuantity)#");
+                  columns.Bound(p => p.BeforeFreeOfChargeCountQuantity).Width(100).Sortable(true).Visible(ViewBag.DisplayCurrentAmount).ClientTemplate("#= OnDatabound3(BeforeFreeOfChargeCountQuantity)#");
+                  columns.Bound(p => p.BeforePaidCountQuantity).Width(100).Sortable(true).Visible(ViewBag.DisplayCurrentAmount).ClientTemplate("#= OnDatabound2(BeforePaidCountQuantity)#");
+
+                  //columns.Bound(p => p.BeforeCountQuantity).Width(100).Sortable(true).Visible(ViewBag.DisplayCurrentAmount).ClientTemplate("#= OnDatabound2(BeforeCountQuantity)#");
+                  columns.Bound(p => p.AfterCountQuantity).Width(100).Sortable(true).ClientTemplate("#= OnDatabound2(AfterCountQuantity)#");
+                  columns.Bound(p => p.ApprovedCountQuantity).Width(100).Sortable(false).ClientTemplate("#= OnDatabound(ApprovedCountQuantity)#").EditorTemplateName("DecimalNumericTextbox").Format("{0:N2}");
+                  columns.Bound(p => p.StockDiffQty).Width(100).Sortable(false).ClientTemplate("#= Justified(StockDiffQty) #");
+                  columns.Bound(p => p.Price).Width(100).Sortable(false).Title(CommonUtility.GetResourceValue("AppointDetailsParts_Display_ListPrice"));
+                  columns.Bound(p => p.PriceString).Width(100).Sortable(false).ClientTemplate("#= CalculateTotalPrice(PartCode,PriceString,CurrencyCode,Price,BeforePaidCountQuantity) #");
+              })
+              .Sortable()
+              .Scrollable()
+              .Editable(editable => editable.Mode(GridEditMode.InCell))
+              .Events(e => e.DataBound("onDataBoundAppDetMaint"))
+              .DataSource(dataSource => dataSource
+                                            .Ajax()
+                                            .Batch(true)
+                                            .PageSize(10)
+                                            .Read(read => read.Action("ListCycleCountResult", "CycleCountResult", Model.ResultListModel).Data("PageSizeFlag"))
+                                            .Model(
+                                            model =>
+                                            {
+                                                model.Id(p => p.CycleCountResultId);
+                                                model.Field(p => p.CycleCountId).Editable(false);
+                                                model.Field(p => p.WarehouseName).Editable(false);
+                                                model.Field(p => p.RackName).Editable(false);
+                                                model.Field(p => p.StockCardName).Editable(false);
+                                                model.Field(p => p.PartCode).Editable(false);
+                                                model.Field(p => p.BeforeFreeOfChargeCountQuantity).Editable(false);
+                                                model.Field(p => p.BeforePaidCountQuantity).Editable(false);
+                                                model.Field(p => p.BeforeCampaignCountQuantity).Editable(false);
+                                                // model.Field(p => p.BeforeCountQuantity).Editable(false);
+                                                model.Field(p => p.AfterCountQuantity).Editable(false);
+                                                model.Field(p => p.ApprovedCountQuantity).Editable(ViewBag.CycleCountStatus == (int)ODMSCommon.CommonValues.CycleCountStatus.Finished);
+                                                model.Field(p => p.StockDiffQty).Editable(false);
+                                                model.Field(p => p.Price).Editable(false);
+                                                model.Field(p => p.PriceString).Editable(false);
+                                            })
+                                            .Update(update => update.Action("CycleCountResultSave", "CycleCountResult").Type(HttpVerbs.Post))))
+</div>

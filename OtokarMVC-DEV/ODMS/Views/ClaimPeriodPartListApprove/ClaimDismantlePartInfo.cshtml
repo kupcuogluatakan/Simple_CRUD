@@ -1,0 +1,59 @@
+﻿@using ODMSCommon.Resources
+@model List<ODMSModel.ClaimPartListApprove.ClaimDismantledPartInfoModel>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <strong>@MessageResource.ClaimPeriodPartListApprove_Display_ClaimDismantledPartInfo</strong>
+    </div>
+    <div class="panel-body">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>
+                    @MessageResource.WorkOrderBatchInvoice_Display_WorkOrderId
+                </th>
+                <th>
+                    @MessageResource.User_Display_DealerName
+                </th>
+                <th>
+                    @MessageResource.ClaimRecallPeriodPart_Display_PartCode
+                </th>
+                <th>
+                    @MessageResource.ClaimRecallPeriodPart_Display_PartName
+                </th>
+                <th>
+                    @MessageResource.Appointment_Display_Qty
+                </th>
+                <th>
+                    @MessageResource.ClaimDismantledParts_Display_DismantledPartSerialNo
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <a target="_blank" href="@Url.Action("WorkOrderCardIndex","WorkOrderCard",new {id=item.WorkOrderId})"> @item.WorkOrderId</a>
+                    </td>
+                    <td>
+                        @item.DealerShortName
+                    </td>
+                    <td>
+                        @item.PartCode
+                    </td>
+                    <td>
+                        @item.PartName
+                    </td>
+                    <td>
+                        @item.Quantity
+                    </td>
+                    <td>
+                        @item.DismantledPartSerialNo
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>    
+    </div>
+</div>
+

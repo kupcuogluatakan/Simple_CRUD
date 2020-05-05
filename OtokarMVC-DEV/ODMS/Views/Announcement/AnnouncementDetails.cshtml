@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Announcement_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.Announcement.AnnouncementViewModel
+
+<style>
+
+    #checkMail {
+        width: 150px !important;
+    }
+
+    #checkUrgent {
+        width: 60px !important;
+    }
+
+    #checkSlide {
+        width: 100px !important;
+    }
+
+    .shortTxtDivCheck {
+        width: 200px !important;
+    }
+</style>
+
+<div class="labelDiv">@Html.LabelFor(v => v.DocName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.DocName)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.Title)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.Title) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.Body)</div>
+<div class="shortTxtDiv">@Html.TextAreaFor(v => v.Body, new { @readonly = true, @style = "width: 650px; height: 250px" }) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.StartDate) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.EndDate) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+
+<div id="checkUrgent" class="labelDiv Announchecks">@Html.LabelFor(v => v.IsUrgentName)</div>
+<div class="shortTxtDiv shortTxtDivCheck">@Html.DisplayFor(v => v.IsUrgentName) &nbsp;</div>
+
+<div id="checkMail" class="labelDiv Announchecks">@Html.LabelFor(v => v.SendMailName)</div>
+<div class="shortTxtDiv shortTxtDivCheck">@Html.DisplayFor(v => v.SendMailName) &nbsp;</div>
+
+<div id="checkSlide" class="labelDiv Announchecks"><b> @ODMSCommon.Resources.MessageResource.Announcement_Display_IsSlideName</b></div>
+<div class="shortTxtDiv shortTxtDivCheck">@Html.DisplayFor(v => v.IsSlideName) &nbsp;</div>
+
+<br />
+<br />
+<br />
+<br />
+
+
+
+
+

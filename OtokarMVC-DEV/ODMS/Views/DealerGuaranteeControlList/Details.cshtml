@@ -1,0 +1,469 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@model GRADMstViewModel
+@{
+    ViewBag.Title = MessageResource.DealerGuaranteeControlListDetail_PageTitle_Index;
+}
+
+<script src="~/Scripts/Tooltipster/jquery.tooltipster.min.js"></script>
+<link href="~/Style/Tooltipster/tooltipster.css" rel="stylesheet" />
+<link href="~/Style/Tooltipster/tooltipster-shadow.css" rel="stylesheet" />
+<script id="complete-confirmation" type="text/x-kendo-template">
+    <p id="complete-message" class="complete-message"></p>
+    <p style="text-align:right">
+        <button class="complete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="complete-cancel k-button">@MessageResource.Global_Display_No</button>
+    </p>
+</script>
+@Html.AntiForgeryToken()
+<style>
+    .bgColor {
+        background-color: #CCFFCC;
+    }
+
+    textarea {
+        width: 175px;
+    }
+
+    .approveAll {
+        background-color: #CCFFCC;
+        margin-right: 8px;
+    }
+
+    .rejectAll {
+        background-color: #b22222;
+        margin-left: 8px;
+    }
+</style>
+<script>
+    var totalPrice = 0;
+    var selectedItemText = '';
+    function CompleteConfirm(completeFunction, message) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_Approve",
+            resizable: false,
+            modal: true
+        });
+        kendoWindow.data("kendoWindow")
+            .content(message + $("#complete-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".complete-confirm, .complete-cancel")
+            .click(function () {
+                if ($(this).hasClass("complete-confirm")) {
+                    confirm = true;
+                    if (completeFunction)
+                        completeFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+    function onPartsSelect(e) {
+
+        var dataItem = this.dataItem(e.item.index());
+        selectedItemText = dataItem.Text;
+    }
+    function onPartsEdit(e) {
+        var row = $(e.container).closest("tr");
+        var grid = $(e.container).closest("[data-role=grid]").data("kendoGrid");
+        var dataItem = grid.dataItem(row);
+        dataItem.Text = selectedItemText;
+    }
+
+    function ListRemovalPart() {
+        var row = $(event.srcElement).closest("tr");
+        var grid = $(event.srcElement).closest("[data-role=grid]").data("kendoGrid");
+        var dataItem = grid.dataItem(row);
+
+        return { PartId: dataItem.PartId };
+
+    }
+
+    function ListLabour() {
+        return {};
+    }
+
+    function SearchGuarantee() {
+        return {
+            GuaranteeId: '@Model.GuaranteeId',
+            GuaranteeSeq: '@Model.GuaranteeSeq'
+        };
+    }
+
+    function onEdit(e) {
+        var row = $(event.srcElement).closest("tr");
+        var grid = $(event.srcElement).closest("[data-role=grid]").data("kendoGrid");
+        var indexCell = e.container.context.cellIndex;
+        var dataItem = grid.dataItem(row);
+
+        if (dataItem.IsDurationCheck == false && grid.columns[indexCell].title == '@Html.Raw(MessageResource.LabourDuration_Display_Duration)') {
+            grid.closeCell();
+        }
+    }
+
+    function onDataPartsBound() {
+        //CalculateTotalPrice();
+    }
+
+
+
+    function onDataLaboursBound() {
+        //CalculateTotalPrice();
+    }
+
+    function CalculateTotalPrice() {
+        var grid = $("#gridLabours").data("kendoGrid");
+        var data = grid.dataSource.data();
+        var tPrice = 0;
+        var pPrice = 0;
+        var lPrice = 0;
+        $.each(data, function (i, row) {
+            if (row.Ratio == -1 || row.Ratio == '@MessageResource.Global_Display_Enter') {               
+                row.Ratio = '';
+                grid.refresh();
+            }
+            lPrice += row.WarrantyTotal;
+        });
+        $("#laboursTotalPrice").html(lPrice.toFixed(2));
+        grid = $("#gridParts").data("kendoGrid");
+        data = grid.dataSource.data();
+        $.each(data, function (i, row) {
+            if (row.Ratio == -1 || row.Ratio == '@MessageResource.Global_Display_Enter') {
+                row.Ratio = '';
+                grid.refresh();
+            }
+            pPrice += row.WarrantyTotal;
+        });
+        $("#partsTotalPrice").html(pPrice.toFixed(2));
+        $("#infoWarrantyPrice").html((lPrice + pPrice).toFixed(2));
+    }
+</script>
+<div class="col-xs-5">
+    <h5 style="font-variant:normal">
+        <strong class="text-primary"> @MessageResource.StockCard_Display_DealerName: </strong>@Model.GuaranteeDealer
+    </h5>
+</div>
+<div class="col-xs-6 text-right">
+    <h5 style="font-variant:normal"><strong class="text-primary">@MessageResource.PrivateMessage_Display_Sender: </strong>@Model.GuaranteeCustomer</h5>
+</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="panel-group" id="accordion" style="margin-bottom: 5px;">
+    @{ Html.RenderPartial("PartialGifInfo", Model.GifInfo);}
+    @{ Html.RenderPartial("PartialPeriodicMaintInfo", Model.PeriodicMaintInfo);}
+</div>
+
+<div id="partialDetailInfo">
+</div>
+
+<div id="partialGifHistoryInfo">
+</div>
+<div class="clearDiv">&nbsp;</div>
+<h3>@MessageResource.SparePartSaleDetail_Display_SparePartList</h3>
+<div class="kendoGridDiv" id="grdParts">
+    @(Html.Kendo().Grid<GuaranteePartsListModel>()
+          .Name("gridParts")
+          .Columns(columns =>
+          {
+              columns.Bound(b => b.Id).Visible(false);
+              columns.Bound(b => b.Value).ClientTemplate("#=Text#").Width(200).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(b => b.DisSerialNo).Width(100).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(b => b.PartId).Width(150).Visible(false);
+              columns.Bound(b => b.PartCodeName).Width(200).Sortable(false);
+              columns.Bound(b => b.SerialNo).Width(100).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(b => b.Quantity).Width(50).Sortable(false);
+              columns.Bound(b => b.StockType).Width(60).Sortable(false);
+              columns.Bound(b => b.WarrantyPrice).Width(70).Format("{0:N}").HtmlAttributes(new { @style = "text-align:right" });
+              columns.Bound(b => b.WarrantyTotal).Width(70).Format("{0:N}").HtmlAttributes(new { @style = "text-align:right" });
+              columns.Bound(b => b.Ratio).Width(60).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+
+          }).Events(e => e.DataBound("onDataPartsBound"))
+          .ToolBar(p =>
+          {
+              p.Template(@<text>
+        @{
+          
+                if (Model.WarrantyStatus == 2 || Model.WarrantyStatus == 3)
+                {
+                    <span class="label label-warning">@MessageResource.Guarantee_Warning_StStatus</span>
+                }
+                else if (Model.WarrantyStatus == 5 || Model.WarrantyStatus == 6)
+                {
+                    <span class="label label-warning">@MessageResource.Guarantee_Warning_StStatus2</span>
+                }
+                
+            }
+            <div class="badge" style="text-align: left; float: right; font-size: 13px; font-weight: bold">
+                <div class="labelDiv">@MessageResource.GuaranteeRequestApprove_Display_PartsTotalPrice</div>
+                : <span class="badge" id="partsTotalPrice"></span>@Model.CurrencySymbol
+            </div>
+  
+
+            </text>);
+          })
+                  .DataSource(dataSource => dataSource
+                      .Ajax()
+                      .PageSize(100)
+                      .ServerOperation(true)
+                      .Read(read => read.Action("ListGuaranteeParts", "GuaranteeRequestApproveDetail").Data("SearchGuarantee"))
+                                       )
+                  .AutoBind(true)
+
+    )
+
+</div>
+<br />
+<div class="clearDiv">&nbsp;</div>
+<h3>@MessageResource.LabourDuration_Display_LabourList</h3>
+<div class="kendoGridDiv" id="grdLabours">
+    @(Html.Kendo().Grid<GuaranteeLaboursListModel>()
+          .Name("gridLabours")
+          .Columns(columns =>
+          {
+              columns.Bound(b => b.Id).Visible(false);
+              columns.Bound(b => b.Value).Width(120).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(b => b.Desc).Width(250).Sortable(false);
+              columns.Bound(b => b.Quantity).Width(70).Sortable(false);
+              columns.Bound(b => b.IsDurationCheck).Visible(false);
+              columns.Bound(b => b.WarrantyPrice).Format("{0:N}").Width(70).HtmlAttributes(new { @style = "text-align:right" });
+              columns.Bound(b => b.WarrantyTotal).Format("{0:N}").Width(70).HtmlAttributes(new { @style = "text-align:right" });
+              columns.Bound(b => b.Duration).Width(70).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(b => b.Ratio).Width(70).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+
+          }).Events(e => e.DataBound("onDataLaboursBound"))
+          .ToolBar(p =>
+          {
+              p.Template(@<text>
+        @{
+           
+                if (Model.WarrantyStatus == 2 || Model.WarrantyStatus == 3)
+                {
+                    <span class="label label-warning">@MessageResource.Guarantee_Warning_StStatus</span>
+                }
+                else if (Model.WarrantyStatus == 5 || Model.WarrantyStatus == 6)
+                {
+                    <span class="label label-warning">@MessageResource.Guarantee_Warning_StStatus2</span>
+                }
+                
+            }
+            <div class="badge" style="text-align: left; float: right; font-size: 13px; font-weight: bold">
+                <div class="labelDiv">@MessageResource.GuaranteeRequestApprove_Display_LaboursTotalPrice</div>
+                :<span class="badge" id="laboursTotalPrice"></span>@Model.CurrencySymbol
+            </div>
+
+
+            </text>);
+          })
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(100)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListGuaranteeLabours", "GuaranteeRequestApproveDetail").Data("SearchGuarantee"))
+                                       )
+          .AutoBind(true)
+    )
+
+</div>
+<div class="clearDiv">&nbsp;</div>
+@if (!ODMSCommon.Security.UserManager.UserInfo.IsDealer)
+{
+<br />
+<br />
+<div class="labelDiv">@Html.LabelFor(c => c.CategoryId)</div>
+<div>
+    <div>
+        @if (Model.IsEditable && Model.IsShowCategory)
+        {
+            @Html.RadioButtonFor(c => c.CategoryId, "Water", new { id = "Category_Water" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Water, new { @for = "Category_Water" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Other", new { id = "Category_Other" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Other, new { @for = "Category_Other" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Campaign", new { id = "Category_Campaign" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Campaign, new { @for = "Category_Campaign" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Corrosion", new { id = "Category_Corrosion" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Corrosion, new { @for = "Category_Corrosion" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Service", new { id = "Category_Service" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Service, new { @for = "Category_Service" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Contract", new { id = "Category_Contract" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Contract, new { @for = "Category_Contract" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Design", new { id = "Category_Design" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Design, new { @for = "Category_Design" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Supplier", new { id = "Category_Supplier" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Supplier, new { @for = "Category_Supplier" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Commercial", new { id = "Category_Commercial" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Commercial, new { @for = "Category_Commercial" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Production", new { id = "Category_Production" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Production, new { @for = "Category_Production" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "PDI", new { id = "Category_PDI" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_PDI, new { @for = "Category_PDI" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "SPGuarantee", new { id = "Category_SPGuarantee" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_SPGuarantee, new { @for = "Category_SPGuarantee" })
+            <span style="padding-right: 5px;"></span>
+            @Html.RadioButtonFor(c => c.CategoryId, "Coupon", new { id = "Category_Coupon" })
+            @Html.LabelFor(c => c.CategoryId, MessageResource.GuaranteeRequestApprove_Category_Coupon, new { @for = "Category_Coupon" })
+
+        }
+        else
+        {
+            @Html.DisplayFor(c => c.CategoryName)
+            @Html.HiddenFor(c => c.CategoryId)
+        }
+    </div>
+</div>
+<br />
+<br />
+}
+<div class="clearDiv">&nbsp;</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="row">
+    <div class="col-lg-5">
+        <div class="labelDiv">@Html.LabelFor(c => c.TechnicalDesc)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(c => c.TechnicalDesc)</div>
+    </div>
+    <div class="col-lg-5">
+        <div class="labelDiv">@Html.LabelFor(c => c.CustomerDesc)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(c => c.CustomerDesc)</div>
+    </div>
+</div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.ConfirmDesc)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(p => p.ConfirmDesc)</div>
+<div class="labelDiv">@MessageResource.Global_Display_TotalPrice</div>
+<div class="badge"><span style="font-size: 16px" class="badge" id="infoWarrantyPrice">0</span>   @Model.CurrencySymbol</div>
+<br />
+<br />
+
+
+<div id="OpenPdiPackageResultEditWindowWrap"></div>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/custom.js"></script>
+<script>
+
+    $(document).ready(function () {
+        FillCustomerData();
+        FillGifHistoryData();
+        setTimeout(CalculateTotalPrice, 2500);
+    });
+    function PrintDet() {
+        $("#OpenPdiPackageResultEditWindowWrap").html('<div id="PrintPdiPackageResultWindow" class="hide"></div>');
+        $('#PrintPdiPackageResultWindow').kwnd('@Url.Action("PrintPdiPackageDetails", "WorkOrderCard", new { id = Model.WorkOrderId })', '@Html.Raw(MessageResource.WorkOrderCard_Pdi_BreakDown_Details)',
+        {
+            iframe: true,
+            width: 1000,
+            height: 400,
+            onClose: function () {
+                $('#PrintPdiPackageResultWindow').data("kendoWindow").destroy();
+            }
+        });
+        $('#PrintPdiPackageResultWindow').removeClass("hide");
+        OpenWindow($('#PrintPdiPackageResultWindow'));
+    }
+    function FillCustomerData() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetWorkOrderPartial", "WorkOrder")',
+            async: false,
+            data: { id: '@Model.WorkOrderId' },
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $("#partialDetailInfo").html(result);
+            },
+            error: function (request, status, err) {
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+    function FillGifHistoryData() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetPartialGifHistory", "GuaranteeRequestApproveDetail")',
+            async: false,
+            data: { id: '@Model.GuaranteeId', seq: '@Model.GuaranteeSeq' },
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $("#partialGifHistoryInfo").html(result);
+            },
+            error: function (request, status, err) {
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+    $("#btnCreateParts").click(function () {
+        window.totalPrice = 0;
+        SaveParts(1);
+        setTimeout(CalculateTotalPrice, 1000);
+    });
+    $("#btnCreateLabour").click(function () {
+        window.totalPrice = 0;
+        SaveLabours(1);
+        setTimeout(CalculateTotalPrice, 1000);
+    });
+
+
+
+
+
+    function CheckDescriptionValidation() {
+        var rValue = true;
+        var checkValid = false;
+        var partGrid = $("#gridParts").data("kendoGrid").dataSource.data();
+        var labourGrid = $("#gridLabours").data("kendoGrid").dataSource.data();
+        $.each(partGrid, function (i, row) {
+            if (row.Ratio < 100 && row.Ratio != '@MessageResource.Global_Display_Enter') {
+                checkValid = true;
+            }
+        });
+        $.each(labourGrid, function (i, row) {
+            if (row.Ratio < 100 && row.Ratio != '@MessageResource.Global_Display_Enter') {
+                checkValid = true;
+            }
+        });
+
+        if (checkValid) {
+            var txtDesc = $("#ConfirmDesc").val();
+            if (txtDesc) {
+                $("#ConfirmDesc").css("border", "1px solid grey");
+            } else {
+                $("#ConfirmDesc").css("border", "2px solid red");
+                $("#infoDesc").html("*");
+                rValue = false;
+            }
+        }
+        console.log(rValue);
+        return rValue;
+    }
+
+
+</script>

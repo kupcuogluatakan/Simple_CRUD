@@ -1,0 +1,75 @@
+﻿@model BireyselCalisma2.Models.DB.Makale
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var deneme = ViewBag.kategorilist;
+}
+
+<h2>Edit</h2>
+
+@using (Html.BeginForm())
+{
+
+
+
+    @Html.HiddenFor(model => model.MakaleId) @*makalenin id sini gizli bir şekilde basıyoruz yoksa edit sayfasında id 0 döner*@
+
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Makale</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.MTitle, htmlAttributes: new { @class = "control-label col-md-2" })
+            @*liste şeklinde kategorilerin gelmesi*@
+            @Html.DropDownListFor(model => model.CategoryID, new SelectList(deneme, "CategoryID", "categoryType", Model.CategoryID), new { htmlAttributes = new { @class = "form-control" } })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.MTitle, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.MTitle, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.MDetail, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.MDetail, new { @id = "editor1" })
+
+                @Html.ValidationMessageFor(model => model.MDetail, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+        @*<div class="dropdown">
+
+                @Html.DropDownListFor
+
+            </div>*@
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-success" />
+            </div>
+        </div>
+    </div>
+}
+
+@*<button class="">
+        @Html.ActionLink("Geri Dön", "Listele")
+    </button>*@
+
+@Html.ActionLink("Geri Dön", "Listele", new { }, new { @class = "btn btn-outline-primary" })
+
+
+@section jscode
+{
+    <script>
+        var editor = CKEDITOR.instances['editor1'];
+        if (editor) { editor.destroy(true); }
+        CKEDITOR.replace('editor1', {
+            enterMode: CKEDITOR.ENTER_BR,
+        });
+        //CKFinder.setupCKEditor(null, '    ****burada et işareti var   ****            Url.Content("~/ckeditor/ckfinder/")');  //sunucuya bir şey yükleyip seçme işlemi
+    </script>
+}

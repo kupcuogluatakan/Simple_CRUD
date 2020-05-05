@@ -1,0 +1,818 @@
+﻿@*@using ODMSCommon.Resources
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+    <link href="~/Style/default.css" rel="stylesheet" />
+    <link href="~/Style/Site.css" rel="stylesheet" />
+    <title>@ViewBag.Title - Otokar DMS</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/bundles/odms/css/commons")
+    @Styles.Render("~/Content/kendo/css")
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/kendo")
+    <link href="~/Style/bootstrap-theme.css" rel="stylesheet" />
+    <link href="~/Style/bootstrap.css" rel="stylesheet" />
+    <script src="~/Scripts/JSONProblemSolver.js"></script>
+    <script src="~/Scripts/custom.js"></script>
+    @{
+        var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.ToString();
+    }
+    <script id="fileTemplate" type="text/x-kendo-template">
+    <span class='k-progress'></span>
+    <div id="holderTemp" class='file-wrapper'>
+        <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
+        <h5 class='file-heading file-name-heading'>Name: #=name#</h4>
+        <h5 class='file-heading file-size-heading'>Size: #=size# bytes</h4>
+        <button type='button' class='k-upload-action'></button>
+    </div>
+    </script>
+
+    <script type="text/javascript">
+        function InputToUpper(obj) {
+            if (obj.value != "") {
+                obj.value = obj.value.toUpperCase();
+            }
+        }
+        function InputToUpperWithoutWhiteSpace(obj) {
+            if (obj.value != "") {
+                obj.value = obj.value.toUpperCase();
+                obj.value = obj.value.replace(' ', '');
+            }
+        }
+        //Custom Confirm Message write in popup
+        root = '@Url.Content("~")';
+
+        function CustomConfirm(customFunction, title, content, textYes, textNo) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: title,
+                resizable: false,
+                modal: true
+            });
+
+            var string = '<p class="delete-message">' + content + '</p>' +
+                '<p style="text-align:right">' +
+                '<button class="delete-confirm k-button">' + textYes + '</button>' +
+                '<button class="delete-cancel k-button">' + textNo + '</button></p>';
+
+            kendoWindow.data("kendoWindow")
+                .content(string)
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (customFunction)
+                            customFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+        function onSelect(e) {
+            var files = e.files;
+            $.each(files, function () {
+                if (this.extension.toLowerCase() != '@CommonValues.ExcelExtOld' && this.extension.toLowerCase() != '@CommonValues.ExcelExtNew') {
+                    SetErrorMessage('@MessageResource.Global_Warning_TypeExcel');
+                    e.preventDefault();
+                }
+                if (this.size / 1024 / 1024 > 5) {
+                    SetErrorMessage('@MessageResource.Global_Warning_FileSize');
+                    e.preventDefault();
+                }
+            });
+        }
+
+        function addExtensionClass(extension) {
+            switch (extension) {
+            case '.jpg':
+            case '.img':
+            case '.png':
+            case '.gif':
+                return "img-file";
+            case '.doc':
+            case '.docx':
+                return "doc-file";
+            case '.xls':
+            case '.xlsx':
+                return "xls-file";
+            case '.pdf':
+                return "pdf-file";
+            case '.ppt':
+                return "ppt-file";
+            case '.zip':
+            case '.rar':
+                return "zip-file";
+            case '.mov':
+            case '.mpg':
+                return "vid-file";
+            default:
+                return "default-file";
+            }
+        }
+    </script>
+
+
+    <style scoped>
+   .file-icon
+   {
+       display: inline-block;
+       float: left;
+       width: 32px;
+       height: 32px;
+       margin-left: 5px;
+       margin-top: 2px;
+   }
+
+   .img-file { background-image: url(@Url.Content("~/Images/pic.png")) }
+   .doc-file { background-image: url(@Url.Content("~/Images/doc.png")) }
+   .pdf-file { background-image: url(@Url.Content("~/Images/pdf.png")) }
+   .ppt-file { background-image: url(@Url.Content("~/Images/ppt.png")) }
+   .vid-file { background-image: url(@Url.Content("~/Images/vid.png")) }
+   .xls-file { background-image: url(@Url.Content("~/Images/excel.png")) }
+   .zip-file { background-image: url(@Url.Content("~/Images/zip-icon.png")) }
+   .default-file { background-image: url(@Url.Content("~/Images/default.png")) }
+
+   #file-wrapper .file-heading
+   {
+       font-family: Arial;
+       font-size: 1.1em;
+       display: inline-block;
+       float: left;
+       width: 450px;
+       margin: 0 0 0 25px;
+       height: 25px;
+       -ms-text-overflow: ellipsis;
+       -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+       overflow:hidden;
+       white-space:nowrap;
+   }
+
+       #file-wrapper .file-name-heading
+       {
+           font-weight: bold;
+       }
+
+        #file-wrapper .file-size-heading
+       {
+           font-weight: normal;
+           font-style: italic;
+       }
+
+   li.k-file .file-wrapper .k-upload-action
+   {
+       position: absolute;
+       top: 0;
+       right: 0;
+   }
+
+   li.k-file div.file-wrapper
+   {
+       position: relative;
+       height: 75px;
+   }
+</style>
+    <script src="@Url.Content("~/Scripts/kendo/cultures/kendo.culture." + culture + ".min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/languages/kendo." + culture + ".js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/globalize.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/cultures/globalize.culture.tr-TR.js")"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/messages_tr.js"></script>
+    <script>
+        var errors = [];
+        $(document).ready(function () {
+            
+            try {
+                var settings = $('form').validate().settings;
+                if (settings) {
+                    settings.wrapper = "label";
+                    settings.showErrors = function (errorMap, errorList) {
+                        this.defaultShowErrors();
+                        $(".field-validation-error").each(function (i, e) {
+                            if ($("a", e).length > 0) return;
+                            var html = $("label", e).text().replace("'", "").replace("'", "");
+                            var newHtml = "<a title='" + html + "' data-toggle='tool-tip'><img style='width:16px'  class='' src='@Url.Content("~/images/messagebox_warning.png")' /> </a>";
+                            $(e).html(newHtml);
+
+                            $("a", e).tooltip({ placement: "right" });
+                        });
+                    };
+                }
+                $(".field-validation-error").each(function (i, k) {
+                    // if ($("a", e).length > 0) return;
+                    ////console.log("k=>" + $(k).html());
+                    var html = $(k).html().replace("'", "").replace("'", "");
+                    var newHtml = "<a title='" + html + "' data-toggle='tool-tip'><img style='width:16px'  class='' src='@Url.Content("~/images/messagebox_warning.png")' /> </a>";
+                    $(k).html(newHtml);
+
+                    $("a", k).tooltip({ placement: "right", html: true });
+                });
+            }
+            catch (m) { }
+        });
+
+
+        $.validator.methods.number = function(value, element) {
+            return !isNaN(Globalize.parseFloat(value));
+        };
+
+        function pageLoad() {
+            CheckAlertBox();
+        }
+        (function ($) {
+
+            var pr = 0, bgWidth = true, bgResize;
+
+
+
+            $(document).ready(function () {
+                
+                $.validator.methods.date = function (value, element) {
+                    return this.optional(element) || Globalize.parseDate(value, "dd/MM/yyyy", "tr-TR") || Globalize.parseDate(value, "dd/MM/yyyy HH:mm", "tr-TR") || Globalize.parseDate(value, "HH:mm", "tr-TR");;
+                }
+                $(".ScreenName").html("@ViewBag.Title");
+                kendo.culture("@culture");
+                CheckAlertBox();
+                $(".close").on("click", function () {
+                    $(".messageDiv").fadeOut("slow");
+                });
+
+                Globalize.culture('@culture');
+            });
+        })(jQuery);
+
+        function SetPageTitle(pageTitle) {
+            $(".ScreenName").html(pageTitle);
+        }
+        function CheckAlertBox() {
+            $('div[id="successDiv"]:visible').each(function () {
+
+                $(this).css("display", "none");
+                $(this).fadeIn(2000, function () {
+                });
+            });
+            $('div[id="errorDiv"]:visible').each(function () {
+                $(this).css("display", "none");
+                $(this).fadeIn(2000, function () {
+                });
+            });
+        }
+
+    </script>
+
+</head>
+<body>
+
+
+      <script id="delete-confirmation" type="text/x-kendo-template">
+        <p class="delete-message">@MessageResource.Global_Display_DeleteConfirmQuestion</p>
+        <p style="text-align:right">
+            <button class="delete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="delete-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+    </script>
+
+    <script>
+        
+        function CustomConfirm(customFunction, title, content, textYes, textNo) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: title,
+                resizable: false,
+                modal: true
+            });
+
+            var string = '<p class="delete-message">' + content + '</p>' +
+                '<p style="text-align:right">' +
+                '<button class="delete-confirm k-button">' + textYes + '</button>' +
+                '<button class="delete-cancel k-button">' + textNo + '</button></p>';
+
+            kendoWindow.data("kendoWindow")
+                .content(string)
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (customFunction)
+                            customFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+
+        function DeleteConfirm(deleteFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: "@MessageResource.Gloabl_Display_DeleteConfirmTitle",
+                resizable: false,
+                modal: true
+            });
+
+            kendoWindow.data("kendoWindow")
+                .content($("#delete-confirmation").html())
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (deleteFunction)
+                            deleteFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+    </script>
+
+    <div id="popupContentWrapper">
+
+
+        <div id="popupContent" style="background-color: White;">
+            <div>
+
+                <div style="width: 100%">
+                    @Html.Partial("MessageHolder")
+                    @RenderBody()
+                </div>
+
+            </div>
+        </div>
+        <script>
+
+            //$("form").validate({
+            //    submitHandler: function(form) {
+            //      if($(form).valid()){
+            //          //console.log(form)
+            //          //form.submit();
+            //      }
+            //    },
+            //   errorPlacement: function (error, element) {
+            //       error.insertAfter(element);
+            //      //console.log("ghjghj")
+            //    }
+            //});
+
+            function DisableComboUserEdit(e) {
+                if (this.value() && this.selectedIndex == -1) {
+                    var dt = this.dataSource._data[0];
+                    this.text('');
+                }
+            }
+
+            $.validator.setDefaults({
+                errorPlacement: function (error, element) {
+                    ////console.log(element)
+                    error.appendTo(element);
+                }
+            });
+
+            $('th').each(function () {
+                var title = $(this).attr("data-title");
+                $(this).attr("title", title);
+            });
+
+        </script>
+    </div>
+
+</body>
+</html>*@
+@using ODMSCommon.Resources
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+    <link href="~/Style/default.css" rel="stylesheet" />
+    <link href="~/Style/Site.css" rel="stylesheet" />
+    <title>@ViewBag.Title - Otokar DMS</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/bundles/odms/css/commons")
+    @Styles.Render("~/Content/kendo/css")
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/kendo")
+    <link href="~/Style/bootstrap-theme.css" rel="stylesheet" />
+    <link href="~/Style/bootstrap.css" rel="stylesheet" />
+    <script src="~/Scripts/JSONProblemSolver.js"></script>
+    <script src="~/Scripts/custom.js"></script>
+    @{
+        var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.ToString();
+    }
+    <script id="fileTemplate" type="text/x-kendo-template">
+        <span class='k-progress'></span>
+        <div id="holderTemp" class='file-wrapper'>
+            <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
+            <h5 class='file-heading file-name-heading'>
+                Name: #=name#</h4>
+                <h5 class='file-heading file-size-heading'>
+                    Size: #=size# bytes</h4>
+                    <button type='button' class='k-upload-action'></button>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        function InputToUpper(obj) {
+            if (obj.value != "") {
+                obj.value = obj.value.toUpperCase();
+            }
+        }
+        function InputToUpperWithoutWhiteSpace(obj) {
+            if (obj.value != "") {
+                obj.value = obj.value.toUpperCase();
+                obj.value = obj.value.replace(' ', '');
+            }
+        }
+        //Custom Confirm Message write in popup
+        root = '@Url.Content("~")';
+
+        function CustomConfirm(customFunction, title, content, textYes, textNo,cancelFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: title,
+                resizable: false,
+                modal: true
+            });
+
+            var string = '<p class="delete-message">' + content + '</p>' +
+                '<p style="text-align:right">' +
+                '<button class="delete-confirm k-button">' + textYes + '</button>' +
+                '<button class="delete-cancel k-button">' + textNo + '</button></p>';
+
+            kendoWindow.data("kendoWindow")
+                .content(string)
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (customFunction)
+                            customFunction();
+                    } else {
+                        confirm = false;
+                        if (cancelFunction)
+                            cancelFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+        function onSelect(e) {
+            var files = e.files;
+            $.each(files, function () {
+                if (this.extension.toLowerCase() != '@CommonValues.ExcelExtOld' && this.extension.toLowerCase() != '@CommonValues.ExcelExtNew') {
+                    SetErrorMessage('@MessageResource.Global_Warning_TypeExcel');
+                    e.preventDefault();
+                }
+                if (this.size / 1024 / 1024 > 5) {
+                    SetErrorMessage('@MessageResource.Global_Warning_FileSize');
+                    e.preventDefault();
+                }
+            });
+        }
+
+        function addExtensionClass(extension) {
+            switch (extension) {
+            case '.jpg':
+            case '.img':
+            case '.png':
+            case '.gif':
+                return "img-file";
+            case '.doc':
+            case '.docx':
+                return "doc-file";
+            case '.xls':
+            case '.xlsx':
+                return "xls-file";
+            case '.pdf':
+                return "pdf-file";
+            case '.ppt':
+                return "ppt-file";
+            case '.zip':
+            case '.rar':
+                return "zip-file";
+            case '.mov':
+            case '.mpg':
+                return "vid-file";
+            default:
+                return "default-file";
+            }
+        }
+    </script>
+
+
+    <style scoped>
+   .file-icon
+   {
+       display: inline-block;
+       float: left;
+       width: 32px;
+       height: 32px;
+       margin-left: 5px;
+       margin-top: 2px;
+   }
+
+   .img-file { background-image: url(@Url.Content("~/Images/pic.png")) }
+   .doc-file { background-image: url(@Url.Content("~/Images/doc.png")) }
+   .pdf-file { background-image: url(@Url.Content("~/Images/pdf.png")) }
+   .ppt-file { background-image: url(@Url.Content("~/Images/ppt.png")) }
+   .vid-file { background-image: url(@Url.Content("~/Images/vid.png")) }
+   .xls-file { background-image: url(@Url.Content("~/Images/excel.png")) }
+   .zip-file { background-image: url(@Url.Content("~/Images/zip-icon.png")) }
+   .default-file { background-image: url(@Url.Content("~/Images/default.png")) }
+
+   #file-wrapper .file-heading
+   {
+       font-family: Arial;
+       font-size: 1.1em;
+       display: inline-block;
+       float: left;
+       width: 450px;
+       margin: 0 0 0 25px;
+       height: 25px;
+       -ms-text-overflow: ellipsis;
+       -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+       overflow:hidden;
+       white-space:nowrap;
+   }
+
+       #file-wrapper .file-name-heading
+       {
+           font-weight: bold;
+       }
+
+        #file-wrapper .file-size-heading
+       {
+           font-weight: normal;
+           font-style: italic;
+       }
+
+   li.k-file .file-wrapper .k-upload-action
+   {
+       position: absolute;
+       top: 0;
+       right: 0;
+   }
+
+   li.k-file div.file-wrapper
+   {
+       position: relative;
+       height: 75px;
+   }
+    </style>
+    <script src="@Url.Content("~/Scripts/kendo/cultures/kendo.culture." + culture + ".min.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/languages/kendo." + culture + ".js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/globalize.js")"></script>
+    <script src="@Url.Content("~/Scripts/kendo/cultures/globalize.culture.tr-TR.js")"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/messages_tr.js"></script>
+    <script>
+        var errors = [];
+        $(document).ready(function () {
+
+            try {
+                var settings = $('form').validate().settings;
+                if (settings) {
+                    settings.wrapper = "label";
+                    settings.showErrors = function (errorMap, errorList) {
+                        this.defaultShowErrors();
+                        $(".field-validation-error").each(function (i, e) {
+                            if ($("a", e).length > 0) return;
+                            var html = $("label", e).text().replace("'", "").replace("'", "");
+                            var newHtml = "<a title='" + html + "' data-toggle='tool-tip'><img style='width:16px'  class='' src='@Url.Content("~/images/messagebox_warning.png")' /> </a>";
+                            $(e).html(newHtml);
+
+                            $("a", e).tooltip({ placement: "right" });
+                        });
+                    };
+                }
+                $(".field-validation-error").each(function (i, k) {
+                    // if ($("a", e).length > 0) return;
+                    ////console.log("k=>" + $(k).html());
+                    var html = $(k).html().replace("'", "").replace("'", "");
+                    var newHtml = "<a title='" + html + "' data-toggle='tool-tip'><img style='width:16px'  class='' src='@Url.Content("~/images/messagebox_warning.png")' /> </a>";
+                    $(k).html(newHtml);
+
+                    $("a", k).tooltip({ placement: "right", html: true });
+                });
+            }
+            catch (m) { }
+        });
+
+
+        $.validator.methods.number = function(value, element) {
+            return !isNaN(Globalize.parseFloat(value));
+        };
+
+        function pageLoad() {
+            CheckAlertBox();
+        }
+        (function ($) {
+
+            var pr = 0, bgWidth = true, bgResize;
+
+
+
+            $(document).ready(function () {
+
+                $.validator.methods.date = function (value, element) {
+                    return this.optional(element) || Globalize.parseDate(value, "dd/MM/yyyy", "tr-TR") || Globalize.parseDate(value, "dd/MM/yyyy HH:mm", "tr-TR") || Globalize.parseDate(value, "HH:mm", "tr-TR");;
+                }
+                $(".ScreenName").html("@ViewBag.Title");
+                kendo.culture("@culture");
+                CheckAlertBox();
+                $(".close").on("click", function () {
+                    $(".messageDiv").fadeOut("slow");
+                });
+
+                Globalize.culture('@culture');
+            });
+        })(jQuery);
+
+        function SetPageTitle(pageTitle) {
+            $(".ScreenName").html(pageTitle);
+        }
+        function CheckAlertBox() {
+            $('div[id="successDiv"]:visible').each(function () {
+
+                $(this).css("display", "none");
+                $(this).fadeIn(2000, function () {
+                });
+            });
+            $('div[id="errorDiv"]:visible').each(function () {
+                $(this).css("display", "none");
+                $(this).fadeIn(2000, function () {
+                });
+            });
+        }
+
+    </script>
+
+</head>
+<body>
+
+
+    <script id="delete-confirmation" type="text/x-kendo-template">
+        <p class="delete-message">@MessageResource.Global_Display_DeleteConfirmQuestion</p>
+        <p style="text-align:right">
+            <button class="delete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="delete-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+    </script>
+
+    <script>
+
+        function CustomConfirm(customFunction, title, content, textYes, textNo,cancelFunc) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: title,
+                resizable: false,
+                modal: true
+            });
+
+            var string = '<p class="delete-message">' + content + '</p>' +
+                '<p style="text-align:right">' +
+                '<button class="delete-confirm k-button">' + textYes + '</button>' +
+                '<button class="delete-cancel k-button">' + textNo + '</button></p>';
+
+            kendoWindow.data("kendoWindow")
+                .content(string)
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (customFunction)
+                            customFunction();
+                    } else {
+                        if (cancelFunc)
+                            cancelFunc();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+
+        function DeleteConfirm(deleteFunction) {
+            var confirm = false;
+            var kendoWindow = $("<div />").kendoWindow({
+                title: "@MessageResource.Gloabl_Display_DeleteConfirmTitle",
+                resizable: false,
+                modal: true
+            });
+
+            kendoWindow.data("kendoWindow")
+                .content($("#delete-confirmation").html())
+                .center().open();
+
+            kendoWindow
+                .find(".delete-confirm,.delete-cancel")
+                .click(function () {
+                    if ($(this).hasClass("delete-confirm")) {
+                        confirm = true;
+                        if (deleteFunction)
+                            deleteFunction();
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                })
+                .end();
+            return confirm;
+        }
+        function AddConfirm(addFunction) {
+                var confirm = false;
+                var kendoWindow = $("<div />").kendoWindow({
+                    title: "@MessageResource.Global_Display_AddConfirmTitle",
+                resizable: false,
+                modal: true
+            });
+
+            //kendoWindow.data("kendoWindow")
+            //    .content($("#add-confirmation").html())
+            //    .center().open();
+
+            //kendoWindow
+            //    .find(".add-confirm,.add-cancel")
+            //    .click(function () {
+            //        if ($(this).hasClass("add-confirm")) {
+            //            confirm = true;
+            //            if (addFunction)
+            //                addFunction();
+            //        }
+            //        kendoWindow.data("kendoWindow").close();
+            //    })
+            //    .end();
+            addFunction();
+            return confirm;
+        }
+    </script>
+
+    <div id="popupContentWrapper">
+
+
+        <div id="popupContent" style="background-color: White;">
+            <div>
+
+                <div style="width: 100%">
+                    @Html.Partial("MessageHolder")
+                    @RenderBody()
+                </div>
+
+            </div>
+        </div>
+        <script>
+
+            //$("form").validate({
+            //    submitHandler: function(form) {
+            //      if($(form).valid()){
+            //          //console.log(form)
+            //          //form.submit();
+            //      }
+            //    },
+            //   errorPlacement: function (error, element) {
+            //       error.insertAfter(element);
+            //      //console.log("ghjghj")
+            //    }
+            //});
+
+            $.validator.setDefaults({
+                errorPlacement: function (error, element) {
+                    ////console.log(element)
+                    error.appendTo(element);
+                }
+            });
+
+            $('th').each(function () {
+                var title = $(this).attr("data-title");
+                $(this).attr("title", title);
+            });
+
+        </script>
+    </div>
+
+</body>
+</html>

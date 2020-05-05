@@ -1,0 +1,68 @@
+﻿@using ODMSCommon.Resources
+@model List<ODMSModel.PurchaseOrderDetail.PurchaseOrderSparePartDetailsModel>
+
+@{
+    Layout = null;
+}
+<div class="panel panel-success">
+    <div class="panel-heading">
+
+    </div>
+    <div class="panel-body" style="max-height: 360px; overflow-y:auto ">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>
+                        @MessageResource.DeliveryList_Display_WaybillNo
+                    </th>
+                    <th>
+                        @MessageResource.DeliveryList_Display_WaybillDate
+                    </th>
+                    <th>
+                        @MessageResource.DeliveryDetail_Display_DesiredPart
+                    </th>
+                    <th>
+                        @MessageResource.DeliveryDetail_Display_SentPart
+                    </th>
+                    <th>
+                        @MessageResource.Delivery_Display_ShipQuantity
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+            {
+                    <tr>
+                        <td>
+                            @if (item.SupplierId != null && item.SenderDealerId == null)
+                            {
+                                <a class="k-link2" href="@Url.Action("DeliveryIndex", "Delivery")" target="blank">
+                                    @item.WayBillNo
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="k-link2" href="@Url.Action("DeliveryListIndex", "DeliveryList", new {id = item.DeliveryId})" target="blank">
+                                    @item.WayBillNo
+                                </a>
+                            }
+                        </td>
+                        <td>
+                            @item.WayBillDate.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @item.DesiredPartCode / @item.DesiredPartName
+                        </td>
+                        <td>
+                            @item.PartCode / @item.PartName
+                        </td>
+                        <td>
+                            @item.ShipQuantity
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

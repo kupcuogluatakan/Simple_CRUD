@@ -1,0 +1,94 @@
+﻿@using ODMSCommon.Security
+@model ODMSModel.CriticalStockCard.CriticalStockCardViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.CriticalStockCard_PageTitle_Create;
+}
+
+@Html.AntiForgeryToken()
+@using (Html.BeginForm("CriticalStockCardCreate", "CriticalStockCard", FormMethod.Post))
+{
+           
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        @Html.ValidationMessageFor(v => v.IdDealer)
+    </div>
+    
+    @Html.HiddenFor(v => v.IdDealer)
+
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">
+        @{ 
+            Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "IdPart", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "", CallbackFunction = "GetShipQty" });
+            @Html.ValidationMessageFor(v => v.IdPart)
+        }
+
+        @Html.HiddenFor(v => v.IdPart)
+    </div>   
+       
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipQty)</div>
+    <div class="labelDiv shipQty">0</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.CriticalStockQuantity)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(v => v.CriticalStockQuantity).Min(0).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" })
+        @Html.ValidationMessageFor(v => v.CriticalStockQuantity)
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+  
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.CriticalStockCard.CriticalStockCardCreate, "CriticalStockCardCreate")          
+
+}
+
+<script type="text/javascript">
+
+    function BindAutoComplate(e) {
+        var dataItem = this.dataItem(e.item.index());
+        $("#IdPart").val(dataItem.Value);
+    }
+
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+    });
+
+    function GetShipQty() {        
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("GetShipQtyByPartId", "CriticalStockCard")",
+            data: { partId: $("#IdPart").val(), "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                $(".shipQty").text(result.ShipQty);
+            },
+            dataType: "json"
+        });
+    }
+
+
+</script>
+
+
+
+
+
+

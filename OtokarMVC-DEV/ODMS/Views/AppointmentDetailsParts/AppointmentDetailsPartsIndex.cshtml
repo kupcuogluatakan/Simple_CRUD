@@ -1,0 +1,242 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.AppointmentDetailsMaintenance
+@using ODMSModel.AppointmentDetailsParts
+@model AppointmentDetailsPartsViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("AppointDetailsParts_PageTitle_Index");
+}
+ 
+<div class="clearDiv">&nbsp;</div>
+@Html.AntiForgeryToken()
+<div id="appointmentdetailspartsContent">
+    <script type="text/javascript">
+
+        function SearchPart() {
+            return {
+                //IsActiveSearch: $("#IsActiveSearch").val(),
+                //VehicleTypeId : $("#VehicleTypeId").val(),
+                //MaintTypeId: $("#MaintTypeId").val()
+                AppointIndicId: @Model.AppointIndicId
+
+            };
+        }
+        function SearchAppIndicMaint() {
+            return {
+                AppIndicId : @Model.AppointIndicId  ,
+                ObjType : 1
+                
+            };
+        } 
+        $(document).ready(function () {
+            $("body #appointmentdetailspartsContent").delegate(".modalClick3", "click", function (e) {
+                $('#modelWindow3','#appointmentdetailspartsContent').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("edit3")) {
+                    link = "@Url.Action("AppointmentDetailsPartsUpdate", "AppointmentDetailsParts", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("createNew3")) {
+                    link = "@Url.Action("AppointmentDetailsPartsCreate", "AppointmentDetailsParts",new {AppointIndicId = Model.AppointIndicId})";
+                }
+                if ($(this).hasClass("details3") == true) {
+                    link = "@Url.Action("AppointmentDetailsPartsDetails", "AppointmentDetailsParts", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                if ($(this).hasClass("changepart")) {
+                    link = "@Url.Action("ChangePart", "AppointmentDetailsMaintenance", new { AppIndPartId = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                $("#modelWindow3_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow3").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+               
+            });
+
+        });
+        function onDataBoundAppDetMaint(arg) {
+            var data = $("#AppDetailMaintGrid").data("kendoGrid").dataSource.data();
+            $.each(data, function (i, row) {
+                if (row.IsRemoved) {
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#FE2E2E");
+                    $('tr[data-uid="' + row.uid + '"] td:first-child').find('a').attr('onClick', 'AddRecord(' + row.LabourPartId + ','+row.ObjType+')');
+                } else {
+                    $('tr[data-uid="' + row.uid + '"]').css("background-color", "#32cd32");
+                    $('tr[data-uid="' + row.uid + '"] td:first-child').find('img').attr('src', '@Url.Content("~/Images/delete.png")');
+                    $('tr[data-uid="' + row.uid + '"] td:first-child').find('a').attr('onClick', 'DeleteRecord(' + row.LabourPartId + ',' + row.ObjType + ')');
+                }
+                if (row.ObjType==2) {
+                    $('tr[data-uid="' + row.uid + '"] td:nth-child(2)').html('');
+                }
+                if (row.IsMust) {
+                    $('tr[data-uid="' + row.uid + '"] td:first-child').html('');
+                }
+            });
+        }
+
+    </script>
+    <div id="modelWindowDiv">
+        @(Html.Kendo().Window()
+              .Name("modelWindow3")
+              .Draggable()
+              .Resizable()
+              .Width(950)
+              .Height(350)
+              .Visible(false)
+              .Modal(true)
+              .Iframe(true)
+              .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid3').data('kendoGrid');
+         if(grid){
+
+         }
+         else{
+            grid = $('#AppDetailMaintGrid').data('kendoGrid');
+         }
+         grid.dataSource.page(1);
+         grid.dataSource.read();
+        
+    }"))
+              )
+    </div>
+    @if (Model.IndicType != "IT_P")
+    {
+         @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick3 createNew3", CommonUtility.GetResourceValue("AppointDetailsParts_PageTitle_Create"), CommonValues.PermissionCodes.AppointmentDetailsParts.AppointmentDetailsPartsCreate)
+        <div class="kendoGridDiv" id="grd">
+            @(Html.Kendo().Grid<AppointmentDetailsPartsListModel>()
+                  .Name("grid3")
+                  .Columns(columns =>
+                  {
+                      //columns.Bound(p => p.Id).ClientTemplate("<center><a class='details3 modalClick3' id='#=Id#' frameTitle='" + CommonUtility.GetResourceValue("AppointDetailsParts_PageTitle_Details") + "' href='/AppointmentDetailsParts/AppointmentDetailsPartsDetails/#=Id#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentDetailsParts.AppointmentDetailsPartsDetails));
+                      columns.Bound(p => p.Id).ClientTemplate("<center><a class='edit3 modalClick3' id='#=Id#' frameTitle='" + CommonUtility.GetResourceValue("AppointDetailsParts_PageTitle_Update") + "' href='/AppointmentDetailsParts/AppointmentDetailsPartsUpdate/#=Id#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentDetailsParts.AppointmentDetailsPartsUpdate));
+                      columns.Bound(o => o.Id).ClientTemplate("<center><a onclick='Delete(#=Id#)' id='#=Id#' frameTitle='"+MessageResource.AppointmentDetailsMaint_PageTitle_ChangePart+"' href='javascript:void(0);'><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentDetailsParts.AppointmentDetailsPartsDelete));
+                      columns.Bound(p => p.PartName).Width(380).Sortable(true);
+                      columns.Bound(p => p.Quantity).Width(100).Sortable(true);
+                      columns.Bound(p => p.ListPrice).Width(100).Sortable(true).HtmlAttributes(new{@style="text-align:right"});
+                  })
+                  .Pageable()
+                  .Sortable()
+                  .Scrollable()
+                  .DataSource(dataSource => dataSource
+                      .Ajax()
+                      .PageSize(10)
+                      .ServerOperation(true)
+                      .Read(read => read.Action("ListAppointmentDetailsParts", "AppointmentDetailsParts", Model).Data("SearchPart"))
+                      .Model(model => model.Field(o => o.Id).DefaultValue(-1)))
+
+                  )
+        </div>
+    }
+    else
+    {
+        <div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<AppointmentDetailsMaintenanceListModel>()
+          .Name("AppDetailMaintGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.MaintId).ClientTemplate("<center><a class='loadclss'><img width='16px' height='16px' class=iconLink src='" + @Url.Content("~/Images/add.png") + "'></a></center>").Title(MessageResource.AppointmentDetailsMaint_Display_AddRemove).Width(50).Sortable(false);
+                  columns.Bound(p => p.LabourPartId).ClientTemplate("<center><a id=#=LabourPartId# class='changepart modalClick3'  frameTitle='" + MessageResource.AppointmentDetailsMaint_PageTitle_ChangePart + "'><img class=iconLink src='" + @Url.Content("~/Images/wheel.png") + "'></a></center>").Title(MessageResource.AppointmentDetailsMaint_PageTitle_ChangePart).Width(50).Sortable(false);
+                  columns.Bound(p => p.Name).Width(100).Sortable(true);
+                  columns.Bound(p => p.Quantity).Width(110).Sortable(true);
+                  columns.Bound(p => p.Price).Width(150).Sortable(true);
+                  columns.Bound(p => p.ObjType).Visible(false);
+                  columns.Bound(p => p.LabourPartId).Visible(false);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .Events(e => e.DataBound("onDataBoundAppDetMaint"))
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListAppointmentDetailsMaintenance", "AppointmentDetailsMaintenance", Model).Data("SearchAppIndicMaint"))
+                                        .Model(model => model.Field(o => o.AppIndicId).DefaultValue(-1)))
+
+          )
+</div>
+    }
+
+</div>
+
+<script>
+
+    function AddRecord(id, objType) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        AddConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AddAppDetailLabourAndPart", "AppointmentDetailsMaintenance")",
+                data: { LabourPartId: id, ObjType: objType,"__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#AppDetailMaintGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+    function DeleteRecord(id,objType) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteAppDetailLabourAndPart", "AppointmentDetailsMaintenance")",
+                data: { LabourPartId: id, ObjType: objType,"__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#AppDetailMaintGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+    function Delete(Id) {
+       
+        var paramaters = {
+            Id:Id
+        };
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AppointmentDetailsPartsDelete", "AppointmentDetailsParts")",
+                data: paramaters,
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid3').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>

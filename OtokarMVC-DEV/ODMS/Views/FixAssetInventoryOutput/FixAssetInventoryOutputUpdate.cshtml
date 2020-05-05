@@ -1,0 +1,138 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.FixAssetInventoryOutput.FixAssetInventoryOutputViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("FixAssetInventory_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<script type="text/javascript">
+    function GetWarehouseId() {
+        return {
+            id: $('#IdWarehouse').val()
+        };
+    }
+
+    function GetDealerId() {
+        return {
+            idDealer: $('#IdDealer').val()
+        };
+    }
+</script>
+ 
+@using (Html.BeginForm("FixAssetInventoryOutputUpdate", "FixAssetInventoryOutput", FormMethod.Post, new { id = "SubmitForm" }))
+{
+    if (Model != null && (!string.IsNullOrEmpty(Model.PartName)))
+    {
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartName) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartCode) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.StockTypeName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.StockTypeName) &nbsp;</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IdWarehouse)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.IdWarehouse).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListWarehouse", "FixAssetInventoryOutput").Data("GetDealerId")).ServerFiltering(true)).Enable(true).AutoBind(true).CascadeFrom("IdDealer")
+        @Html.ValidationMessageFor(c => c.IdWarehouse)
+
+    </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IdRack)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.IdRack).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListRacks", "FixAssetInventoryOutput").Data("GetWarehouseId")).ServerFiltering(true)).AutoBind(true).CascadeFrom("IdWarehouse")
+        @Html.ValidationMessageFor(c => c.IdRack)
+
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    }
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SerialNo)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.SerialNo)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Description)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Description)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.RestockReason)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.RestockReason) @Html.ValidationMessageFor(c => c.RestockReason)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.FixAssetStatus)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.FixAssetStatus).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusExitList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.FixAssetStatus)
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+      
+    if (Model.FixAssetStatus == (int)CommonValues.FixAssetStatus.FixInventory)
+    {
+        @ODMSHelpers.Button("Update", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.FixAssetInventoryOutput.FixAssetInventoryOutputUpdate, "FixAssetInventoryOutputUpdate");
+    }
+    
+
+    @Html.HiddenFor(v => v.IdFixAssetInventory)
+    @Html.HiddenFor(v => v.PartName)
+    @Html.HiddenFor(v => v.StockTypeName)
+
+    @Html.HiddenFor(v => v.SubmitFinished)
+    
+    
+    //HiddenFor ile int? null dondugunde validation error olusuyor. 0 mantık hatasına yol acıyor.
+    <input type="hidden" name="StockType" value="@Model.StockType" />
+    <input type="hidden" name="IdDealer" id="IdDealer" value="@Model.IdDealer" />
+    
+    //<input type="hidden" name="IdFixAssetInventory" id="IdFixAssetInventory" value="@Model.IdFixAssetInventory" />
+}
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+        if ($('#SubmitFinished').val() == "True") {
+            $('#SubmitForm').hide();
+        }
+
+        if ("@Model.IdPart" == 0)//IdPart null not original
+        {
+            $("#FixAssetStatus").data("kendoComboBox").value("-1");
+            $("#FixAssetStatus").data("kendoComboBox").readonly(true);
+        } else {           //original
+
+            $("#IdRack").on("change", function (e) {
+                if (($("#IdRack").val() > 0) && ($("#IdWarehouse").val() > 0)) {
+                    $("#FixAssetStatus").data("kendoComboBox").value("2");
+                    //$("#FixAssetStatus").data("kendoComboBox").readonly(true);
+                }
+                else {
+                    $("#FixAssetStatus").data("kendoComboBox").value("");
+                    //$("#FixAssetStatus").data("kendoComboBox").readonly(false);
+                }
+            })
+
+            $("#FixAssetStatus").on("change", function (e) {
+                if ($("#FixAssetStatus").val() == -1) {//Hurdaya çıkarıldı
+                    $("#IdWarehouse").data("kendoComboBox").value("");
+                    $("#IdRack").data("kendoComboBox").value("");
+                    $("#IdWarehouse").data("kendoComboBox").enable(false);
+                    $("#IdRack").data("kendoComboBox").enable(false);
+                }
+                else {//Stoğa Aktarıldı
+                    $("#IdWarehouse").data("kendoComboBox").enable(true);
+                    //$("#IdRack").data("kendoComboBox").enable(true);
+                }
+            })
+
+        }
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+
+</script>

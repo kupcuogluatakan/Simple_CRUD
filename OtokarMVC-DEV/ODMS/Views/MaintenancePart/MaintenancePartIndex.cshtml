@@ -1,0 +1,275 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.MaintenancePart
+@model MaintenancePartViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Index");
+}
+
+@Html.AntiForgeryToken()
+
+@if (Model.IsRequestRoot)
+{
+    <div class="row">
+        <div class="col-md-7">
+            <div id="showSearch4" class="showSearch btn btn-default">@MessageResource.Global_Display_Search_Criteria</div>
+            <div id="searchDiv4" class="searchDiv">
+                <div id="searchFields4" class="searchFields">
+                    <div class="labelDiv">@Html.LabelFor(v => v.IsActiveSearch)</div>
+                    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.Search).DataTextField("Text").DataValueField("Value").SelectedIndex(0).BindTo(ViewBag.IASelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+                </div>
+            </div>
+            <button class="k-button" id="btnReset" onclick="ResetSearch();"><i class=" glyphicon glyphicon-remove"></i> @MessageResource.Global_Display_Clear</button>
+            @ODMSHelpers.LinkButton("btnSearch4", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.MaintenancePart.MaintenancePartsIndex)
+            @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickMaintPart createNewMaintPart", CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Create"), null)
+            @if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenancePart.MaintenancePartIndexExcelExport))
+            {
+
+                <form id="exportForm" action="@Url.Action("ListMaintenancePartForExcel", "MaintenancePart")" method="post" style="display: inline-block;margin-top:10px!important;">
+                    <button type="submit" class="k-button"><img src="~/Images/excel.gif" id="excel-exp" style="height:14px; vertical-align:text-top;">&nbsp;Excel'e Aktar</button>
+                </form>
+            }
+        </div>
+        <div class="col-md-3">
+
+            <div style="border:1px dashed #808080;margin-top:5px;">
+                <h4>@Html.Raw(MessageResource.Part_Display_UploadFromExcel) </h4>
+                <div class="labelDiv" style="width:80px;float:left;">@MessageResource.Global_Display_SampleFile </div>
+                <div>
+                    <a class="k-link2" href="@Url.Action("ExcelSample")">
+                        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                    </a>
+                    <br />
+                    @using (Html.BeginForm("MaintenancePartIndex", "MaintenancePart", FormMethod.Post, new { id = "frmPartUpload", enctype = "multipart/form-data" }))
+                    {
+                        @Html.HiddenFor(x=>x.MaintId)
+                        @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+                        <div id="divExcepUpload">
+                            @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+}
+
+<style>
+    .showSearch {
+        color: #428BCA;
+        cursor: pointer;
+        display: table;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+</style>
+
+<script>
+
+    //parçaların ajax ile yüklenmesi
+    $('#frmPartUpload').submit(function (event) {
+        event.preventDefault();
+        var formdata = new FormData($('#frmPartUpload').get(0));
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("MaintenancePartIndex", "MaintenancePart")',
+            data: formdata,
+            dataType: "json",
+            processData: false, 
+            contentType: false, 
+            success: function (response) {
+                $('html, body').animate({ scrollTop: (0) }, 1000);
+                if (response.Success) {
+                    SetSuccessMessage(response.Message);
+                    $('#MaintenancePartGrid').data('kendoGrid').dataSource.read();
+                }
+                else {
+                    SetErrorMessageWithFile(response.Message, response.FileId);
+                }
+            }
+        });
+    });
+
+    function SearchMaintenancePart() {
+        return {
+            IsActiveSearch: $("#Search").val(),
+            MaintId : @Model.MaintId
+            };
+    }
+
+    function SearchMaintenancePartForExcel() {
+        return {
+            IsActiveSearch: $("#Search").val(),
+            MaintId : @Model.MaintId,
+            MaintName: '',
+            VehicleModel: '',
+            VehicleTypeName: '',
+            EngineType: '',
+            MaintTypeName: '',
+            MaintKM: '',
+            MaintMonth: '',
+            MainCategoryName: '',
+            CategoryName: '',
+            SubCategoryName: '',
+            FailureCode: '',
+            IsActiveS: '',
+            PartCode: '',
+            PartName: '',
+            IsMustS: '',
+            IsAlernateAllowS: '',
+            IsDifBrandAllowS: '',
+            Quantity: '',
+            Unit: '',
+            IsActiveString: ''
+        };
+    }
+
+    function ResetSearch() {
+        $("#Search").data('kendoComboBox').value(null);
+    }
+    $(document).ready(function () {
+        $("#btnSearch4").click(function (e) {
+            var grid = $('#MaintenancePartGrid').data('kendoGrid');
+            grid.dataSource.read();
+        });
+        $("#showSearch4").click( function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (IsVisible==false) {
+                $(this).html("@MessageResource.Global_Display_Hide_Search_Criteria");
+                $(this).addClass("searchVisible");
+                $("#searchDiv4").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv4").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClickMaintPart", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var clickedPartId = $(this).attr("idpart");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("MaintenancePartUpdate", "MaintenancePart", new { id = -1, partId = -2 })";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-2", clickedPartId);
+            }
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("MaintenancePartDetails", "MaintenancePart", new { id = -1, partId = -2 })";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-2", clickedPartId);
+            }
+            else if ($(this).hasClass("createNewMaintPart")) {
+
+                link = "@Url.Action("MaintenancePartCreate", "MaintenancePart", new { id = Model.MaintId })";
+            }
+            $("#modelWindowMaintPart_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindowMaintPart").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+            windowWidget.refresh({
+                url: link
+            }).center();
+
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+        $("#showSearch1").addClass("btn btn-default");
+
+        $('#exportForm').submit(function () { //listen for submit event
+            var json = SearchMaintenancePartForExcel();
+            for (var i in json) {
+                $('#exportForm').find('input[name="' + i + '"]').remove();
+                $('<input />').attr('type', 'hidden')
+                    .attr('name', i)
+                    .attr('value', json[i])
+                    .appendTo('#exportForm');
+            }
+            return true;
+        });
+
+    });
+    function DeleteMaintPart(maintId,partId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("MaintenancePartDelete", "MaintenancePart")",
+                data: { id: maintId ,partId : partId , "__RequestVerificationToken": token  },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#MaintenancePartGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindowMaintPart")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#MaintenancePartGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<MaintenancePartListModel>()
+          .Name("MaintenancePartGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.MaintId).ClientTemplate("<center><a class='details modalClickMaintPart' id='#=MaintId#' idpart='#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Details") + "' href='/MaintenancePart/MaintenanceParteDetails?id=#=MaintId#&secId=#=PartId# '><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenancePart.MaintenancePartsDetails));
+                  columns.Bound(p => p.MaintId).ClientTemplate("<center><a class='edit modalClickMaintPart' id='#=MaintId#' idpart='#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Update") + "' href='/MaintenancePart/MaintenanceParteUpdate?id=#=MaintId#&secId=#=PartId# '><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenancePart.MaintenancePartsUpdate));
+                  columns.Bound(o => o.MaintId).ClientTemplate("<center><a onclick='DeleteMaintPart(#=MaintId#,#=PartId#)' href='javascript:void(0);' id='#=MaintId#' idpart='#=PartId#' frameTitle='" + @CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Delete") + "' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenancePart.MaintenancePartsDelete));
+                  columns.Bound(p => p.MaintName).Width(150).Sortable(true);
+                  columns.Bound(p => p.PartCode).Width(150).Sortable(true);
+                  columns.Bound(p => p.PartName).Width(150).Sortable(true);
+                  columns.Bound(p => p.IsMustS).Width(80).Sortable(true);
+                  columns.Bound(p => p.IsAlernateAllowS).Width(120).Sortable(true);
+                  columns.Bound(p => p.IsDifBrandAllowS).Width(120).Sortable(true);
+                  columns.Bound(p => p.Quantity).Width(100).Sortable(true);
+                  columns.Bound(p => p.Unit).Width(100).Sortable(true);
+                  columns.Bound(p => p.IsActiveString).Width(100).Sortable(true);
+
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListMaintenancePart", "MaintenancePart", Model).Data("SearchMaintenancePart"))
+                                        .Model(model => model.Field(o => o.MaintId).DefaultValue(-1)))
+
+
+
+    )
+</div>
+

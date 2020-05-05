@@ -1,0 +1,38 @@
+﻿@model ODMSModel.BreakdownDefinition.BreakdownDefinitionViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("BreakdownDefinition_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("BreakdownDefinitionUpdate", "BreakdownDefinition", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.PdiBreakdownCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PdiBreakdownCode)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc)</div>  @Html.ValidationMessageFor(v => v.AdminDesc)
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv" style="margin-top: 5px">@Html.LabelFor(v => v.BreakdownName)</div>
+    <div class="shortTxtDiv" style="margin-top: 5px">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = true }); }
+        @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+    </div>
+        
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.PdiBreakdownCode)
+    @ODMSHelpers.Button("Update", ODMSCommon.Resources.MessageResource.Global_Display_Update, ODMSCommon.CommonValues.PermissionCodes.BreakdownDefinition.BreakdownDefinitionUpdate, "BreakdownDefinitionUpdate")        
+}
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

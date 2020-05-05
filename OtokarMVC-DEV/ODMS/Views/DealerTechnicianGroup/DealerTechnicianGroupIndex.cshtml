@@ -1,0 +1,177 @@
+﻿@using ODMSCommon.Security
+@using ODMSCommon.Resources
+@using ODMSModel.DealerTechnicianGroup
+
+@model DealerTechnicianGroupListModel
+@{
+    ViewBag.Title = @MessageResource.DealerTechnicianGroup_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.DealerId).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        </div>
+        <div class="labelDiv">@Html.LabelFor(b => b.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsActive).BindTo(ViewBag.StatusList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.WorkshopTypeName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.WorkshopTypeId).BindTo(ViewBag.WorkshopTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelKod)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleModelKod).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleModelList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.TechnicianGroupName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.TechnicianGroupName)</div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerTechnicianGroup.DealerTechnicianGroupIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.DealerTechnicianGroup_PageTitle_Create, CommonValues.PermissionCodes.DealerTechnicianGroup.DealerTechnicianGroupCreate)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<DealerTechnicianGroupListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(b => b.DealerTechnicianGroupId).ClientTemplate("<center><a class='details modalClick' id='#=DealerTechnicianGroupId#'frameTitle='" + MessageResource.DealerTechnicianGroup_PageTitle_Details + "' href='/DealerTechnicianGroup/DealerTechnicianGroupDetails/#=DealerTechnicianGroupId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerTechnicianGroup.DealerTechnicianGroupDetails));
+                  columns.Bound(b => b.DealerTechnicianGroupId).ClientTemplate("<center><a class='edit modalClick' id='#=DealerTechnicianGroupId#' frameTitle='" + MessageResource.DealerTechnicianGroup_PageTitle_Update + "' href='/DealerTechnicianGroup/DealerTechnicianGroupUpdate/#=DealerTechnicianGroupId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(MessageResource.Global_Display_Update).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerTechnicianGroup.DealerTechnicianGroupUpdate));
+                  columns.Bound(b => b.DealerTechnicianGroupId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.DealerTechnicianGroup_PageTitle_Delete + "' onclick='DeleteDealerTechnicianGroup(#=DealerTechnicianGroupId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerTechnicianGroup.DealerTechnicianGroupDelete));
+                  columns.Bound(b => b.DealerName).Width(70).Sortable(true);
+                  columns.Bound(b => b.WorkshopTypeName).Width(70).Sortable(true);
+                  columns.Bound(b => b.VehicleModelKod).Width(180).Sortable(true);
+                  columns.Bound(b => b.TechnicianGroupName).Width(100).Sortable(true);
+                  columns.Bound(b => b.Description).Width(100).Sortable(true);
+                  columns.Bound(b => b.IsActiveName).Width(70).Sortable(true);
+                  columns.Bound(p => p.DealerTechnicianGroupId).Width(120).Title(@CommonUtility.GetResourceValue("DealerTechnicianGroupTechnician_PageTitle_Details")).ClientTemplate(Html.ActionLink(@CommonUtility.GetResourceValue("DealerTechnicianGroupTechnician_PageTitle_Details"), "DealerTechnicianGroupTechnicianIndex", "DealerTechnicianGroupTechnician", new { id = "#=DealerTechnicianGroupId#" }, new { target = "_blank" }).ToString()).Filterable(false).Sortable(false);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerTechnicianGroups", "DealerTechnicianGroup", Model).Data("Search"))
+                                        .Model(model => model.Field(b => b.DealerTechnicianGroupId).DefaultValue(-1)))
+          )
+
+</div>
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Title("DealerTechnicianGroup")
+        .Draggable()
+        .Resizable()
+        .Width(1000)
+        .Height(400)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            RegisterEventHandlers();
+        });
+
+        function RegisterEventHandlers() {
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+
+            $("body").delegate("#btnSearch", "click", function () {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("DealerTechnicianGroupDetails", "DealerTechnicianGroup", new { dealerTechnicianGroupId = -1 })";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("DealerTechnicianGroupUpdate", "DealerTechnicianGroup", new { dealerTechnicianGroupId = -1 })";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("DealerTechnicianGroupCreate", "DealerTechnicianGroup")";
+                }
+
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+                
+            });
+}
+
+function Search() {
+    return {
+        DealerId: $("#DealerId").val(),
+        IsActive: $("#IsActive").val(),
+        WorkshopTypeId: $('#WorkshopTypeId').val(),
+        VehicleModelKod: $('#VehicleModelKod').val(),
+        TechnicianGroupName: $('#TechnicianGroupName').val()
+    };
+}
+
+function DeleteDealerTechnicianGroup(frId, sId) {
+    var token = $('input[name="__RequestVerificationToken"]').val();
+    
+    DeleteConfirm(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DealerTechnicianGroupDelete")",
+            data: { dealerTechnicianGroupId: frId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+
+    </script>
+}

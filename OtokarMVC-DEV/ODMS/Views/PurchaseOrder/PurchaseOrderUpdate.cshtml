@@ -1,0 +1,323 @@
+﻿@using ODMSCommon.Security
+@model ODMSModel.PurchaseOrder.PurchaseOrderViewModel
+@{
+    ViewBag.Title = ViewBag.Title = ODMSCommon.Resources.MessageResource.PurchaseOrder_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+
+<link href="~/Style/Content.css" rel="stylesheet" />
+@Html.AntiForgeryToken()
+@using (Html.BeginForm("PurchaseOrderUpdate", "PurchaseOrder", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.PoNumber)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PoNumber)</div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        @Html.ValidationMessageFor(v => v.IdDealer)
+    </div>
+
+
+    <div class="labelDiv">@Html.LabelFor(v => v.SupplyTypeName)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.SupplyType).DataTextField("Text").Events(e => e.Change("CheckSupplyType")).DataValueField("Value").BindTo(ViewBag.SupplyTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+</div>
+    <div class="clearDiv">&nbsp;</div>
+
+
+    <div class="labelDiv">@Html.LabelFor(v => v.PoType)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.PoType).DataSource(c => c.Read(a => a.Action("ListPurchaseOrderTypes", "PurchaseOrder").Data("GetSupplyType").Type(HttpVerbs.Post)).ServerFiltering(true)).DataTextField("Text").DataValueField("Value").AutoBind(false).CascadeFrom("SupplyType").Events(e => e.Change("CheckPoType")).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+    @Html.ValidationMessageFor(v => v.PoType)
+</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsProposal)</div>
+    <div class="shortTxtDiv">
+        @Html.CheckBoxFor(v => v.IsProposal)
+    @Html.ValidationMessageFor(v => v.IsProposal)
+</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IdStockType)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IdStockType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(false)
+        @Html.ValidationMessageFor(v => v.IdStockType)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IdSupplier)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IdSupplier).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SupplierList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+    @Html.ValidationMessageFor(v => v.IdSupplier)
+</div>
+    <div id="divVehicleIdLabel" class="labelDiv">@Html.LabelFor(v => v.VehicleId)</div>
+    <div id="divVehicleId" class="shortTxtDivObjectSearch">
+        @Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel { ObjectSearchType = CommonValues.ObjectSearchType.Vehicle, WindowTitle = ODMSCommon.Resources.MessageResource.ObjectSearch_WindowTitle_Vehicle, ReferenceObjectId = "VehicleId", ClearCallBackFunction = "ChangeVehicle", SelectCallBackFunction = null, Required = false, ReferenceObjectText = Model == null ? null : Model.VehiclePlateVinNo, ReferenceObjectValue = Model == null ? null : Model.VehicleId, ParentWindowId = "PurchaseOrderModelWindow" })
+    @Html.ValidationMessageFor(v => v.VehicleId)
+</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IsBranchOrder)</div>
+    <div class="shortTxtDiv">
+        @Html.CheckBoxFor(v => v.IsBranchOrder)
+    @Html.ValidationMessageFor(v => v.IsBranchOrder)
+</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IdDefect)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IdDefect)</div>
+<div class="shortTxtDiv">
+    @Html.Kendo().ComboBoxFor(v => v.IdDefect).DataSource(c => c.Read(a => a.Action("ListDefectList", "PurchaseOrder").Data("GetVehicle").Type(HttpVerbs.Get)).ServerFiltering(true)).DataTextField("Text").DataValueField("Value").AutoBind(false).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+    @*@Html.Kendo().ComboBoxFor(v => v.IdDefect).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DefectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(false)*@
+    @Html.ValidationMessageFor(v => v.IdDefect)
+</div>
+    <div class="clearDiv">&nbsp;</div>
+
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderUpdate, "PurchaseOrderUpdate")
+
+    @Html.HiddenFor(v => v.IdDealer)
+    @Html.HiddenFor(v => v.PoNumber)
+    @Html.HiddenFor(v => v.Status)
+    @Html.HiddenFor(v => v.DealerBranchSSID)
+    @Html.HiddenFor(v => v.IdStockType)
+    @Html.HiddenFor(v => v.SupplyType)
+    @Html.HiddenFor(v => v.SupplierIdDealer)
+    @Html.HiddenFor(v => v.PoType)
+    @Html.HiddenFor(v => v.IdDefect)
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script type="text/javascript">
+
+
+    function GetSupplyType() {
+        return {
+            supplyType: $("#SupplyType").val()
+        };
+    }
+
+    function GetVehicle() {
+        return {
+            idVehicle: $("#VehicleId").val()
+        };
+    }
+
+    function SetStockType() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $("#IdStockType").data("kendoComboBox").readonly(true);//.enable(false);
+
+        $.post("@Url.Action("GetStockTypeIdByGeneralParameter", "PurchaseOrder")", {
+            "__RequestVerificationToken": token
+        }, function (json) {
+            $("#IdStockType").data("kendoComboBox").value(json.StockTypeId);
+        }, "JSON");
+    }
+    function GetPoTypeList() {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("ListPoType", "PurchaseOrder")",
+            data: { supplyTypeId: $("#SupplyType").data("kendoComboBox").value() },
+        traditional: true,
+        success: function (result) {
+            var combobox = $("#PoType").data("kendoComboBox");
+            combobox.dataSource.data(result);
+        },
+        dataType: "json"
+    });
+    }
+    function GetSupplierList() {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("ListSupplier", "PurchaseOrder")",
+            data: { supplyTypeId: $("#SupplyType").data("kendoComboBox").value() },
+            traditional: true,
+            success: function(result) {
+                var combobox = $("#IdSupplier").data("kendoComboBox");
+                combobox.dataSource.data(result);
+            },
+            dataType: "json"
+        });
+    }
+
+    function CheckSupplyType() {
+
+        if ($("#SupplyType").data("kendoComboBox").value() == '1') { //Otokar
+            $("#PoType").data("kendoComboBox").enable(true);
+            $("#PoType").data("kendoComboBox").value(null);
+            $("#PoType").data("kendoComboBox").text('');
+            $("#IdSupplier").data("kendoComboBox").enable(false);
+            $("#IdSupplier").data("kendoComboBox").value(null);
+            $("#IdSupplier").data("kendoComboBox").value(null);
+            $("#IsProposal").hide();
+            if ('@string.IsNullOrEmpty(Model.DealerBranchSSID)' =='True') {
+                $("#IsBranchOrder").attr("disabled", false);
+            $("#IsBranchOrder").hide();
+            $("label[for='IsBranchOrder']").hide();
+
+        } else {
+            $("#IsBranchOrder").attr("checked", false);
+            $("#IsBranchOrder").removeAttr("disabled");
+            $("#IsBranchOrder").show();
+            $("label[for='IsBranchOrder']").show();
+        }
+
+    } else {
+            $("#IsBranchOrder").hide();
+            $("label[for='IsBranchOrder']").hide();
+            $("#IsBranchOrder").val(false);
+            $("#IsProposal").hide();
+    }
+
+    if ($("#SupplyType").data("kendoComboBox").value() == '2') {//Tedarikçi
+        $("#IdSupplier").data("kendoComboBox").enable(true);
+        $(".k-widget").removeClass("input-validation-error");
+    }
+    if ($("#SupplyType").data("kendoComboBox").value() == '3') { //Bayi/Servis
+        $("#IdSupplier").data("kendoComboBox").enable(false);
+        $("#PoType").data("kendoComboBox").enable(true);
+
+        GetSupplierList();
+        GetPoTypeList();
+        $("#IsProposal").show();
+        $("label[for='IsProposal']").show();
+    }
+    }
+
+    function ChangeVehicle() {
+        var vehId = $("#VehicleId").val();
+
+        if (vehId != null || vehId != '') {
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("ListDefectList", "PurchaseOrder")",
+                data: { idVehicle: vehId },
+            traditional: true,
+            success: function (result) {
+                if (result.length > 0 && result != '') {
+                    $("#IdDefect").data("kendoComboBox").enable(true);
+                    var combobox = $("#IdDefect").data("kendoComboBox").value();
+                    combobox.dataSource.data(result);
+                    combobox.dataSource.query();
+                    combobox.value("");
+                } else {
+                    $("#IdDefect").data("kendoComboBox").enable(false);
+                    $("#IdDefect").data("kendoComboBox").value(null);
+                }
+            },
+            dataType: "json"
+        });
+        }
+    }
+
+    function CheckPoType() {
+
+        if ($("#PoType").data("kendoComboBox").value() == 145 && $("#VehicleId").val() != null && $("#VehicleId").val() != '') {//Sözleşme Kapsamında Sipariş
+            $("#IdDefect").data("kendoComboBox").enable(true);
+        } else {
+            $("#IdDefect").data("kendoComboBox").enable(false);
+            $("#IdDefect").data("kendoComboBox").value(null);
+        }
+
+        if ($("#PoType").data("kendoComboBox").value() == null || $("#PoType").data("kendoComboBox").value() == 0 ||
+            $("#PoType").data("kendoComboBox").value() == '' || $("#PoType").data("kendoComboBox").text() == ',') {
+            $("#PoType").data("kendoComboBox").text('');
+            $("#PoType").data("kendoComboBox").value(null);
+            $("#PoType").data("kendoComboBox").enable(false);
+        } else {
+
+            $.post("@Url.Action("GetStockType", "PurchaseOrder")", {
+                poType: $("#PoType").data("kendoComboBox").value()
+            }, function(json2) {
+                var item = $("#IdStockType").data("kendoComboBox");
+                item.value(json2.StockTypeId);
+                item.enable(false);
+
+                if ($("#SupplyType").data("kendoComboBox").value() == '1') { //Otokar
+                    $("#PoType").data("kendoComboBox").enable(true);
+                    $("#IdSupplier").data("kendoComboBox").enable(false);
+                } else {
+                    if ($("#SupplyType").data("kendoComboBox").value() == '2') { //Tedarikçi
+                        $("#IdSupplier").data("kendoComboBox").enable(true);
+                    } else {
+                        if ($("#SupplyType").data("kendoComboBox").value() == '3') { //Bayi/Servis
+                            $("#IdSupplier").data("kendoComboBox").enable(false);
+                            $("#PoType").data("kendoComboBox").enable(true);
+                            $("#IsProposal").show();
+                            $("label[for='IsProposal']").show();
+                        } else {//Boş
+                            $("#PoType").data("kendoComboBox").enable(false);
+                            $("#PoType").data("kendoComboBox").value(null);
+                            $("#IdSupplier").data("kendoComboBox").enable(false);
+                        }
+                    }
+                }
+            }, "JSON");
+        }
+    }
+
+
+    $(document).ready(function () {
+        $("#IsProposal").attr("disabled", "true");
+        $("#IsProposal").hide();
+        $("label[for='IsProposal']").hide();
+
+        $("#SupplyType").data("kendoComboBox").enable(false);
+        $("#PoType").data("kendoComboBox").enable(false);
+
+        $("#PurchaseOrderForm").submit(function() {
+            $("#IsBranchOrder").removeAttr("disabled");
+        });
+
+        if ($("#SupplyType").data("kendoComboBox").value() != 1) { //Otokar
+            CheckSupplyType();
+            CheckPoType();
+            $("#IsBranchOrder").hide();
+            $("label[for='IsBranchOrder']").hide();
+        } else {
+            $("#IsBranchOrder").show();
+            $("label[for='IsBranchOrder']").show();
+        }
+        if ('@string.IsNullOrEmpty(Model.DealerBranchSSID)' == 'True') {
+            $("#IsBranchOrder").hide();
+            $("label[for='IsBranchOrder']").hide();
+        }
+
+        if ($("#PoType").data("kendoComboBox").value() == 145 && $("#VehicleId").val() != null) {//Sözleşme Kapsamında Sipariş
+            $("#IdDefect").data("kendoComboBox").enable(true);
+        } else {
+            $("#IdDefect").data("kendoComboBox").enable(false);
+            $("#IdDefect").data("kendoComboBox").value(null);
+        }
+
+        if ($("#SupplyType").data("kendoComboBox").value() == null || $("#SupplyType").data("kendoComboBox").value() == 0 ||
+            $("#SupplyType").data("kendoComboBox").value() == '') {
+            $("#SupplyType").data("kendoComboBox").value(null);
+        }
+
+        if ($("#IdStockType").data("kendoComboBox").value() == null || $("#IdStockType").data("kendoComboBox").value() == 0 ||
+            $("#IdStockType").data("kendoComboBox").value() == '' || $("#IdStockType").data("kendoComboBox").value() == ',') {
+            $("#IdStockType").data("kendoComboBox").value(null);
+            $("#IdStockType").data("kendoComboBox").text(null);
+        }
+
+        $(function () {
+            $('.k-widget').addClass('input-validation-valid');
+            $(".k-widget").removeClass("input-validation-error");
+        });
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+    $("#popupContent").css("width", 900);
+    $("#popupContent").css("height", 450);
+
+</script>
+
+

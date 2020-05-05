@@ -1,0 +1,121 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.StockTypeDetail
+@model StockTypeDetailListModel
+
+@{
+    ViewBag.Title = MessageResource.DealerStockTypeDetail_PageTitle_Index;
+}
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        </div>
+
+         <div class="labelDiv">@Html.LabelFor(v => v.IdStockType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IdStockType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+       <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>
+
+        <div class="labelDiv">@Html.LabelFor(d => d.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartName) </div>
+        <br /><br />
+        </div>
+        <br />
+    </div>
+
+
+        @ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockTypeDetail.StockTypeDetailIndex)
+
+
+<br />
+<div id="StockTypeDetailModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("StockTypeDetailModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#StockTypeDetailGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(init);
+    function GetParameters()
+    {
+        return {
+            IdDealer: $('#IdDealer').val(),
+            PartName: $('#PartName').val(),
+            PartCode: $('#PartCode').val(),
+            IdStockType: $('#IdStockType').val(),
+            ReportType: 22,
+            Columns: "PartCode,PartName,StockQuantity,StockTypeName"
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#StockTypeDetailGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                }
+                else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+        });
+}
+
+</script>
+
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<StockTypeDetailListModel>()
+          .Name("StockTypeDetailGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.PartCode).Sortable(true);
+                  columns.Bound(p => p.PartName).Sortable(true);
+                  columns.Bound(p => p.StockQuantity).Sortable(true);
+                  columns.Bound(p => p.StockTypeName).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(30)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerStockTypeDetail", "StockTypeDetail", Model).Data("GetParameters"))
+                                        .Model(model => model.Field(o => o.IdDealer).DefaultValue(-1)))
+
+          )
+</div>

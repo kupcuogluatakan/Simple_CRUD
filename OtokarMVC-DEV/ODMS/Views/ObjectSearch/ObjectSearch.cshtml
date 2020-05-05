@@ -1,0 +1,97 @@
+﻿@model ODMSModel.ObjectSearch.ObjectSearchModel
+
+@(Html.Kendo().Window()
+    .Name(@Model.ReferenceObjectId + "SearchWindow")
+    .Title(Model.WindowTitle)
+    .Iframe(true)
+    .Width(1350)
+    .Height(550)
+    .Visible(false)
+    .Modal(true)
+    .Events(v=>v.Close(string.Format("on{0}Close",Model.ReferenceObjectId))))
+    
+    @ODMSHelpers.ObjectSearchTextbox(Model.ReferenceObjectId + "TextContainer", Model.ObjectSearchType, Model.ReferenceObjectValue, Model.ReferenceObjectText,Model.HideTextBox)
+    @ODMSHelpers.ImageWithDynamicId(Url.Content("~/images/search.png"), Model.ReferenceObjectId + "Search", "cursor: pointer; width: 24px; height: 24px;")
+    @ODMSHelpers.ImageWithDynamicId(Url.Content("~/images/clear.png"), Model.ReferenceObjectId + "Clear", "cursor: pointer; width: 24px; height: 24px;")
+    @ODMSHelpers.CustomHiddenFieldWithValidation(Model.ReferenceObjectId, Model.ReferenceObjectValue, Model.Required, Model.ReferenceObjectName)
+
+<script type="text/javascript">
+    @OriginalParentWindowStateHolder()
+    $(document).ready(function () {
+        @OriginalParentWindowStateSetter()
+
+        $("#" + "@Model.ReferenceObjectId" + "Search").on("click", function(e) {
+            var url = "@CommonUtility.BuildObjectSearchUrl(Request.RequestContext, Model.ObjectSearchType, Model.ReferenceObjectId, Model.ClearCallBackFunction, Model.SelectCallBackFunction, Model.FilterId)";
+            @if (!string.IsNullOrEmpty(Model.DataCallbackFunction))
+            {
+                @Html.Raw("url+='&'+$.param("+ Model.DataCallbackFunction + "());")
+            }
+            var searchWindowId = "#" + "@Model.ReferenceObjectId" + "SearchWindow";
+            //var targetWindowState = {width: 1400, height: 650 };
+            var targetWindowState = getWindowState(searchWindowId, false);
+            var parentWindowId = "@Model.ParentWindowId";
+            var gotParentWindow = parentWindowId != null && parentWindowId != "";
+            setParentWindowState(parentWindowId, searchWindowId, url, @OriginalParentStateVariable(), targetWindowState, gotParentWindow);
+        });
+
+        $("#" + "@Model.ReferenceObjectId" + "Clear").on("click", function (e) {
+            $("#" + "@Model.ReferenceObjectId").val('');
+            $("#" + "@Model.ReferenceObjectId" + "TextContainer").val('');
+            var callBackFunction = "@Model.ClearCallBackFunction";
+
+            if (callBackFunction != null && window[callBackFunction]) {
+                window[callBackFunction]();
+            }
+        });
+
+        //parentwindow close restore default size    
+        @Html.Raw(string.Format("var originalParentState = originalParentWindowStateFor{0};  var parentWindowId = \"{1}\"; var searchWindowId = \"{0}SearchWindow\";  var targetWindowState = getWindowState(searchWindowId, false); var gotParentWindow = parentWindowId!=null && parentWindowId!=\"\";  bindParentCloseEvent(parentWindowId, originalParentState, targetWindowState, gotParentWindow); ", Model.ReferenceObjectId, Model.ParentWindowId));
+               
+
+     
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+     
+    });
+
+    @ObjectSearchValueSetter()
+    @WindowCloseEvent()
+</script>
+<style>
+    body
+    {
+        height: 1500px;
+        /*overflow: hidden;*/
+        width: 1200px;
+    }
+</style>
+
+
+@helper OriginalParentStateVariable()
+{
+@Html.Raw(string.Format("originalParentWindowStateFor{0}", @Model.ReferenceObjectId))
+}
+
+@helper OriginalParentWindowStateHolder()
+{
+@Html.Raw(string.Format("var originalParentWindowStateFor{0} = null;", @Model.ReferenceObjectId))
+}
+
+@helper OriginalParentWindowStateSetter()
+{
+@Html.Raw(string.Format("originalParentWindowStateFor{0} = getWindowState(\"{1}\", true);", @Model.ReferenceObjectId, Model.ParentWindowId))
+}
+@helper ObjectSearchValueSetter()
+{
+    @Html.Raw(string.Format("function setFoundValuesFor{0}(referenceObjectId, foundId, foundText, callBackFunction,targetWindowState){{  var parentWindowId = \"{1}\"; var gotParentWindow = parentWindowId!=null && parentWindowId!=\"\"; setFoundValues(referenceObjectId, foundId, foundText, callBackFunction,\"{1}\",originalParentWindowStateFor{0},targetWindowState, gotParentWindow); }}",Model.ReferenceObjectId,Model.ParentWindowId))
+}
+@helper WindowCloseEvent()
+{
+    @Html.Raw(string.Format("function on{0}Close(){{ var originalParentState = originalParentWindowStateFor{0};  var parentWindowId = \"{1}\"; var searchWindowId = \"{0}SearchWindow\";  var targetWindowState = getWindowState(searchWindowId, false); var gotParentWindow = parentWindowId!=null && parentWindowId!=\"\";  restoreParentWindowState(parentWindowId, originalParentState, targetWindowState, gotParentWindow); }}",Model.ReferenceObjectId,Model.ParentWindowId))    
+}
+

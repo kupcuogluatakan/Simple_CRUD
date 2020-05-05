@@ -1,0 +1,209 @@
+﻿@using ODMSBusiness
+@using ODMSCommon.Resources
+@using ODMSModel.LabourMainGroup
+@model LabourMainGroupListModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("LabourMainGroup_PageTitle_Index");
+}
+
+<script>
+
+    function Search() {
+        return {
+            IsActive: $("#IsActive").val()
+        };
+    }
+
+    //SearchScript
+    $(document).ready(function () {
+        $('#divDetails').hide();
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#LabourMainGroupGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        //Popup
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("LabourMainGroupDetail", "LabourMainGroup", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("LabourMainGroupUpdate", "LabourMainGroup", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("LabourMainGroupCreate", "LabourMainGroup")";
+            }
+
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+    });
+
+    function DeleteMain(Id) {
+    DeleteConfirm(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("LabourMainGroupDelete", "LabourMainGroup")",
+                data: { id: Id.toString() },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#LabourMainGroupGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+
+    function loadTabs(mainId) {
+
+        var tabStrip = $('#LabourMainGroupTabs').kendoTabStrip().data("kendoTabStrip");
+
+        var partTab = tabStrip.contentElements[0];
+
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("LabourSubGroupIndex", "LabourSubGroup")",
+            data: { mainId: mainId },
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $(partTab).html(result);
+                tabStrip.select(tabStrip.tabGroup.children("li").eq(0));
+            },
+            error: function (request, status, err) {
+                //////console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+
+        $('#divDetails').show();
+    }
+
+</script>
+
+
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.SearchIsActive)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(c => c.IsActive).BindTo(CommonBL.ListStatus().Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All)
+        </div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", null)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("LabourMainGroup_PageTitle_Create"), CommonValues.PermissionCodes.LabourMainGroup.LabourMainGroupCreate)
+@*@Html.ExportExcelButton(new ExcelExportDto("LabourMainGroup", "Read", "Search", "ExportExcel").Build<LabourMainGroupListModel, object>(c => c.MainGroupId, c => c.LabourGroupName, c => c.Description, c => c.IsActiveString))*@
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<LabourMainGroupListModel>()
+          .Name("LabourMainGroupGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.MainGroupId).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(\"#=MainGroupId#\")' id='#=MainGroupId#' ><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(10).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourMainGroup.LabourMainGroupDetail));
+                  columns.Bound(p => p.MainGroupId).ClientTemplate("<center><a class='details modalClick' id='#=MainGroupId#' frameTitle='" + @CommonUtility.GetResourceValue("LabourMainGroup_PageTitle_Details") + "' href='./LabourMainGroup/#=MainGroupId#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(10).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourMainGroup.LabourMainGroupDetail));
+                  columns.Bound(p => p.MainGroupId).ClientTemplate("<center><a class='edit modalClick' id='#=MainGroupId#' frameTitle='" + @CommonUtility.GetResourceValue("LabourMainGroup_PageTitle_Update") + "' href='./LabourMainGroup/#=MainGroupId#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(10).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourMainGroup.LabourMainGroupUpdate));
+                  columns.Bound(o => o.MainGroupId).ClientTemplate("<center><a onclick='DeleteMain(\"#=MainGroupId#\")' href='javascript:void(0);' id='#=MainGroupId#' frameTitle='" + @CommonUtility.GetResourceValue("LabourMainGroup_PageTitle_Delete") + "' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(10).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourMainGroup.LabourMainGroupDelete));
+                  columns.Bound(p => p.MainGroupId).Width(50).Sortable(true);
+                  columns.Bound(p => p.LabourGroupName).Width(400).Sortable(true);
+                  columns.Bound(p => p.Description).Width(400).Sortable(true);
+                  columns.Bound(p => p.IsActiveString).Width(10).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("Read", "LabourMainGroup", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.MainGroupId).DefaultValue(-1)))
+
+          )
+</div>
+<br />
+<h4>@Html.Raw(MessageResource.LabourMainGroup_Display_UploadFromExcel)  </h4>
+<div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+<div>
+    <a class="k-link2" href="@Url.Action("ExcelSample")">
+        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+    </a>
+    @using (Html.BeginForm("LabourMainGroupIndex", "LabourMainGroup", FormMethod.Post))
+    {
+        @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+        <div id="divExcepUpload">
+            @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+        </div>
+    }
+</div>
+
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("LabourMainGroup")
+          .Draggable()
+          .Resizable()
+          .Width(550)
+          .Height(400)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){var grid = $('#LabourMainGroupGrid').data('kendoGrid');grid.dataSource.page(1);}"))
+    )
+</div>
+
+<div id="divDetails">
+    @(Html.Kendo().TabStrip()
+          .Name("LabourMainGroupTabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.LabourSubGroup_PageTitle_Index).LoadContentFrom(Url.Action("LabourSubGroupIndex", "LabourSubGroup"))))
+</div>
+
+
+

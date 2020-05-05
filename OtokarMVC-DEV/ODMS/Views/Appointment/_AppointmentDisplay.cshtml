@@ -1,0 +1,42 @@
+﻿@model ODMSModel.Appointment.AppointmentViewModel
+@Html.AntiForgeryToken()
+@Html.HiddenFor(v=>v.AppointmentTypeId)
+<div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.DealerName)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.AppointmentTypeName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.AppointmentTypeName)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.CustomerName)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleIdVehiclePlate)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.VehicleVin)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleModelCode)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.VehicleModelName)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleType)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.VehicleTypeName)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehiclePlate)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.VehiclePlate)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleVin)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.VehicleVin)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleColor)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.VehicleColor)</div>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ContactName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.ContactName)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ContactLastName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.ContactLastName)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ContactPhone)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.ContactPhone)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ContactAddress)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.ContactAddress)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.AppointmentDate)</div>
+<div class="shortTxtDiv">@Convert.ToDateTime(Model.AppointmentDateFormatted).ToString("dd/MM/yyyy") </div>
+<div class="labelDiv">@Html.LabelFor(v => v.AppointmentTime)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.AppointmentTime)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.ComplaintDescription)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v=>v.ComplaintDescription)</div>
+<div class="clearDiv">&nbsp;</div>

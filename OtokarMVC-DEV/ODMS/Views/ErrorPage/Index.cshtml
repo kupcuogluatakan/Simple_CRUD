@@ -1,0 +1,9 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("ErrorPage_PageTitle_Index");
+}
+<div id="ajaxError" style="" class="alert alert-danger messageDiv">
+    <span id="ajaxFailSpan">
+        @CommonUtility.GetResourceValue("ErrorMessage_Index");
+    </span>
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>

@@ -1,0 +1,119 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SparePartSaleDetail.OSparePartSaleDetailViewModel
+@{
+    ViewBag.Title = MessageResource.OtokarPartSaleDetail_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script>
+
+    function OnPartSelected() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        var partId = $("#PartId").val();
+
+        $.post("@Url.Action("GetOtokarValues", "SparePartSaleDetail")", {
+            partId: partId,
+            partSaleId:'@Model.SparePartSaleId',
+            stockTypeId: '@Model.StockTypeId',
+            "__RequestVerificationToken": token
+        }, function (json) {
+            if (json) {
+                $("#VatRatio").kendoNumericTextBox({
+                    value: json.VatRatio,
+                    spinners: false
+                });
+                $("#VatRatio").prop('readonly', true);
+
+                $("#DiscountPrice").kendoNumericTextBox({
+                    value: json.DiscountPrice,
+                    spinners: false
+                });
+                $("#DiscountPrice").prop('readonly', true);
+                $("#Price").kendoNumericTextBox({
+                    value: json.Price,
+                    spinners: false
+                });
+
+                if (json.FreeQuantity == 0) {
+                    SetErrorMessage('@MessageResource.OtokarSparePartSaleDetail_Warning_NoStockAvailable');
+            }
+            $("#Quantity").kendoNumericTextBox({
+                value: json.FreeQuantity,
+                spinners: false
+            });
+            $("#Quantity").prop('readonly', true);
+        }
+        }, "JSON");
+        // BEDELSİZ VE KAMPANYA
+    if (parseInt(@Model.StockTypeId) != 1) {
+            $("#DiscountPrice").kendoNumericTextBox({
+                value: 0,
+                spinners: false
+            });
+            $("#Price").kendoNumericTextBox({
+                value: 0,
+                spinners: false
+            });
+
+            $("#Price").prop('readonly', true);
+            $("#DiscountPrice").prop('readonly', true);
+        }
+        $('#divDetails').show();
+    }
+
+    $(document).ready(function () {
+        if ('@ViewBag.IsSuccessfullyAdded' == 'True')
+            $('#divDetails').hide();
+        else {
+            $("#VatRatio").prop('readonly', true);
+            $("#DiscountPrice").prop('readonly', true);
+            $("#Quantity").prop('readonly', true);
+        }
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+
+@Html.AntiForgeryToken()
+@using (Html.BeginForm("OtokarSparePartSaleDetailCreate", "SparePartSaleDetail", FormMethod.Post))
+{
+    <div id="acsDiv">
+        <div class="labelDiv">@Html.Label(MessageResource.SparePart_Display_PartCode)</div>
+        <div class="shortTxtDiv">
+            @{ Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", CallbackFunction = "OnPartSelected", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartNameCode, DefaultValue = Model.PartId }); }
+            @Html.ValidationMessageFor(d => d.PartId)
+        </div>
+    </div>
+    <div id="divDetails">
+        @Html.HiddenFor(p => p.StockTypeId)
+        @Html.HiddenFor(p => p.PartNameCode)
+        @Html.HiddenFor(p => p.SparePartSaleId)
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(d => d.Quantity)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.Quantity).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+        <div class="labelDiv">@Html.LabelFor(p => p.PlanQuantity)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.PlanQuantity).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })
+            @Html.ValidationMessageFor(d => d.PlanQuantity)
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(d => d.DiscountPrice)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.DiscountPrice).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+        <div class="labelDiv">@Html.LabelFor(p => p.Price)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.Price).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })
+            @Html.ValidationMessageFor(d => d.Price)
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(p => p.VatRatio)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.VatRatio).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+        <div class="labelDiv">@Html.LabelFor(p => p.ReturnReasonText)</div>
+        <div class="shortTxtDiv">@Html.TextAreaFor(p => p.ReturnReasonText)
+            @Html.ValidationMessageFor(d => d.ReturnReasonText)
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        @ODMSHelpers.Button("btnCreate", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailCreate, "OtokarSparePartSaleDetailCreate")
+    </div>
+}

@@ -1,0 +1,54 @@
+﻿@using ODMSCommon.Security
+@using ODMSCommon.Resources
+@model ODMSModel.DealerTechnicianGroup.DealerTechnicianGroupViewModel
+@{
+    ViewBag.Title = MessageResource.DealerTechnicianGroup_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("DealerTechnicianGroupUpdate", "DealerTechnicianGroup", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(b => b.DealerName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.DealerId).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        @Html.ValidationMessageFor(d => d.DealerId)
+    </div>
+    <div class="clearDiv">&nbsp;</div> 
+    <div class="labelDiv">@Html.LabelFor(b => b.WorkshopTypeName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.WorkshopTypeId).BindTo(ViewBag.WorkshopTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(d => d.WorkshopTypeId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(b => b.VehicleModelKod)</div>
+    <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModelKodList).Value(Model.VehicleModelKodList).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")
+                @Html.ValidationMessageFor(d => d.VehicleModelKodList)
+    </div>
+    <div class="clearDiv">&nbsp;</div> 
+    <div class="labelDiv">@Html.LabelFor(d => d.TechnicianGroupName)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(d => d.TechnicianGroupName)
+        @Html.ValidationMessageFor(d => d.TechnicianGroupName)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(d => d.Description)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(d => d.Description)
+        @Html.ValidationMessageFor(d => d.Description)
+    </div>
+    <div class="clearDiv">&nbsp;</div> 
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.DealerTechnicianGroupId)
+    @Html.HiddenFor(v => v.DealerId)
+    @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.DealerTechnicianGroup.DealerTechnicianGroupUpdate, "DealerTechnicianGroupUpdate")
+}
+
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

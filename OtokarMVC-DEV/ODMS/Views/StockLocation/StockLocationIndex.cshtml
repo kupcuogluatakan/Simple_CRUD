@@ -1,0 +1,123 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+
+@model ODMSModel.StockLocation.StockLocationListModel
+
+@{
+    ViewBag.Title = MessageResource.StockLocation_PageTitle_Index;
+}
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.IdDealer)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.IsDealer == false)
+        </div>
+        <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>
+
+        <div class="labelDiv">@Html.LabelFor(d => d.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartName) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IdWarehouse)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IdWarehouse).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.WarehouseList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <br />
+        <br />
+    </div>
+    <br />
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockLocation.StockLocationIndex)
+
+
+<br />
+<div id="StockLocationModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("StockLocationModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#StockLocationGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+
+    $(document).ready(init);
+    function StockLocationSearch() {
+        return {
+            IdDealer: $('#IdDealer').val(),
+            IdPart: $('#IdPart').val(),
+            PartName: $('#PartName').val(),
+            PartCode: $('#PartCode').val(),
+            IdWarehouse: $('#IdWarehouse').val()
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#StockLocationGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+    }
+
+</script>
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.StockLocation.StockLocationListModel>()
+          .Name("StockLocationGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.DealerName).Sortable(true);
+                  columns.Bound(p => p.PartCode).Sortable(true);
+                  columns.Bound(p => p.PartName).Sortable(true);
+                  columns.Bound(p => p.WarehouseCode).Sortable(true);
+                  columns.Bound(p => p.RackCode).Sortable(true);
+                  columns.Bound(p => p.Quantity).Sortable(true);
+                  columns.Bound(p => p.Unit).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListStockLocation", "StockLocation", Model).Data("StockLocationSearch"))
+                                        .Model(model => model.Field(o => o.IdDealer).DefaultValue(-1)))
+
+          )
+</div>

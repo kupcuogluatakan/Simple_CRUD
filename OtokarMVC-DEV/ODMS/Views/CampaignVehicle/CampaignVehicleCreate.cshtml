@@ -1,0 +1,38 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.CampaignVehicle.CampaignVehicleViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignVehicle_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CampaignVehicleCreate", "CampaignVehicle", FormMethod.Post))
+{
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+    <div class="shortTxtDiv">@Html.Kendo().Upload().Name("attachments").Events(e => e.Select("onSelect"))</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.CampaignCode)
+    @Html.HiddenFor(v => v.IsUtilized)
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleCreate, "CampaignVehicleCreate")
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

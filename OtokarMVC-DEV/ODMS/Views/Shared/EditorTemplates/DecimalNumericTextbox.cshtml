@@ -1,0 +1,3 @@
+﻿@using ODMSCommon.Resources
+@model decimal
+    @Html.Kendo().NumericTextBox().Decimals(2).Spinners(false).Culture(System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()).HtmlAttributes(new { maxlength = "6", data_val_min = @MessageResource.CycleCountPlan_Warning_MinusValueFound })

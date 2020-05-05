@@ -1,0 +1,266 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+
+@model ODMSModel.Fleet.FleetListModel
+
+@{
+    ViewBag.Title = MessageResource.Fleet_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.FleetName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.FleetName) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.FleetCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.FleetCode) </div>
+        
+        <div class="clear"></div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsConstricted)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IsConstricted).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive) </div>
+        <br />
+        <br />
+    </div>
+    <br />
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Fleet.FleetIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.Fleet_PageTitle_Create, CommonValues.PermissionCodes.Fleet.FleetCreate)
+
+
+<br />
+<div id="FleetModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("FleetModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#FleetGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    function DeleteFleet(obj, idFleed) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteFleet", "Fleet")",
+                data: { IdFleet: idFleed, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    var grid = $('#FleetGrid').data('kendoGrid');
+                    grid.dataSource.read();
+                    SetSuccessMessage(result.Message);
+                }
+            },
+            dataType: "json"
+        });
+        });
+}
+
+function UpdateFleet(obj, idFleet) {
+    $('#modelWindow').html('');
+    var frameTitle = $(obj).attr("frameTitle");
+    var link = "@Url.Action("FleetUpdate", "Fleet", new { IdFleet = "idFleet" })";
+        link = link.replace("idFleet", idFleet);
+
+        ShowPopup(frameTitle, link);
+    }
+
+    function ShowPopup(frameTitle, link) {
+        $("#FleetModelWindow_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#FleetModelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+       
+    }
+
+    $(document).ready(init);
+    function FleetSearch() {
+        return {
+            FleetCode: $('#FleetCode').val(),
+            IsConstricted: $('#IsConstricted').val(),
+            FleetName: $('#FleetName').val(),
+            IsActive : $("#IsActive").is(":checked")
+        };
+    }
+    function init() {
+
+        $('#divDetails').hide();
+
+        //loadTabs('@Model.IdFleet');
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#FleetGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#FleetGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#FleetModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("idFleet");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit") == true) {
+                link = "@Url.Action("FleetUpdate", "Fleet", new { idFleet = -1 })";
+                    link = link.replace("-1", clickedId);
+
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("FleetCreate", "Fleet")";
+                }
+                $("#FleetModelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#FleetModelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+                
+            });
+
+    }
+
+</script>
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.Fleet.FleetListModel>()
+          .Name("FleetGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.IdFleet).ClientTemplate("#if(IsActive){#"+
+                  "<center><a class='loadTab' onclick='ShowTabs(\"#=IdFleet#\")' id='#=IdFleet#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>"+
+                  "#}else{#"+
+                  ""+
+                  "#}#").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(90).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Fleet.FleetIndex));
+              columns.Bound(p => p.IdFleet).ClientTemplate("<center><a class='edit modalClick' idFleet='#=IdFleet#' frameTitle='" + CommonUtility.GetResourceValue("Fleet_PageTitle_Update") + "' href='/Fleet/FleetUpdate/#=IdFleet#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Fleet.FleetUpdate));
+              columns.Bound(p => p.IdFleet).ClientTemplate("#if(IsActive){#" +
+                  "<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("Fleet_PageTitle_Delete") + "' onclick='DeleteFleet(this,#=IdFleet#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>"+
+                  "#}else{#" +
+                  "" +
+                  "#}#").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Fleet.FleetDelete));
+              columns.Bound(p => p.FleetCode).Width(200).Sortable(true);
+              columns.Bound(p => p.FleetName).Width(300).Sortable(true);
+              columns.Bound(p => p.IsVinControl).Width(150).Sortable(true);
+              columns.Bound(p => p.OtokarPartDiscount).Width(150).Sortable(true);
+              columns.Bound(p => p.OtokarLabourDiscount).Width(150).Sortable(true);
+              columns.Bound(p => p.DealerPartDiscount).Width(150).Sortable(true);
+              columns.Bound(p => p.DealerLabourDiscount).Width(150).Sortable(true);
+              columns.Bound(p => p.IsConstrictedName).Width(150).Sortable(true);
+              columns.Bound(p => p.StartDateValid).Width(150).Format("{0:dd/MM/yyyy}").Width(120).Sortable(true);
+              columns.Bound(p => p.EndDateValid).Width(150).Format("{0:dd/MM/yyyy}").Width(120).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListFleet", "Fleet", Model).Data("FleetSearch"))
+                                        .Model(model => model.Field(o => o.IdFleet).DefaultValue(-1)))
+
+          )
+</div>
+
+
+@*tab content start*@
+<div id="divDetails" style="display: none; margin-top: 20px;">
+    @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.FleetPartPartial_PageTitle_Index).Selected(true).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("FleetPartPartialIndex", "FleetPartPartial") + "');" }))
+          .Items(tabstrip => tabstrip.Add().Visible(UserManager.UserInfo.DealerID==0).Text(MessageResource.DealerFleetVehicle_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("DealerFleetVehicleIndex", "DealerFleetVehicle") + "');" }))
+           .Items(tabstrip => tabstrip.Add().Text(MessageResource.FleetVehicle_PageTitle_Index).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("FleetVehicleIndex", "FleetVehicle") + "');" }))
+          )
+
+
+    <div id="TabContent" style="padding: 0 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+</div>
+@*tab content end*@
+
+
+<script type="text/javascript">
+
+    var FleetId;
+
+    function ShowTabs(id) {
+        FleetId = id;
+        $('#TabContent').html('');
+        $("#Tabs").data("kendoTabStrip").select(0);
+        $('#divDetails').show();
+        LoadTabContent('@Url.Action("FleetPartPartialIndex", "FleetPartPartial")');
+    }
+
+    function LoadTabContent(url) {
+        $('#TabContent').html('');
+        $.ajax({
+            type: "GET",
+            url: url + '/' + FleetId,
+            data: {},
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $('#TabContent').html(result);
+            },
+            error: function (request, status, err) {
+                //////console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+</script>

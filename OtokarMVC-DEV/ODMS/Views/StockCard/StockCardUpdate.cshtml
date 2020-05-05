@@ -1,0 +1,99 @@
+﻿@model ODMSModel.StockCard.StockCardViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("StockCard_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using (Html.BeginForm("StockCardUpdate", "StockCard", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.DealerName)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartName)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Weight)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Weight)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Volume)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Volume)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VatRatio)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AutoOrderName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(c=>c.AutoOrder) @Html.ValidationMessageFor(v => v.AutoOrder)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MinSaleQuantity)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.MinSaleQuantity)
+        @Html.ValidationMessageFor(v => v.MinSaleQuantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MinStockQuantity)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.MinStockQuantity)
+        @Html.ValidationMessageFor(v => v.MinStockQuantity)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.MaxStockQuantity)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.MaxStockQuantity)
+        @Html.ValidationMessageFor(v => v.MaxStockQuantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.WarehouseName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.WarehouseId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.WarehouseList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.WarehouseId)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.RackName)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(c => c.RackId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListRacks", "StockCard").Data("GetWarehouseId")).ServerFiltering(true)).Enable(true).AutoBind(false).CascadeFrom("WarehouseId").SelectedIndex(0)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AvgDealerPrice)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AvgDealerPrice)
+        @Html.ValidationMessageFor(v => v.AvgDealerPrice)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CriticalStockQuantity)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CriticalStockQuantity)
+        @Html.ValidationMessageFor(v => v.CriticalStockQuantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    if (@Model.DealerId == @Model.PartDealerId)
+     {
+         <div class="labelDiv">@Html.LabelFor(v => v.SalePrice)</div>
+         <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SalePrice)
+             @Html.ValidationMessageFor(v => v.SalePrice)
+         </div>
+         <div class="labelDiv">@Html.LabelFor(v => v.ProfitMarginRatio)</div>
+         <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ProfitMarginRatio)
+             @Html.ValidationMessageFor(v => v.ProfitMarginRatio)
+         </div>
+     }
+    @Html.HiddenFor(v => v.StockCardId)
+    @Html.HiddenFor(v => v.DealerId)
+    @Html.HiddenFor(v => v.PartId)
+    @Html.HiddenFor(v => v.DealerName)
+    @Html.HiddenFor(v => v.PartName)
+    @Html.HiddenFor(v => v.Weight)
+    @Html.HiddenFor(v => v.Volume)
+    @Html.HiddenFor(v => v.VatRatio)
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"),  CommonValues.PermissionCodes.StockCard.StockCardUpdate, "StockCardUpdate")
+}
+                                  
+<script type="text/javascript">
+    function GetWarehouseId() {
+        return {
+            id: $('#WarehouseId').val()
+        };
+    }
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

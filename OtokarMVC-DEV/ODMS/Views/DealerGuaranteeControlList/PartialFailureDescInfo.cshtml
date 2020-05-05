@@ -1,0 +1,14 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@model FailureDescInfo
+<div class="panel panel-default panel-collapse" style="width: 1030px">
+    <div class="panel-heading">
+        <a data-toggle="collapse" data-parent="#gradFailureDescInfo" href="#collapseFailureDescInfo">
+            <strong style="font-size: 16px;">@MessageResource.Global_Display_FailureDescInfo</strong>
+        </a>
+    </div>
+    <div class="panel-body collapse" id="collapseFailureDescInfo">
+        <div class="labelDiv">@Html.LabelFor(p=>p.TechnicDesc)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(p=>p.TechnicDesc)</div>
+    </div>
+</div>

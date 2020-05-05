@@ -1,0 +1,56 @@
+﻿@model ODMSModel.Equipment.EquipmentViewModel
+
+@{    
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<script src="~/Scripts/Json2.js"></script>
+<script src="~/Scripts/UI_Scripts/EquipmentType.js"></script>
+
+@using (Html.BeginForm("EquipmentTypeCreate", "EquipmentType", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.EquipmentTypeName)</div>
+    <div class="shortTxtDiv">
+        <div style="float: left; width: 70%">
+            @{
+            Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model == null ? string.Empty : Model.MultiLanguageContentAsText, IsEnabled = true });
+            @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+        }
+        </div>
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.EquipmentTypeDesc)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.EquipmentTypeDesc)
+        @Html.ValidationMessageFor(v => v.EquipmentTypeDesc)
+    </div>
+
+    <br />
+    <div class="shortTxtDiv">
+        @ODMSHelpers.Button("Save", CommonUtility.GetResourceValue("Global_Display_Save"),CommonValues.PermissionCodes.Equipment.EquipmentCreate, "EquipmentTypeCreate")
+    </div>    
+}
+<script>
+    $(function () {
+        adjustPage();
+        adjustControlPositions();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 400);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 400);
+        $("#popupContentWrapper").css("width", 410);
+    }
+
+    function adjustControlPositions() {
+        $("#Create").css("position", "absolute");
+        $("#Create").css("margin-top", "180px");
+        $("#Create").css("margin-left", "-100px");
+        $("#Create").css("width", "75px");
+
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("margin-left", "-75px");
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("margin-top", "80px");
+    }
+</script>

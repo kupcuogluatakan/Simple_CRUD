@@ -1,0 +1,17 @@
+﻿@*@model decimal
+
+@{
+    var uiHintData = ViewData.ModelMetadata.ContainerType.GetProperties().FirstOrDefault(c => c.Name == ViewData.ModelMetadata.PropertyName).GetCustomAttributes(typeof(NumericTextBoxUIHintAttribute),true).First() as NumericTextBoxUIHintAttribute;
+    if (uiHintData == null)
+    {
+        throw new ArgumentException("NumericTextBoxUIHintAttribute must be set for the property " + ViewData.ModelMetadata.PropertyName, ViewData.ModelMetadata.PropertyName);
+    }
+}
+@(Html.Kendo().NumericTextBox().Decimals(uiHintData.Decimals).Min(uiHintData.Min).HtmlAttributes(new{maxlength=uiHintData.MaxLength}).Spinners(uiHintData.Spinners)
+.Format("{0:N}"))
+
+    *@
+
+@using ODMSCommon.Resources
+@model decimal
+    @Html.Kendo().NumericTextBox().Decimals(2).Format("{0:N2}").Spinners(false).Culture(System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()).HtmlAttributes(new { maxlength = "9", data_val_min = @MessageResource.CycleCountPlan_Warning_MinusValueFound })

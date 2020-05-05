@@ -1,0 +1,44 @@
+﻿@model ODMSModel.AppointmentDetailsParts.AppointmentDetailsPartsViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("AppointDetailsParts_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("AppointmentDetailsPartsUpdate", "AppointmentDetailsParts", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.GroupList)</div>
+    <div class="shortTxtDiv" style="width:600px;">@Html.DisplayFor(v => v.GroupList)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PartId)</div>
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartSearch.DefaultText, DefaultValue = Model.PartSearch.DefaultValue });@Html.ValidationMessageFor(v => v.PartId)
+
+     <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    @Html.Kendo().NumericTextBoxFor(v => v.Quantity).Decimals(2).Min(0).Format("{0:N2}").HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(v => v.Quantity)
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.CurrencyCode)</div>
+    <div class="shortTxtDiv" style="width: 600px;">@Html.DisplayFor(v => v.CurrencyCode)</div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(d => d.Id)
+    @Html.HiddenFor(d => d.PartId)
+    @Html.HiddenFor(p=>p.AppointIndicId)
+    @Html.HiddenFor(p=>p.GroupList)
+    @Html.HiddenFor(d => d.CurrencyCode)
+    
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.AppointmentDetailsParts.AppointmentDetailsPartsUpdate, "AppointmentDetailsPartsUpdate")
+    
+}
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

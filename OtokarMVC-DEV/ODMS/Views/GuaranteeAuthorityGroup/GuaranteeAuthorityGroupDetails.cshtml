@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = MessageResource.GuaranteeAuthorityGroup_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+    #popupContentWrapper {
+        min-height: 250px !important;
+    }
+</style>
+
+ 
+@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeAuthorityGroup
+@model GuaranteeAuthorityGroupViewModel
+<div class="labelDiv">@Html.LabelFor(c=>c.GroupName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(c=>c.GroupName) &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(c=>c.MailList)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(c=>c.MailList) &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(c=>c.IsActiveString) &nbsp; </div>
+<div class="clearDiv">&nbsp;</div>

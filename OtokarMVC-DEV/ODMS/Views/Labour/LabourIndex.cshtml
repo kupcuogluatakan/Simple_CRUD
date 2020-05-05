@@ -1,0 +1,374 @@
+﻿@using ODMS.Model
+@using ODMSCommon.Resources
+@using ODMSModel.Labour
+@model LabourListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Labour_PageTitle_Index");
+}
+<script type="text/javascript">
+    function GetLabourMainGroupId() {
+        return {
+            id: $("#LabourMainGroupId").val()
+        };
+    }
+    function GetParameters1() {
+        return {
+            IsActiveSearch: $("#IsActiveSearch").val(),
+            RepairCode: $("#RepairCode").val(),
+            LabourCode: $("#LabourCode").val(),
+            LabourName: $("#LabourName").val(),
+            LabourMainGroupId: $("#LabourMainGroupId").val(),
+            LabourSubGroupId: $("#LabourSubGroupId").val(),
+            ReportType: 50,
+            Columns: "LabourSubGrp,LabourType,RepairCode,LabourCode,LabourName,IsActiveS"
+
+        };
+    }
+    function GetParameters2() {
+        return {
+            IsActiveSearch: $("#IsActiveSearch").val(),
+            RepairCode: $("#RepairCode").val(),
+            LabourCode: $("#LabourCode").val(),
+            LabourName: $("#LabourName").val(),
+            LabourMainGroupId: $("#LabourMainGroupId").val(),
+            LabourSubGroupId: $("#LabourSubGroupId").val(),
+            ReportType: 52,
+            Columns: " LABOUR_CODE,LABOUR_NAME,LABOUR_SSID,LABOUR_GROUP_DESC,LABOUR_SUBGROUP_DESC,LABOUR_REPAIR_CODE,LABOUR_TYPE_NAME,MODEL_KOD,DURATION,IS_ACTIVE_STRING,MODEL_NAME,TYPE_NAME,ENGINE_TYPE"
+
+            //Columns: " LabourAndLabourDet_LABOUR_CODE,LabourAndLabourDet_LABOUR_NAME,LabourAndLabourDet_LABOUR_SSID,LabourAndLabourDet_LABOUR_GROUP_DESC,LabourAndLabourDet_LABOUR_SUBGROUP_DESC,LabourAndLabourDet_LABOUR_REPAIR_CODE,LabourAndLabourDet_LABOUR_TYPE_NAME,LabourAndLabourDet_MODEL_KOD,LabourAndLabourDet_DURATION,LabourAndLabourDet_IS_ACTIVE_STRING,LabourAndLabourDet_MODEL_NAME,LabourAndLabourDet_TYPE_NAME,LabourAndLabourDet_ENGINE_TYPE"
+
+        };
+    }
+
+    $(document).ready(function () {
+        $('#divDetails').hide();
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#LabourGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClickLabour", "click", function (e) {
+            $('#modelWindowLabour').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            var height = "350";
+            var width = "950";
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("LabourUpdate", "Labour", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+                height = "480";
+            }
+            else if ($(this).hasClass("createNewLabour")) {
+                link = "@Url.Action("LabourCreate", "Labour")";
+                height = "480";
+            }
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("LabourDetails", "Labour", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#modelWindowLabour_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindowLabour").data("kendoWindow");
+            //Change Size of Window for different actions
+            windowWidget.wrapper.css({
+                width: width,
+                height: height
+            });
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+        var requestId = 0;
+        function GetExcelExportStatus1() {
+            if (requestId == 0)
+                return;
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("GetExcelStatus", "Reports")",
+                data: "requestId=" + requestId,
+                dataType: "json",
+                global: false,
+                success: function (result) {
+                    if (result.Complete) {
+                        $(".btnExcelExport1").html("<img src='@Url.Content("~/Images/excel.gif")' class='excel-exp' style='height:14px; vertical-align:text-top;'> @CommonUtility.GetResourceValue("Excel_Export_Labour")");
+                        $(".btnExcelExport1").removeAttr("disabled");
+                        requestId = 0;
+
+                        if (!result.Success)
+                            SetErrorMessage(result.Message);
+                        else {
+                            document.location = "@Url.Content("~")content/excel/" + result.File;
+                        }
+                    }
+                }
+            });
+        }
+
+        function GetExcelExportStatus2() {
+            if (requestId == 0)
+                return;
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("GetExcelStatus", "Reports")",
+                data: "requestId=" + requestId,
+                dataType: "json",
+                global: false,
+                success: function (result) {
+                    if (result.Complete) {//
+                        $(".btnExcelExport2").html("<img src='@Url.Content("~/Images/excel.gif")' class='excel-exp' style='height:14px; vertical-align:text-top;'> @CommonUtility.GetResourceValue("Excel_Export_Labour_And_Labour_Det")");
+                        $(".btnExcelExport2").removeAttr("disabled");
+                        requestId = 0;
+
+                        if (!result.Success)
+                            SetErrorMessage(result.Message);
+                        else {
+                            document.location = "@Url.Content("~")content/excel/" + result.File;
+                        }
+                    }
+                }
+            });
+        }
+
+        //setInterval(GetExcelExportStatus, 10000);
+
+        $(".btnExcelExport1").click(function (evt) {
+            if ($(this).is('[disabled=disabled]'))
+                return;
+
+            $(this).attr("disabled", "disabled");
+            $(this).html("<div style='float:left;'>@MessageResource.Excel_Export_Please_Wait</div> <div style='float:left; margin-left:5px;' class='loader'></div>");
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AddExcelRequest", "Reports")",
+                data: GetParameters1(),
+                dataType: "json",
+                success: function (result) {
+                    requestId = result.RequestId;
+                    setInterval(GetExcelExportStatus1, 10000);
+                },
+                global: false,
+            });
+
+            return false;
+        }); //end btnClick
+
+        $(".btnExcelExport2").click(function (evt) {
+            if ($(this).is('[disabled=disabled]'))
+                return;
+
+            $(this).attr("disabled", "disabled");
+            $(this).html("<div style='float:left;'>@MessageResource.Excel_Export_Please_Wait</div> <div style='float:left; margin-left:5px;' class='loader'></div>");
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AddExcelRequest", "Reports")",
+                data: GetParameters2(),
+                dataType: "json",
+                success: function (result) {
+                    requestId = result.RequestId;
+
+                    setInterval(GetExcelExportStatus2, 10000);
+
+                },
+                global: false,
+            });
+
+            return false;
+        }); //end btnClick
+    });
+
+    function DeleteLabour(labourId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("LabourDelete", "Labour")",
+                data: { labourId: labourId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#LabourGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    function loadTabs(labourId) {
+        var tabStrip = $('#LabourDuration').kendoTabStrip().data("kendoTabStrip");
+
+        var durationTab = tabStrip.contentElements[0];
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("LabourDurationIndex", "LabourDuration")',
+            data: { id: labourId },
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $(durationTab).html(result);
+                tabStrip.select(tabStrip.tabGroup.children("li").eq(0));
+            },
+            error: function (request, status, err) {
+                //////console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+
+        $('#divDetails').show();
+    }
+</script>
+
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.LabourCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.LabourCode)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.LabourName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.LabourName)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.LabourMainGroupId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.LabourMainGroupId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.LMGSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="labelDiv">@Html.LabelFor(c => c.LabourSubGroupId)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(c => c.LabourSubGroupId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListSubGroup", "Labour")
+                .Data("GetLabourMainGroupId"))
+                .ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("LabourMainGroupId")  @Html.ValidationMessageFor(v => v.LabourSubGroupId)
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.RepairCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.RepairCode)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActiveSearch).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.IASelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Labour.LabourIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickLabour createNewLabour", CommonUtility.GetResourceValue("Labour_PageTitle_Create"), CommonValues.PermissionCodes.Labour.LabourCreate)
+
+<div class="clearfix"></div>
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Labour.LabourExcelExport))
+{
+<br />
+
+
+
+<a class="k-button btnExcelExport1">
+    <img src="@Url.Content("~/Images/excel.gif")" class="excel-exp" style="height: 14px; vertical-align: text-top;">
+    @CommonUtility.GetResourceValue("Excel_Export_Labour") 
+</a>
+
+@*@Html.Partial("_ExcelExport", new ExportModel() { ButtonText = CommonUtility.GetResourceValue("Excel_Export_Labour") , JsFunctionName = "GetParameters" } )*@
+}
+<br />
+<div id="modelWindowDiv">
+@(Html.Kendo().Window().Name("modelWindowLabour")
+        .Draggable()
+        .Resizable()
+        .Width(950)
+        .Height(350)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+                var grid = $('#LabourGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            grid.dataSource.read();
+        }"))
+)
+</div>
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Labour.LabourExcelExport))
+{
+<br />
+
+<a class="k-button btnExcelExport2">
+    <img src="@Url.Content("~/Images/excel.gif")" class="excel-exp" style="height: 14px; vertical-align: text-top;">
+    @CommonUtility.GetResourceValue("Excel_Export_Labour_And_Labour_Det")
+</a>
+@*@Html.Partial("_ExcelExport", new ExportModel() { ButtonText = CommonUtility.GetResourceValue("Excel_Export_Labour_And_Labour_Det"), JsFunctionName = "GetParameters2" })*@
+}
+
+<div class="kendoGridDiv" id="grd">
+@(Html.Kendo().Grid<LabourListModel>()
+            .Name("LabourGrid")
+            .Columns(columns =>
+                {
+                    columns.Bound(p => p.LabourId).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(#=LabourId#)' id='#=LabourId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourDuration.LabourDurationIndex));
+                    columns.Bound(p => p.LabourId).ClientTemplate("<center><a class='details modalClickLabour' id='#=LabourId#' frameTitle='" + @CommonUtility.GetResourceValue("Labour_PageTitle_Details") + "' href='/Labour/LabourDetails/#=LabourId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Labour.LabourDetails));
+                    columns.Bound(p => p.LabourId).ClientTemplate("<center><a class='edit modalClickLabour' id='#=LabourId#' frameTitle='" + @CommonUtility.GetResourceValue("Labour_PageTitle_Update") + "' href='/Labour/LabourUpdate/#=LabourId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Labour.LabourUpdate));
+                    columns.Bound(o => o.LabourId).ClientTemplate("<center><a  onclick='DeleteLabour(#=LabourId#)' href='javascript:void(0);'  id='#=LabourId#' frameTitle='" + @CommonUtility.GetResourceValue("Labour_PageTitle_Delete") + "'><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Labour.LabourDelete));
+                    columns.Bound(p => p.LabourMainGrp).Width(150).Sortable(true);
+                    columns.Bound(p => p.LabourSubGrp).Width(150).Sortable(true);
+                    columns.Bound(p => p.LabourType).Width(100).Sortable(true);
+                    columns.Bound(p => p.RepairCode).Width(80).Sortable(true);
+                    columns.Bound(p => p.LabourCode).Width(100).Sortable(true);
+                    columns.Bound(p => p.LabourName).Width(200).Sortable(true);
+                    columns.Bound(p => p.IsActiveS).Sortable(true).Width(70);
+                })
+            .Pageable()
+            .Sortable()
+            .Scrollable()
+
+            .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListLabour", "Labour", Model).Data("GetParameters1"))
+                                        .Model(model => model.Field(o => o.LabourId).DefaultValue(-1)))
+
+)
+</div>
+<div id="excelVisibility">
+<h4>@Html.Raw(MessageResource.Labour_Display_UploadFromExcel) </h4>
+<div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+<div>
+<a class="k-link2" href="@Url.Action("ExcelSample")">
+    <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+</a>
+<br />
+@using (Html.BeginForm("LabourIndex", "Labour", FormMethod.Post))
+{
+    @Html.Kendo().Upload().Name("excelFile").TemplateId("fileTemplate").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+    <div id="divExcelUpload">
+        @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Labour_Display_UploadFromExcel"), "", "UploadExcel")
+    </div>
+}
+</div>
+</div>
+<div id="divDetails">
+@(Html.Kendo().TabStrip().Name("LabourDuration").Items(tabstrip => tabstrip.Add().Text(MessageResource.LabourDuration_PageTitle_Index).LoadContentFrom(Url.Action("LabourDurationIndex", "LabourDuration"))))
+</div>
+
+

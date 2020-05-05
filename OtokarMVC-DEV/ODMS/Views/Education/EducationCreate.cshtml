@@ -1,0 +1,77 @@
+﻿@model ODMSModel.Education.EducationViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Education_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("EducationCreate", "Education", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.EducationCode)@Html.ValidationMessageFor(v => v.EducationCode)</div> 
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationTypeId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.EducationTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.ETSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))@Html.ValidationMessageFor(v => v.EducationTypeId)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationName)</div>
+    <div class="shortTxtDiv">
+        <div style="float:left;width:70%">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = "", IsEnabled = true }); }</div>
+       <div style="float:left;width:20%;margin-top:50px">@Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)    </div> 
+    </div>
+    
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.AdminDesc)@Html.ValidationMessageFor(v => v.AdminDesc)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleModelCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VMSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.VehicleModelCode)</div> 
+
+    <div class="labelDiv">
+        @Html.LabelFor(v => v.EducationDurationDay) &nbsp;
+        @Html.Kendo().NumericTextBoxFor(v => v.EducationDurationDay).Min(1).Max(9999).Decimals(0).Spinners(true).HtmlAttributes(new { type = "text", @style = "width:70px;" }) 
+        @Html.ValidationMessageFor(v => v.EducationDurationDay)
+    </div>
+    
+    <div class="labelDiv">
+        @Html.LabelFor(v => v.EducationDurationHour) &nbsp;
+        @Html.Kendo().NumericTextBoxFor(v => v.EducationDurationHour).Min(1).Max(9999).Decimals(0).Spinners(true).HtmlAttributes(new { type = "text", @style = "width:70px;" })
+        @Html.ValidationMessageFor(v => v.EducationDurationHour)
+    </div>
+    
+
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsMandatory)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsMandatory)</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Education.EducationCreate, "EducationCreate")        
+}
+
+<script>
+    $(document).ready(function () {
+        if ($('#EducationTypeId').data('kendoComboBox').value() == 0 || $('#EducationTypeId').data('kendoComboBox').value() == null) {
+            $('#EducationTypeId').data('kendoComboBox').text('');
+        }
+        if ($('#VehicleModelCode').data('kendoComboBox').value() == '' || $('#VehicleModelCode').data('kendoComboBox').value() == null) {
+            $('#VehicleModelCode').data('kendoComboBox').text('');
+        }
+
+        $("#popupContentWrapper").css("min-height", 350);
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

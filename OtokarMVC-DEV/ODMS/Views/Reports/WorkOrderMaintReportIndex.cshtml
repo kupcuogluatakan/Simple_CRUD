@@ -1,0 +1,180 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model WorkOrderMaintReportListModel
+
+@{
+    ViewBag.Title = MessageResource.WorkOrderMaintReport_PageTitle_Index;
+}
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.InvoiceStartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.InvoiceStartDate).Events(e => e.Open("OpenInvoiceStartDate").Change("OpenInvoiceEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.InvoiceEndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.InvoiceEndDate).Events(e => e.Open("OpenInvoiceEndDate").Change("OpenInvoiceStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerRegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerRegionIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ViewBag.DealerRegionId.ToString()).Enable(ViewBag.DealerRegionId == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerRegionList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ModelKodList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ModelKodList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.InvoiceNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(f => f.InvoiceNo)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.InGuarantee)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.InGuarantee).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).BindTo(ViewBag.GuaranteeParameters as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.PeriodicMaint)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.PeriodicMaint).HtmlAttributes(new { style = "width:400px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.PeriodicMaintList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.WorkOrderMaintReportIndex)
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.WorkOrderMaintExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<WorkOrderMaintReportListModel>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DealerRegionName).Sortable(true).Width(100);
+              columns.Bound(p => p.DealerName).Sortable(true).Width(100);
+              columns.Bound(p => p.ModelKod).Sortable(true).Width(100);
+              columns.Bound(p => p.VinNo).HtmlAttributes(new { style = "text-align:center" }).ClientTemplate("<a class='k-link' onclick='OpenVehicleHistory(#=VehicleId#)'>#=VinNo#</a>").Sortable(true).Width(150);
+              columns.Bound(p => p.Customer).Sortable(true).Width(200);
+              columns.Bound(p => p.MaintName).Sortable(true).Width(250);
+              columns.Bound(p => p.IdWorkOrder).HtmlAttributes(new { style = "text-align:center" }).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}/#=IdWorkOrder#'>#=IdWorkOrder#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard"))).Sortable(true).Width(100);
+              columns.Bound(p => p.InvoiceNo).HtmlAttributes(new { style = "text-align:center" }).ClientTemplate("  <a class=\"btn btn-default\" target=\"_blank\" href=\"" + Url.Action("PrintWorkOrderInvoice", "WorkOrderCard") + "/#=IdWorkOrder#?invoiceId=#=WorkOrderInvoiceId#&printType=Transcript\">#=InvoiceNo#</a>").Sortable(true).Width(100);
+              columns.Bound(p => p.InvoiceDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(100);
+              columns.Bound(p => p.TotalPartPrice).Format("{0:n}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.TotalLabourPrice).Format("{0:n}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.TotalDiscountPrice).Format("{0:n}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              columns.Bound(p => p.TotalInvoiceAmount).Format("{0:n}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                        .Read(read => read.Action("ListWorkOrderMaintReport", "Reports", Model).Data("GetParameters"))
+                                        .Model(model => model.Field(o => o.DealerName).DefaultValue("")))
+
+    )
+</div>
+<div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+@Html.Partial("_MultipleSelectionFunc")
+
+<script type="text/javascript">
+    function OpenVehicleHistory(obj) {
+        $('#VehicleHistoryWindow').kwnd('@Url.Action("VehicleHistoryIndex", "Vehicle")?VehicleId=' + obj, '@Html.Raw(MessageResource.WorkOrderCard_Display_VehicleHistory)',
+        {
+            iframe: true,
+            width: 1250,
+            height: 650,
+            onClose: function () {
+                $("#VehicleHistoryWindow").html('');
+            }
+        });
+        $('#VehicleHistoryWindow').removeClass("hide");
+        OpenWindow($('#VehicleHistoryWindow'));
+    }
+</script>
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+        if (($("#StartDate").val() == "" || $("#EndDate").val() == "") &&
+            ($("#InvoiceStartDate").val() == "" || $("#InvoiceEndDate").val() == "")) {
+            SetErrorMessage('@MessageResource.WorkOrderMaint_Validation_Required');
+            e.preventDefault();
+        } else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    function OpenInvoiceStartDate() {
+        var dateStart = $("#InvoiceStartDate").data("kendoDatePicker");
+        var dateEnd = $("#InvoiceEndDate").data("kendoDatePicker");
+        if ($("#InvoiceEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenInvoiceEndDate() {
+        var dateStart = $("#InvoiceStartDate").data("kendoDatePicker");
+        var dateEnd = $("#InvoiceEndDate").data("kendoDatePicker");
+        if ($("#InvoiceStartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    $(document).ready(init);
+   
+    function GetParameters() {
+        return {
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            InvoiceStartDate: $('#InvoiceStartDate').val(),
+            InvoiceEndDate: $('#InvoiceEndDate').val(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            DealerRegionIdList: $("#DealerRegionIdList").data('kendoMultiSelect').value().toString(),
+            ModelKodList: GetQuotedList($("#ModelKodList").data('kendoMultiSelect').value().toString()),
+            InGuarantee: $("#InGuarantee").data('kendoComboBox').value(),
+            PeriodicMaint: $("#PeriodicMaint").data('kendoMultiSelect').value().toString(),
+            InvoiceNo: $('#InvoiceNo').val(),
+            ReportType: 27,
+            Columns: "DealerRegionName,DealerName,ModelKod,VinNo,Customer,MaintName,IdWorkOrder,InvoiceNo,InvoiceDate,TotalPartPrice,TotalLabourPrice,TotalDiscountPrice,TotalInvoiceAmount"
+        };
+
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#ModelKodList").data('kendoMultiSelect').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+</script>

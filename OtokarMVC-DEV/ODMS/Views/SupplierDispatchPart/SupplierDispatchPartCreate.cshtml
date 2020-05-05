@@ -1,0 +1,81 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SupplierDispatchPart.SupplierDispatchPartViewModel
+
+@{
+    ViewBag.Title = MessageResource.SupplierDispatchPart_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+@using (Html.BeginForm("SupplierDispatchPartCreate", "SupplierDispatchPart", FormMethod.Post))
+{
+
+    @Html.HiddenFor(c => c.DeliveryId)
+
+    <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+    <div class="shortTxtDiv">
+        @{
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "NotOrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartCode, DefaultValue = Model.PartId, CallbackFunction = "GetValues" });
+        }
+        @Html.ValidationMessageFor(v => v.PartId)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Qty)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(c => c.Qty).Min(0).HtmlAttributes(new { type = "text", data_val_min = "0", style = "width:200px" }).Spinners(false)
+        @Html.ValidationMessageFor(v => v.Qty)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.InvoicePrice)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(c => c.InvoicePrice).Decimals(2).Spinners(false).Culture(System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()).HtmlAttributes(new { type = "text", style = "width:200px" })
+        @Html.ValidationMessageFor(v => v.InvoicePrice)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Save", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.SupplierDispatchPart.SupplierDispatchPartCreate, "SupplierDispatchPartCreate")
+
+    if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePart.SparePartIndex))
+    {
+        <a class="k-button" target="_blank" href="@Url.Action("SparePartIndex", "SparePart")">
+            @MessageResource.ChangePart_Display_New
+        </a>
+
+    }
+
+}
+
+<script>
+
+    
+
+    function GetValues() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.post("@Url.Action("GetOrderPrice", "PurchaseOrderDetail")", {
+            partId: $('#PartId').val(), "__RequestVerificationToken": token
+        }, function (json) {
+            if (json) {
+                $("#InvoicePrice").kendoNumericTextBox({
+                    value: json.OrderPrice,
+                    spinners: false
+                });
+            }
+        }, "JSON");
+    }
+
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 630);
+        $("#popupContentWrapper").css("min-height", 300);
+        $("#popupContentWrapper").css("width", 650);
+    }
+</script>
+

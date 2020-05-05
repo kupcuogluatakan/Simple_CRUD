@@ -1,0 +1,285 @@
+﻿@model ODMSModel.MaintenanceLabour.MaintenanceLabourViewModel
+@Html.HiddenFor(c => c.MaintenanceId)
+@using ODMSCommon.Resources
+@using ODMSModel.MaintenanceLabour
+
+@{
+    ViewBag.Title = MessageResource.MaintenanceLabour_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+@if (!Model.HideElements)
+{
+    <div class="row">
+        <div class="col-md-7">
+            <div id="showSearch2" class="showSearch btn btn-default">@MessageResource.Global_Display_Search_Criteria</div>
+            <div id="searchDiv2" class="searchDiv">
+                <div id="searchFields2" class="searchFields">
+
+                    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+                    <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Quantity) </div>
+                    <div class="labelDiv">@Html.LabelFor(v => v.IsMust)</div>
+                    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsMust).DataValueField("Value").DataTextField("Text").Placeholder(MessageResource.Global_Display_Select).BindTo(ViewBag.IsMustList)</div>
+                    <div class="clearDiv">&nbsp;</div>
+                    <div class="labelDiv">@Html.LabelFor(v => v.SearchIsActive)</div>
+                    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SearchIsActive).DataValueField("Value").DataTextField("Text").SelectedIndex(0).Placeholder(MessageResource.Global_Display_Select).BindTo(ViewBag.IsMustList)</div>
+
+                </div>
+            </div>
+            @ODMSHelpers.LinkButton("btnSearch3", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourIndex)
+            @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickMainLabour createNewMaintLabour", CommonUtility.GetResourceValue("MaintenanceLabour_PageTitle_Create"), CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourCreate)
+            @if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourIndexExcelExport))
+            {
+                <form id="exportForm" action="@Url.Action("ListMaintenanceLabourForExcel", "MaintenanceLabour")" method="post" style="display: inline-block;margin-top:10px!important;">
+                    <button type="submit" class="k-button"><img src="~/Images/excel.gif" id="excel-exp" style="height:14px; vertical-align:text-top;">&nbsp;Excel'e Aktar</button>
+                    @Html.HiddenFor(x => x.MaintenanceId)
+                </form>
+            }
+        </div>
+        <div class="col-md-3">
+
+            <div style="border:1px dashed #808080;margin-top:5px;">
+                <h4>@Html.Raw(MessageResource.Labour_Display_UploadFromExcel) </h4>
+                <div class="labelDiv" style="width:80px;float:left;">@MessageResource.Global_Display_SampleFile </div>
+                <div>
+                    <a class="k-link2" href="@Url.Action("ExcelSample")">
+                        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                    </a>
+                    <br />
+                    @using (Html.BeginForm("MaintenanceLabourIndex", "MaintenanceLabour", FormMethod.Post, new { id = "frmLabourUpload", enctype = "multipart/form-data" }))
+                    {
+                        @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+                        <div id="divExcepUpload">
+                            @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+}
+
+    @*scripts start*@
+    <script type="text/javascript">
+        //işçiliklerin ajax ile yüklenmesi
+        $('#frmLabourUpload').submit(function (event) {
+            event.preventDefault();
+            var formdata = new FormData($('#frmLabourUpload').get(0));
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("MaintenanceLabourIndex", "MaintenanceLabour")',
+                data: formdata,
+                dataType: "json",
+                processData: false, 
+                contentType: false, 
+                success: function (response) {
+                    $('html, body').animate({ scrollTop: (0) }, 1000);
+                    if (response.Success) {
+                        SetSuccessMessage(response.Message);
+                        $('#MaintenanceLabourGrid').data('kendoGrid').dataSource.read();
+                    }
+                    else {
+                        SetErrorMessageWithFile(response.Message, response.FileId);
+                    }
+                }
+            });
+        });
+
+        function MaintenanceLabourSearch() {
+            return {
+                Quantity: $('#Quantity').val(),
+                MaintenanceId: $('#MaintenanceId').val(),
+                IsMust: $('#IsMust').val(),
+                IsActive: $('#SearchIsActive').val(),
+            };
+        }
+        function MaintenanceLabourSearchForExcel() {
+            return {
+                Quantity: $('#Quantity').val(),
+                MaintenanceId: $('#MaintenanceId').val(),
+                IsMust: $('#IsMust').val(),
+                VehicleModel: '',
+                VehicleTypeName: '',
+                EngineType: '',
+                MaintTypeName: '',
+                MaintKM: '',
+                MaintMonth: '',
+                MainCategoryName: '',
+                CategoryName: '',
+                SubCategoryName: '',
+                FailureCode: '',
+                IsActiveS: '',
+                LabourCode: '',
+                LabourName: '',
+                Quantity: '',
+                IsMustString: ''
+            };
+        }
+        $(document).ready(init);
+
+        function init() {
+            $("#btnSearch3").click(function (e) {
+                var grid = $('#MaintenanceLabourGrid').data('kendoGrid');
+                grid.dataSource.read();
+            });
+            $("#showSearch2").click(function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (IsVisible == false) {
+                    $(this).html("@MessageResource.Global_Display_Hide_Search_Criteria");
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv2").show("slow");
+                }
+                else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv2").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClickMainLabour", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link = $(this).attr("href");
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("createNewMaintLabour")) {
+                    link = "@Url.Action("MaintenanceLabourCreate", "MaintenanceLabour", new {id = Model.MaintenanceId})";
+                }
+                @*if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("MaintenanceLabourDetails", "MaintenanceLabour", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("MaintenanceLabourUpdate", "MaintenanceLabour", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                ";
+                }*@
+                $("#modelWindowMaintLabour_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindowMaintLabour").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+
+            $('#exportForm').submit(function () { //listen for submit event
+                var json = MaintenanceLabourSearchForExcel();
+                for (var i in json) {
+                    $('#exportForm').find('input[name="' + i + '"]').remove();
+                    $('<input />').attr('type', 'hidden')
+                        .attr('name', i)
+                        .attr('value', json[i])
+                        .appendTo('#exportForm');
+                }
+                return true;
+            });
+        }
+
+        function DeleteMaintenanceLabour(m, l) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("MaintenanceLabourDelete", "MaintenanceLabour")",
+                    data: { MaintenanceId: m, LabourId: l, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#MaintenanceLabourGrid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+
+        var searchHtml2;
+        $(document).ready(function () {
+            var $search = $('#searchDiv2');
+            var resetButtonHtml;
+            resetButtonHtml = "<button class='k-button' id='btnReset2' onclick='ResetSearch2();'><i class=' glyphicon glyphicon-remove'></i> " + '@MessageResource.Global_Display_Clear' + "</button>";
+            $search.after(resetButtonHtml);
+
+            searchHtml2 = $search.html();
+            $search.keypress(function (e) {
+                var code = e.keyCode || e.which;
+                if (code == 13) {
+                    $('#btnSearch2').trigger("click");
+                }
+            });
+        });
+        function ResetSearch2() {
+            $('#searchDiv2').html(searchHtml2);
+            $(".k-datepicker", '#searchDiv2').width(200).css("padding", "0");
+        }
+    </script>
+
+    @*scripts end*@
+
+
+
+
+    @*grid start*@
+    <div class="kendoGridDiv" id="grd2">
+        @(Html.Kendo().Grid<MaintenanceLabourListModel>()
+          .Name("MaintenanceLabourGrid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.MaintenanceId).ClientTemplate("<center><a class='details modalClickMainLabour' id='#=MaintenanceId#' frameTitle='" + CommonUtility.GetResourceValue("MaintenanceLabour_PageTitle_Details") + "' href='" + Url.Action("MaintenanceLabourDetails", "MaintenanceLabour") + "?MaintenanceId=#=MaintenanceId#&LabourId=#=LabourId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourDetails));
+              columns.Bound(p => p.MaintenanceId).ClientTemplate("<center><a class='edit modalClickMainLabour' id='#=MaintenanceId#' frameTitle='" + CommonUtility.GetResourceValue("MaintenanceLabour_PageTitle_Update") + "' href='" + Url.Action("MaintenanceLabourUpdate", "MaintenanceLabour") + "?MaintenanceId=#=MaintenanceId#&LabourId=#=LabourId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourUpdate));
+              columns.Bound(o => o.MaintenanceId).ClientTemplate("<center><a href='javascript:void(0);' id='#=MaintenanceId#' frameTitle='" + CommonUtility.GetResourceValue("MaintenanceLabour_PageTitle_Delete") + "' onclick='DeleteMaintenanceLabour(#=MaintenanceId#,#=LabourId#)' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.MaintenanceLabour.MaintenanceLabourDelete));
+              columns.Bound(p => p.LabourCode).Width(150).Sortable(true);
+              columns.Bound(p => p.LabourName).Width(150).Sortable(true);
+              columns.Bound(p => p.Quantity).Width(120).Sortable(true);
+              columns.Bound(p => p.IsMustString).Width(150).Sortable(true);
+              columns.Bound(p => p.IsActiveS).Width(50).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListMaintenanceLabours", "MaintenanceLabour").Data("MaintenanceLabourSearch"))
+                                        .Model(model => model.Field(o => o.MaintenanceId).DefaultValue(-1)))
+        )
+
+
+    </div>
+    @*grid end*@
+
+    @*modelWindow start*@
+    <div id="modelWindowDiv">
+        @(Html.Kendo().Window()
+        .Name("modelWindowMaintLabour")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(250)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#MaintenanceLabourGrid').data('kendoGrid');
+        grid.dataSource.read();
+    }"))
+        )
+    </div>
+    @*modelWindow end*@
+
+

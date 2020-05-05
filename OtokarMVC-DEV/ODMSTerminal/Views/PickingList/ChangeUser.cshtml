@@ -1,0 +1,29 @@
+﻿@model int
+@{
+    ViewBag.Title = MessageResource.Terminal_PickingList_ChangeUserTitle;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+}
+@section header
+{
+    @Html.Partial("_subheader")
+}
+<div class="margin-3 pageContent">
+    @using (Html.BeginForm("ConfirmUserChange", "PickingList", FormMethod.Post))
+    {
+        <input type="hidden" value="@Model" name="pickingId"/>
+        <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+            <tr>
+                <td>
+                    @Html.ActionLink(MessageResource.Global_Display_No, "index", new {pageId = 1}, new {@class = "btn btn-xs warning margin-top-3", style = "padding:2px"})
+                </td>
+                <td>&nbsp;</td>
+                <td class="last-child text-right">
+
+                    <input id="" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Yes">
+
+                </td>
+            </tr>
+        </table>
+    }
+</div>

@@ -1,0 +1,47 @@
+﻿@model ODMSModel.ClaimSupplier.ClaimSupplierViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.ClaimSupplier_PageTitle_Create;
+}
+
+
+@using (Html.BeginForm("ClaimSupplierCreate", "ClaimSupplier", FormMethod.Post))
+{
+
+    <div class="labelDiv">@Html.LabelFor(v => v.SupplierCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SupplierCode) @Html.ValidationMessageFor(v => v.SupplierCode) </div>
+    
+        <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SupplierName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SupplierName) @Html.ValidationMessageFor(v => v.SupplierName) </div>
+    
+        <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ClaimRackCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ClaimRackCode) @Html.ValidationMessageFor(v => v.ClaimRackCode) </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+  
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.ClaimSupplier.ClaimSupplierCreate, "ClaimSupplierCreate")          
+
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+
+</script>
+
+

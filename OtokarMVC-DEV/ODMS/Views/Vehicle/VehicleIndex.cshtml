@@ -1,0 +1,407 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.ListModel
+@model ODMSModel.Vehicle.VehicleIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Vehicle_PageTitle_Index");
+}
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(x => x.VinCodeList)
+    <div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+    <div id="searchDiv">
+        <div id="searchFields">
+            <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CustomerName) </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.VehicleModel)</div>
+            <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleModel).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleModelList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.VehicleType)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().ComboBoxFor(c => c.VehicleType).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListVehicleTypes", "Vehicle")
+                .Data("GetVehicleModel").Type(HttpVerbs.Post)).ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("VehicleModel")
+            </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.VehicleCode)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().ComboBoxFor(c => c.VehicleCode).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListVehicleCodes", "Vehicle")
+                .Data("GetVehicleType").Type(HttpVerbs.Post)).ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("VehicleType")
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+
+            <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+            <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.EngineNo)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.EngineNo, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" }) </div>
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.WarrantyStartDate)</div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.WarrantyStartDate).Events(e => e.Open("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.WarrantyEndDate)</div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.WarrantyEndDate).Events(e => e.Open("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VinNo, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" }) </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.ModelYear)</div>
+            @Html.Kendo().NumericTextBoxFor(p => p.ModelYear).Spinners(false).Format("####").Max(DateTime.Now.Year).Min(1600).HtmlAttributes(new { type = "text" })
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.Plate)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Plate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" }) </div>
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+
+    @ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Vehicle.VehicleDetails)
+    @if (!ODMSCommon.Security.UserManager.UserInfo.IsDealer)
+    {
+        @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("Vehicle_PageTitle_Create"), CommonValues.PermissionCodes.Vehicle.VehicleCreate)
+    }
+    @if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Vehicle.VehicleExcelExport))
+    {
+        @Html.ExportExcelButton(new ExcelExportDto("Vehicle", "ListVehicle", "Search", "sdfsdf").Build<VehicleListModel, object>(c => c.VehicleGroup, c => c.VehicleModel,
+c => c.VehicleType, c => c.VehicleCode, c => c.VinNo, c => c.ModelYear, c => c.CustomerName, c => c.Description, c => c.EngineNo,
+c => c.Location, c => c.ResponsiblePerson, c => c.ResponsiblePersonPhone, c => c.IsActiveName, c => c.FactoryProductionDate, c => c.WarrantyStartDate, c => c.FactoryShipmentDate, c => c.PaintWarrantyEndDate, c => c.CorrosionWarrantyEndDate,
+c => c.Color, c => c.ContractNo, c => c.Plate, c => c.WarrantyEndDate, c =>c.FactoryQualityControlDate, c=>c.VehicleKilometer, c=>c.SpecialConditions, 
+c=>c.VatExcludeTypeName, c=>c.OutOfWarrantyDescription, c=>c.IsHourMaintName, c=>c.SSIDPriceList, c=>c.WarrantyEndKilometer, c=>c.Notes, c=>c.WarrantyStatusName))
+
+    }
+    <div class="row" style="margin-top:10px;">
+        <div class="col-md-4">
+            @using (Html.BeginForm("VehicleIndex", "Vehicle", FormMethod.Post, new { onsubmit = "FillParameter();" }))
+            {
+                <div style="padding:5px 5px;border:dashed 2px;">
+                    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+                    <div>
+                        <a class="k-link2" href="@Url.Action("ExcelSample","Vehicle")">
+                            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                        </a>
+                        <br />
+                    </div>
+                    <div class="labelDiv">@Html.LabelFor(d => d.VinCodeList) </div>
+                    <div class="shortTxtDiv" style="width:350px;">
+                        @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+                    </div>
+                    <div id="divExcepUpload">
+                        @ODMSHelpers.Button("VinNoSearch", CommonUtility.GetResourceValue("Global_Display_Search"), CommonValues.PermissionCodes.Vehicle.VehicleDetails, "StockCardSearch")
+                    </div>
+
+                    <br />
+
+
+                    @Html.HiddenFor(x => x.CustomerName, new { id = "_CustomerName" })
+                    @Html.HiddenFor(x => x.VehicleCode, new { id = "_VehicleCode" })
+                    @Html.HiddenFor(x => x.VehicleModel, new { id = "_VehicleModel" })
+                    @Html.HiddenFor(x => x.VehicleType, new { id = "_VehicleType" })
+                    @Html.HiddenFor(x => x.IsActive, new { id = "_IsActive" })
+                    @Html.HiddenFor(x => x.WarrantyStartDate, new { id = "_WarrantyStartDate" })
+                    @Html.HiddenFor(x => x.WarrantyEndDate, new { id = "_WarrantyEndDate" })
+                    @Html.HiddenFor(x => x.ModelYear, new { id = "_ModelYear" })
+                    @Html.HiddenFor(x => x.EngineNo, new { id = "_EngineNo" })
+                    @Html.HiddenFor(x => x.VinNo, new { id = "_VinNo" })
+                    @Html.HiddenFor(x => x.Plate, new { id = "_Plate" })
+
+                    <script>
+                        $("#_CustomerName").val($("#CustomerName").val());
+                        $("#_VehicleCode").val($("#VehicleCode").val());
+                        $("#_VehicleModel").val($("#VehicleModel").val());
+                        $("#_VehicleType").val($("#VehicleType").val());
+                        $("#_IsActive").val($("#IsActive").val());
+                        $("#_WarrantyStartDate").val($("#WarrantyStartDate").val());
+                        $("#_WarrantyEndDate").val($("#WarrantyEndDate").val());
+                        $("#_ModelYear").val($("#ModelYear").val());
+                        $("#_EngineNo").val($("#EngineNo").val());
+                        $("#_VinNo").val($("#VinNo").val());
+                        $("#_Plate").val($("#Plate").val());
+                    </script>
+                    <br />
+                    <div class="clearDiv">&nbsp;</div>
+                </div>        }
+        </div>
+        <div class="col-md-4">
+            @using (Html.BeginForm("VehicleNotesUpdateByExcel", "Vehicle", FormMethod.Post))
+            {
+                <div style="padding:5px 5px;border:dashed 2px;">
+                    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+                    <div>
+                        <a class="k-link2" href="@Url.Action("VehicleNotesUpdateBySampleExcel","Vehicle")">
+                            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+                        </a>
+                        <br />
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="labelDiv" style="margin-right:10px;">@Html.Label("Araç Merkez Notu Ve Özel Koşul Güncelleme") </div>
+                    <div class="shortTxtDiv" style="width:350px;">
+                        @Html.Kendo().Upload().Name("uexcelFile").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+                    </div>
+                    <div id="divExcepUpload">
+                        @ODMSHelpers.Button("StockCardSearch", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.StockCard.StockCardSearch, "StockCardSearch")
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="clearfix"></div>
+                </div>
+            }
+        </div>
+    </div>
+
+
+    <br />
+    <div id="modelWindowDiv">
+        @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(800)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    //.Events(ev => ev.Close(@"function(e){
+    //     var grid = $('#grid').data('kendoGrid');
+    //    grid.dataSource.page(1);
+    //}"))
+        )
+    </div>
+    <script>
+        function GetVehicleModel() {
+            return {
+                vehicleModel: $('#VehicleModel').val()
+            };
+        } function GetVehicleType() {
+            return {
+                vehicleType: $('#VehicleType').val()
+            };
+        }
+        function OpenStartDate() {
+            var dateStart = $("#WarrantyStartDate").data("kendoDatePicker");
+            var dateEnd = $("#WarrantyEndDate").data("kendoDatePicker");
+            if ($("#WarrantyEndDate").val()) {
+                dateStart.max(dateEnd.value());
+            } else {
+
+                dateStart.max(new Date(3000, 0, 1));
+            }
+
+        }
+
+        function OpenEndDate() {
+            var dateStart = $("#WarrantyStartDate").data("kendoDatePicker");
+            var dateEnd = $("#WarrantyEndDate").data("kendoDatePicker");
+            if ($("#WarrantyStartDate").val()) {
+                dateEnd.min(dateStart.value());
+            } else {
+                dateEnd.min(new Date(1900, 0, 1));
+            }
+
+        }
+        function Search() {
+            return {
+                CustomerName: $('#CustomerName').val(),
+                VehicleCode: $("#VehicleCode").val(),
+                VehicleModel: $("#VehicleModel").val(),
+                VehicleType: $("#VehicleType").val(),
+                IsActive: $('#IsActive').val(),
+                WarrantyStartDate: $("#WarrantyStartDate").val(),
+                WarrantyEndDate: $("#WarrantyEndDate").val(),
+                ModelYear: $("#ModelYear").val(),
+                EngineNo: $('#EngineNo').val(),
+                VinNo: $('#VinNo').val(),
+                Plate: $("#Plate").val(),
+                VinCodeList: $('#VinCodeList').val()
+            };
+        }
+        $(document).ready(function () {
+            $("body").delegate("#btnReset", "click", function (e) {
+                var combo = $("#VehicleModel").data("kendoComboBox");
+                combo.select(function (dataItem) { return dataItem.Value == -1; });
+                $('#VinCodeList').val('')
+            });
+
+            $('#WarrantyStartDate').prop("readonly", true);
+            $('#WarrantyEndDate').prop("readonly", true);
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+                $('#divDetails').hide();
+            });
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                }
+                else {
+                    $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("historydetails") == true) {
+                    link = "@Url.Action("VehicleHistoryIndex", "Vehicle", new { vehicleId = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("VehicleDetails", "Vehicle", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("VehicleUpdate", "Vehicle", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("VehicleCreate", "Vehicle")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+
+        });
+        function DeleteVehicle(vId) {
+            DeleteConfirm(function () {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("DeleteVehicle")",
+                    data: { vehicleId: vId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+
+        var VehicleId;
+        function ShowTabs(id) {
+            VehicleId = id;
+            $('#TabContent').html('');
+            $("#Tabs").data("kendoTabStrip").select(0);
+            $('#divDetails').show();
+            LoadTabContent('@Url.Action("VehicleNotesIndex", "VehicleNotes")');
+        }
+        function LoadTabContent(url) {
+            $('#TabContent').html('');
+            $.ajax({
+                type: "GET",
+                url: url + '/' + VehicleId,
+                data: {},
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $('#TabContent').html(result);
+                },
+                error: function (request, status, err) {
+                    //console.log(arguments);
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+        }
+        function OpenVehicleHistory(obj) {
+            $('#VehicleHistoryWindow').kwnd('@Url.Action("VehicleHistoryIndex", "Vehicle")?VehicleId=' + obj, '@Html.Raw(MessageResource.WorkOrderCard_Display_VehicleHistory)',
+            {
+                iframe: true,
+                width: 1450,
+                height: 650,
+                onClose: function () {
+                    $("#VehicleHistoryWindow").html('');
+                }
+            });
+            $('#VehicleHistoryWindow').removeClass("hide");
+            OpenWindow($('#VehicleHistoryWindow'));
+        }
+        //function FillParameter() {
+        //    $("#_CustomerName").val($("#CustomerName").val());
+        //    $("#_VehicleCode").val($("#VehicleCode").val());
+        //    $("#_VehicleModel").val($("#VehicleModel").val());
+        //    $("#_VehicleType").val($("#VehicleType").val());
+        //    $("#_IsActive").val($("#IsActive").val());
+        //    $("#_WarrantyStartDate").val($("#WarrantyStartDate").val());
+        //    $("#_WarrantyEndDate").val($("#WarrantyEndDate").val());
+        //    $("#_ModelYear").val($("#ModelYear").val());
+        //    $("#_EngineNo").val($("#EngineNo").val());
+        //    $("#_VinNo").val($("#VinNo").val());
+        //    $("#_Plate").val($("#Plate").val());
+        //}
+    </script>
+
+
+
+    <div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+    <div class="kendoGridDiv" id="grd">
+        @(Html.Kendo().Grid<VehicleListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.VehicleId).ClientTemplate("<center><a class='loadTab' onclick='ShowTabs(#=VehicleId#);' id='#=VehicleId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleNotes.VehicleNotesIndex));
+                  columns.Bound(p => p.VehicleId).ClientTemplate("<center><a class='details modalClick' id='#=VehicleId#' frameTitle='" + @CommonUtility.GetResourceValue("Vehicle_PageTitle_Details") + "' href='" + Url.Action("VehicleDetails") + "/#=VehicleId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Vehicle.VehicleDetails));
+                  columns.Bound(p => p.VehicleId).ClientTemplate("<center><a class='edit modalClick' id='#=VehicleId#' frameTitle='" + @CommonUtility.GetResourceValue("Vehicle_PageTitle_Update") + "' href='" + Url.Action("VehicleUpdate") + "/#=VehicleId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Vehicle.VehicleUpdate));
+                  columns.Bound(o => o.VehicleId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("Vehicle_PageTitle_Delete") + "' onclick='DeleteVehicle(#=VehicleId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Vehicle.VehicleDelete));
+                  columns.Bound(p => p.VehicleGroup).Width(90).Sortable(true);
+                  columns.Bound(p => p.VehicleModel).Width(90).Sortable(true);
+                  columns.Bound(p => p.VehicleType).Width(90).Sortable(true);
+                  columns.Bound(p => p.VehicleCode).Width(90).Sortable(true);
+                  columns.Bound(p => p.EngineType).Width(90).Sortable(true);
+                  columns.Bound(p => p.VinNo).Width(90).Sortable(true).ClientTemplate("<a class='k-link' onclick='OpenVehicleHistory(#=VehicleId#)'>#=VinNo#</a>");
+                  columns.Bound(p => p.ModelYear).Width(90).Sortable(true);
+                  columns.Bound(p => p.CustomerName).Width(90).Sortable(true);
+                  columns.Bound(p => p.Description).Width(90).Sortable(true);
+                  columns.Bound(p => p.EngineNo).Width(90).Sortable(true);
+                  columns.Bound(p => p.Plate).Width(90).Sortable(true);
+                  columns.Bound(p => p.FactoryProductionDate).Width(90).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(p => p.FactoryShipmentDate).Width(90).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(p => p.WarrantyStartDate).Width(90).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(p => p.WarrantyEndDate).Width(90).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(p => p.PaintWarrantyEndDate).Width(90).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(p => p.CorrosionWarrantyEndDate).Width(90).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(p => p.IsActiveName).Sortable(true).Width(60);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListVehicle", "Vehicle", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.VehicleId).DefaultValue(-1)))
+
+        )
+    </div>
+    @*tab content start*@
+    <div id="divDetails" style="display: none; margin-top: 20px;">
+        @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.WorkOrderCard_Display_VehicleNotes).Selected(true).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("VehicleNotesIndex", "VehicleNotes") + "');" }))
+        )
+        <div id="TabContent" style="padding: 0 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+    </div>
+    @*tab content end*@

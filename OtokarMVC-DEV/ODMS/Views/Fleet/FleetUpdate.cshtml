@@ -1,0 +1,124 @@
+﻿@model ODMSModel.Fleet.FleetViewModel
+@{
+    ViewBag.Title = ViewBag.Title = ODMSCommon.Resources.MessageResource.Fleet_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("FleetUpdate", "Fleet", FormMethod.Post,new {id="frmFleet"}))
+{  
+    @*<div class="labelDiv">@Html.LabelFor(v => v)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerName)</div>  
+      
+        *@
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.FleetName)</div>
+    <div class="shortTxtDiv" >@Html.TextBoxFor(v => v.FleetName) @Html.ValidationMessageFor(c => c.FleetName)</div> 
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.FleetCode)</div>
+    <div class="shortTxtDiv" >@Html.TextBoxFor(v => v.FleetCode) @Html.ValidationMessageFor(c => c.FleetCode)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv" >@Html.LabelFor(v => v.OtokarPartDiscount)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c => c.OtokarPartDiscount).Decimals(2).Min(0).Max(100).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "5", data_val_min = "0", style = "width:204px" })
+                                        @Html.ValidationMessageFor(v => v.OtokarPartDiscount)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.OtokarLabourDiscount)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c => c.OtokarLabourDiscount).Decimals(2).Min(0).Max(100).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "5", data_val_min = "0", style = "width:204px" })
+                                        @Html.ValidationMessageFor(v => v.OtokarLabourDiscount)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv" >@Html.LabelFor(v => v.DealerPartDiscount)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c => c.DealerPartDiscount).Decimals(2).Min(0).Max(100).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "5", data_val_min = "0", style = "width:204px" })
+                                        @Html.ValidationMessageFor(v => v.DealerPartDiscount)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerLabourDiscount)</div>
+    <div style="width:300px;float:left">@Html.Kendo().NumericTextBoxFor(c => c.DealerLabourDiscount).Decimals(2).Min(0).Max(100).Spinners(false).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "5", data_val_min = "0", style = "width:204px" })
+        @Html.ValidationMessageFor(v => v.DealerLabourDiscount)
+    </div>
+    
+      <div class="clearDiv">&nbsp;</div>
+
+    
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDateValid)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DateTimePickerFor(v => v.StartDateValid).Events(e=>e.Change("StartChange").Open("OpenFleetStartDate")).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).HtmlAttributes(new { type = "text" }) </div>    
+    
+     <div class="labelDiv">@Html.LabelFor(v => v.EndDateValid)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DateTimePickerFor(v => v.EndDateValid).Events(e=>e.Change("EndChange").Open("OpenFleetEndDate")).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).HtmlAttributes(new { type = "text" })  </div>    
+
+   
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsConstricted)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IsConstricted).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(v => v.IsConstricted)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsVinControl)</div>
+    <div class="shortTxtDiv">
+        @Html.CheckBoxFor(v => v.IsVinControl)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">
+        @Html.CheckBoxFor(v => v.IsActive)</div>
+        <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Fleet.FleetUpdate, "FleetUpdate")
+    @Html.HiddenFor(v => v.IdFleet)
+    @Html.HiddenFor(v => v.HasContent)
+    <div class="clearDiv">&nbsp;</div>
+    @*<div class="labelDiv" style="visibility:hidden">@Html.LabelFor(v => v.IdCustomer)</div>*@
+    
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function OpenFleetStartDate() {
+        var date = $("#StartDateValid").data("kendoDateTimePicker");
+        date.min(new Date($.now()));
+    }
+    function OpenFleetEndDate() {
+        var dateS = $("#StartDateValid").data("kendoDateTimePicker");
+        var dateE = $("#EndDateValid").data("kendoDateTimePicker");
+        dateE.min(dateS.value());
+    }
+    function StartChange() {
+        var start = $("#StartDateValid").data("kendoDateTimePicker");
+        var end = $("#EndDateValid").data("kendoDateTimePicker");
+        end.min(start.value());
+    }
+    function EndChange() {
+        var start = $("#StartDateValid").data("kendoDateTimePicker");
+        var end = $("#EndDateValid").data("kendoDateTimePicker");
+        start.max(end.value());
+        start.min(new Date($.now()));
+    }
+
+    $("#frmFleet").submit(function() {
+        $('#StartDateValid').data('kendoDateTimePicker').enable();
+        $('#EndDateValid').data('kendoDateTimePicker').enable();
+    });
+    $(document).ready(function () {
+        var isContent = '@Model.HasContent';
+        console.log(isContent);
+        if (parseInt(isContent) > 0) {
+            $('#StartDateValid').data('kendoDateTimePicker').enable(false);
+            $('#EndDateValid').data('kendoDateTimePicker').enable(false);
+           
+        }
+        $('#StartDateValid').prop("readonly", true);
+        $('#EndDateValid').prop("readonly", true);
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

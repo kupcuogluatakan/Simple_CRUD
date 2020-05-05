@@ -1,0 +1,371 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.SparePartSaleDetail.SparePartSaleDetailListModel
+@{
+    ViewBag.Title = @MessageResource.SparePartSaleDetail_PageTitle_Index;
+}
+@if (ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderWaybilled).ToString()
+                && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderInvoiced).ToString()
+                && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderCancelled).ToString()
+                && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.CollectOrderCreated).ToString())
+{
+    @ODMSHelpers.LinkButton("btnCreate2", MessageResource.Global_Display_New, "Create", "modalClick2 createNew2", MessageResource.SparePartSaleDetail_PageTitle_Create, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailCreate)
+    @ODMSHelpers.LinkButton("btnAddPart", MessageResource.SparePartSaleDetail_Display_AddPart, "AddPart", "modalClick2 createNew2", MessageResource.SparePartSaleDetail_Display_AddPart, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailCreate)
+}
+@if (ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.CollectOrderCreated).ToString()
+                                        && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderCancelled).ToString()
+                                        && !Model.IsCustomerDealer)
+{
+    @ODMSHelpers.Button("CreatePurchaseOrder", MessageResource.SparePartSale_Display_PurchaseOrderNow, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailOrder, "CreatePurchaseOrder")
+}
+<style>
+    .k-widget.k-tooltip {
+        background-color: white;
+        color: #090909;
+    }
+
+    .tooltip-content {
+        background-color: white;
+        text-align: left;
+        padding: 10px;
+    }
+
+        .tooltip-content .bold {
+            padding-right: 12px;
+        }
+
+    .color-box-wrapper {
+        display: inline-block;
+        margin: 0 5px;
+        text-align: center;
+    }
+
+    .color-box {
+        border-radius: 15px;
+        content: "";
+        display: inline-block;
+        height: 15px;
+        width: 15px;
+    }
+</style>
+
+@Html.AntiForgeryToken()<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow2")
+          .Title("SparePartSaleDetail")
+          .Draggable()
+          .Resizable()
+
+          .Width(1250)
+          .Height(700)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+                ReloadPage();
+            }"))
+    )
+</div>
+
+<script>
+
+    function ReloadPage() {
+        var masterGrid = $('#grid').data('kendoGrid');
+        masterGrid.dataSource.read();
+
+        var grid = $('#grid2').data('kendoGrid');
+        grid.dataSource.page(1);
+
+        parent.ShowTabs('@Model.PartSaleId', false);
+    }
+
+    function SetRowsColor()
+    {
+        $("a.kendotooltip").each(function (i, e) {
+            toolTipIt(e);
+        });
+        if ($('#grid2').data() != null) {
+            var dataSource = $('#grid2').data().kendoGrid.dataSource;
+            var count = dataSource.total();
+            for (var i = 0; i < count; i++) {
+                var item = dataSource.data()[i];
+                if(item)
+                    if (item.DiscountPrice != null && item.DealerPrice != null) {
+                        if (item.DiscountPrice < item.DealerPrice) {
+                            $('tr[data-uid="' + item.uid + '"] td:nth-child(8)').css("background-color", "red");
+                        }
+                    }
+            }
+        }
+
+
+    }
+    function OpenCreatePopup() {
+        $('#modelWindow2').html('');
+
+        var frameTitle = '@MessageResource.SparePartSaleDetail_PageTitle_Create';
+        var link = "@Url.Action("SparePartSaleDetailCreate", "SparePartSaleDetail", new { id = "p1" })";
+        link = link.replace("p1", '@Model.PartSaleId');
+
+        ShowPopup(frameTitle, link,1500,700);
+    }
+
+    $(document).ready(function() {
+        if('@ViewBag.OpenCreatePopup' == 'True')
+            OpenCreatePopup();
+
+        $('#CreatePurchaseOrder').click(function() {
+            var grid = $('#grid2').data().kendoGrid;
+            var strSelectedIds = "";
+            var ischecked = grid.tbody.find(":checked");
+            $.each(ischecked, function() {
+                if (strSelectedIds != "")
+                    strSelectedIds += "," + $(this).attr("id");
+                else
+                    strSelectedIds += $(this).attr("id");
+            });
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CreatePurchaseOrder", "SparePartSaleDetail")",
+                data: { sparePartsaleDetailIdList: strSelectedIds , "__RequestVerificationToken": token  },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid2').data('kendoGrid');
+                        grid.dataSource.read();
+                        ShowTabs('@Model.PartSaleId', false);
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    });
+
+    $(function () {
+        RegisterEventHandlers();
+        AddColumnHeaderTooltip();
+    });
+
+    function RegisterEventHandlers() {
+        $("body").delegate("#showSearch2", "click", function () {
+            var isVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!isVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv2").show("slow");
+            } else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv2").hide("slow");
+            }
+        });
+
+        $("body").delegate("#btnSearch2", "click", function () {
+            var grid = $('#grid2').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+
+        $("body").delegate("#btnCreate2", "click", function () {
+            $('#modelWindow2').html('');
+
+            var frameTitle = $(this).attr("frameTitle");
+            var link = "@Url.Action("SparePartSaleDetailCreate", "SparePartSaleDetail", new { id = "p1" })";
+            link = link.replace("p1", '@Model.PartSaleId');
+
+            ShowPopup(frameTitle, link,1500,700);
+        });
+        $("body").delegate("#btnAddPart", "click", function () {
+            $('#modelWindow2').html('');
+
+            var frameTitle = $(this).attr("frameTitle");
+            var link = "@Url.Action("SparePartSaleDetailAddPart", "SparePartSaleDetail", new { sparePartSaleId = "p1" })";
+            link = link.replace("p1", '@Model.PartSaleId');
+
+            ShowPopup(frameTitle, link,1500,700);
+        });
+    }
+
+    function ShowPopup(frameTitle, link, width,height) {
+        $("#modelWindow2_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#modelWindow2").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+        windowWidget.refresh({
+            url: link
+        }).center();
+
+        windowWidget.wrapper.css({
+            width: width,
+            height: height
+        });
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+    function ViewSparePartSaleDetail(obj, sparePartSaleDetailId) {
+        $('#modelWindow2').html('');
+
+        var frameTitle = $(obj).attr("frameTitle");
+
+        var link = "@Url.Action("SparePartSaleDetailDetails", "SparePartSaleDetail", new { sparePartSaleDetailId = "p1" })";
+        link = link.replace("p1", sparePartSaleDetailId);
+
+        ShowPopup(frameTitle, link,910,200);
+    }
+
+    function UpdateSparePartSaleDetail(obj, sparePartSaleDetailId) {
+        $('#modelWindow2').html('');
+
+        var frameTitle = $(obj).attr("frameTitle");
+        var link = "@Url.Action("SparePartSaleDetailUpdate", "SparePartSaleDetail", new { sparePartSaleDetailId = "p1" })";
+        link = link.replace("p1", sparePartSaleDetailId);
+
+        ShowPopup(frameTitle, link,910,350);
+    }
+
+    function DeleteSparePartSaleDetail(sparePartSaleDetailId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SparePartSaleDetailDelete", "SparePartSaleDetail")",
+                data: { sparePartSaleDetailId: sparePartSaleDetailId , sparePartSaleId:@Model.PartSaleId, "__RequestVerificationToken": token  },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid2').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+    function OpenSparePartSaleOrderIndex(soNumber) {
+        var url = "@Url.Action("SparePartSaleOrderIndex", "SparePartSaleOrder")?soNumber="+ soNumber;
+        window.open(url, '_blank');
+    }
+    function SparePartSaleRefresh(spsdId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        CustomConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SparePartSaleRefresh", "SparePartSaleDetail")",
+                data: { sparePartSaleDetailId: spsdId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid2').data('kendoGrid');
+                        grid.dataSource.read();
+
+                        SetSuccessMessage('@MessageResource.Global_Display_Success');
+                    }
+                },
+                dataType: "json"
+            });
+        }, "@MessageResource.SparePartSaleDetail_Display_Refresh",
+    "@MessageResource.SparePartSaleDetail_Display_RefreshConfirm",
+    "@MessageResource.Global_Display_Yes",
+    "@MessageResource.Global_Display_No");
+    }
+
+
+    function toolTipIt(it) {
+        var partId = $(it).data("partid");
+        $(it).kendoTooltip({
+            content: {
+                url: "@Url.Action("GetChangedPartInfo","SparePart")?partId=" + partId
+            },
+            width: 250,
+            height: 100,
+            position: "top",
+        });
+    }
+    function openpopup(partCode) {
+        $('#PopupWindow').kwnd('@Url.Action("SparePartAssemblePopup","SparePartAssemble")?partCode=' + partCode, '@Html.Raw(MessageResource.Global_Display_ChangedParts)',
+                   {
+                       iframe: false,
+                       width: 1200,
+                       height: 450,
+                       onClose: function () {
+                           $("#PopupWindow").empty();
+                       }
+                   });
+        $('#PopupWindow').removeClass("hide");
+        OpenWindow($('#PopupWindow'));
+    }
+
+
+</script>
+@Html.HiddenFor(c => c.IsCustomerDealer)
+<div id="PopupWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<div class="kendoGridDiv" id="grd2">
+    @(Html.Kendo().Grid<ODMSModel.SparePartSaleDetail.SparePartSaleDetailListModel>()
+          .Name("grid2")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.SparePartSaleDetailId).ClientTemplate("<input type='checkbox' id='#= SparePartSaleDetailId#' value='#= SparePartSaleDetailId#'></input>").Title("").Sortable(false).Visible(ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.CollectOrderCreated).ToString() && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderCancelled).ToString() && !@Model.IsCustomerDealer).Width(5);
+              columns.Bound(d => d.SparePartSaleDetailId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.SparePartSaleDetail_PageTitle_Details + "' onclick='ViewSparePartSaleDetail(this,#=SparePartSaleDetailId#);'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailDetails)).Width(40);
+              columns.Bound(d => d.SparePartSaleDetailId).ClientTemplate("#if(StatusId != 3){#<center><a href='javascript:void(0);' frameTitle='" + MessageResource.SparePartSaleDetail_PageTitle_Update + "' onclick='UpdateSparePartSaleDetail(this, #=SparePartSaleDetailId#);'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Update).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailUpdate) && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderWaybilled).ToString() && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderInvoiced).ToString() && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.OrderCancelled).ToString() && ViewBag.PartSaleStatus != ((int)CommonValues.SparePartSaleStatus.CollectOrderCreated).ToString()).Width(40);
+              columns.Bound(d => d.SparePartSaleDetailId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.SparePartSaleDetail_PageTitle_Delete + "' onclick='DeleteSparePartSaleDetail(#=SparePartSaleDetailId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailDelete) && ViewBag.PartSaleStatus == ((int)CommonValues.SparePartSaleStatus.NewRecord).ToString()).Width(40);
+              columns.Bound(p => p.SoNumber).ClientTemplate("<a onClick='OpenSparePartSaleOrderIndex(#=SoNumber#)' " +
+                                                                     " title='" + CommonUtility.GetResourceValue("SparePartSaleOrder_Display_Index") + "'" +
+                                                                     "frameTitle='"
+                                                                     + @CommonUtility.GetResourceValue("SparePartSaleOrder_Display_Index")
+                                                                     + "' href='javascript:void(0);'>#=SoNumber#</a>").Visible(false);
+              columns.Bound(d => d.SparePartCode).ClientTemplate(
+              "#if (ChangedPartId!= null && ChangedPartId!=SparePartId){#" +
+              "#=SparePartCode# <a class='k-link kendotooltip' data-partid='#=ChangedPartId#' onclick='openpopup(\"#=SparePartCode#\");'> <i class='glyphicon glyphicon-info-sign'></i></a>" +
+              "#} else {# #=SparePartCode# #}# "
+
+              ).Width(100).Sortable(true);
+              columns.Bound(d => d.SparePartName).Width(170).Sortable(true);
+              columns.Bound(d => d.ListPriceWithCurrency).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.DealerPriceWithCurrency).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.DiscountPriceWithCurrency).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.IsPriceFixed).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.DiscountRatio).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.PlanQuantity).HtmlAttributes(new { title = "asd", style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.PickQuantity).HtmlAttributes(new { title = "asd", style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.PickedQuantity).HtmlAttributes(new { title = "asd", style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.ReturnedQuantity).HtmlAttributes(new { title = "asd", style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.VatRatio).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.StatusName).HtmlAttributes(new { title = "asd", style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(p => p.SparePartSaleDetailId).ClientTemplate(
+                  "#if(IsPriceFixed){#<center>" +
+                  "<a href='javascript:void(0);' frameTitle='" +
+                  MessageResource.SparePartSale_Display_Refresh +
+                  "' title='" + CommonUtility.GetResourceValue("SparePartSale_Display_Refresh") + "'" +
+                  " onclick='SparePartSaleRefresh(#=SparePartSaleId#);'><img class='iconLink' style=\"width:20px; height:20px;\" src='" +
+                  Url.Content("~/Images/refresh.png") +
+                  "'/></a>#}#").Title(MessageResource.SparePartSale_Display_Refresh).Width(50).Sortable(false);
+          })
+          .Pageable()
+          .Sortable()
+          .Events(e => e.DataBound("SetRowsColor"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListSparePartSaleDetails", "SparePartSaleDetail", Model)))
+    )
+
+</div>
+
+

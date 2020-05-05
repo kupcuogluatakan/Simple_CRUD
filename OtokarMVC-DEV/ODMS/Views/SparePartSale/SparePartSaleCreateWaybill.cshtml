@@ -1,0 +1,605 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.PaymentType
+@model ODMSModel.SparePartSaleWaybill.SparePartSaleWaybillViewModel
+@{
+    ViewBag.Title = MessageResource.SparePartSale_PageTitle_Waybill;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style type="text/css">
+    #popupContent {
+        width: auto !important;
+    }
+
+    .lockedwrapper {
+        background-color: black;
+        opacity: 0.5;
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 100012;
+    }
+</style>
+<div class="lockedwrapper">
+    <div class="locked">
+        <div class="conteneur_78390">
+            <div class="decalage_pers_78390">
+                <div class="cercle_rouge_78390"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="CustomerAddressModelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("CustomerAddressModelWindow")
+          .Draggable()
+          .Resizable()
+          .Width(850)
+          .Height(350)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){    }"))
+    )
+</div>
+<body style="height: 500px">
+    <link href="~/Style/Content.css" rel="stylesheet" />
+    <link href="~/Style/bootstrap.css" rel="stylesheet" />
+    <script src="~/Scripts/custom.js"></script>
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(c => c.CustomerId)
+        @Html.HiddenFor(c => c.CustomerName)
+        @Html.HiddenFor(c => c.CustomerLastName)
+
+    <div id="divFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+        <div class="shortTxtDiv">
+           @Html.DisplayFor(v => v.CustomerName)
+        </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsWaybilled)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsWaybilled) </div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div id="divWaybill">
+            <div class="labelDiv">@Html.LabelFor(v => v.WaybillSerialNo)</div>
+            <div class="shortTxtDiv">
+                @Html.TextBoxFor(v => v.WaybillSerialNo)
+                @Html.ValidationMessageFor(c => c.WaybillSerialNo)
+            </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.WaybillNo)</div>
+            <div class="shortTxtDiv">
+                @Html.TextBoxFor(v => v.WaybillNo)
+                @Html.ValidationMessageFor(c => c.WaybillNo)
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.WaybillDate)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().DateTimePickerFor(v => v.WaybillDate).Enable(Model.SparePartSaleWaybillId == 0).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(DateTime.Now.AddDays(-30)).Max(DateTime.Now).HtmlAttributes(new { type = "text" })
+                @Html.ValidationMessageFor(v => v.WaybillDate)
+            </div>
+            <div class="labelDiv">@Html.LabelFor(c => c.ShippingAddressId)</div>
+            <table>
+                <tr>
+                    <td>
+                        @(Html.Kendo().ComboBoxFor(c => c.ShippingAddressId)
+                      .DataValueField("Value")
+                              .DataTextField("Text").Enable(Model.SparePartSaleWaybillId == 0)
+                      .HtmlAttributes(new { style = "width:650px;" })
+                      .Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                      .DataSource(source => source.Read(read => read.Action("ListCustomerAddresses", "SparePartSale")
+                          .Data("GetCustomerId")
+                          .Type(HttpVerbs.Post))
+                          .ServerFiltering(true))
+                      .AutoBind(false)
+                      .CascadeFrom("CustomerId")
+                      .Events(e => e.DataBound("ShippingAddressDataBound")))
+                    </td>
+                    <td>@Html.ValidationMessageFor(v => v.ShippingAddressId)</td>
+                    @if (Model.SparePartSaleInvoiceId == 0)
+                    {
+                        <td>
+                            @ODMSHelpers.LinkButton("btnCreateShippingAddress",
+                                CommonUtility.GetResourceValue("Global_Display_NewAddress"),
+                                "Create",
+                                "modalClickCustomerAddress createNewCustomerShippingAddress",
+                                CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Create")
+                                , CommonValues.PermissionCodes.CustomerAddress.CustomerAddressCreate)
+                        </td>
+                    }
+                </tr>
+            </table>
+        </div>
+
+        <div id="divInvoice">
+            <div class="labelDiv">@Html.LabelFor(v => v.InvoiceSerialNo)</div>
+            <div class="shortTxtDiv">
+                @Html.TextBoxFor(v => v.InvoiceSerialNo)
+                @Html.ValidationMessageFor(c => c.InvoiceSerialNo)
+            </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.InvoiceNo)</div>
+            <div class="shortTxtDiv">
+                @Html.TextBoxFor(v => v.InvoiceNo)
+                @Html.ValidationMessageFor(c => c.InvoiceNo)
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.InvoiceDate)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().DateTimePickerFor(v => v.InvoiceDate).Enable(Model.SparePartSaleWaybillId == 0).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" })
+                @Html.ValidationMessageFor(v => v.InvoiceDate)
+            </div>
+            <div class="labelDiv">@Html.LabelFor(c => c.BillingAddressId)</div>
+            <div class="shortTxtDiv">
+                <table>
+                    <tr>
+                        <td>
+                            @(Html.Kendo().ComboBoxFor(c => c.BillingAddressId)
+                          .DataValueField("Value")
+                          .DataTextField("Text")
+                          .HtmlAttributes(new { style = "width:650px;" })
+                          .Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+                          .DataSource(source => source.Read(read => read.Action("ListCustomerInvoiceAddresses", "SparePartSale").Data("GetCustomerId")
+                              .Type(HttpVerbs.Post))
+                              .ServerFiltering(true))
+                          .Enable(Model.SparePartSaleWaybillId == 0)
+                          .AutoBind(false)
+                          .CascadeFrom("CustomerId")
+                          .Events(e => e.DataBound("BillingAddressDataBound")))
+                        </td>
+                        <td>@Html.ValidationMessageFor(v => v.BillingAddressId)</td>
+                        @if (Model.SparePartSaleInvoiceId == 0)
+                        {
+                            <td>
+                                @ODMSHelpers.LinkButton("btnCreateBillingAddress",
+                                    CommonUtility.GetResourceValue("Global_Display_NewAddress"),
+                                    "Create",
+                                    "modalClickCustomerAddress createNewCustomerBillingAddress",
+                                    CommonUtility.GetResourceValue("CustomerAddress_PageTitle_Create"),
+                                    CommonValues.PermissionCodes.CustomerAddress.CustomerAddressCreate)
+                            </td>
+                        }
+                    </tr>
+                </table>
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.PaymentTypeId)</div>
+            <div class="shortTxtDiv">
+                @(Html.Kendo().ComboBoxFor(c => c.PaymentTypeId)
+                  .Events(e => e.Change("PaymentTypeSelectionChanged")).Enable(Model.SparePartSaleWaybillId == 0)
+          .BindTo(ViewBag.PaymentTypeList as List<PaymentTypeListModel>)
+          .DataValueField("Id").DataTextField("PaymentTypeName")
+          .Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")))
+                @Html.ValidationMessageFor(v => v.PaymentTypeId)
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.BankId)</div>
+            <div class="shortTxtDiv">
+                @(Html.Kendo().ComboBoxFor(c => c.BankId)
+        .BindTo(ViewBag.BankList as List<SelectListItem>)
+                .DataValueField("Value").Enable(Model.SparePartSaleWaybillId == 0)
+        .DataTextField("Text")
+        .Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")))
+                @Html.ValidationMessageFor(v => v.BankId)
+            </div>
+            <div class="labelDiv">@Html.LabelFor(v => v.DueDuration) </div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(v => v.DueDuration).Spinners(false).Min(0).Format("0").HtmlAttributes(new { type = "text" })
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.InstalmentNumber)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().NumericTextBoxFor(q => q.InstalmentNumber).Spinners(false).Min(0).Format("0").HtmlAttributes(new { type = "text", maxlength = "4", data_val_min = "0", data_val_max = "1000", style = "width:200px" })
+                @Html.ValidationMessageFor(v => v.InstalmentNumber)
+            </div>
+        </div>
+    </div>
+</body>
+<script src="~/Scripts/odms.objectsearch.js"></script>
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<div class="clearDiv">&nbsp;</div>
+<div class="kendoGridDiv" id="grd2" style="width: 1300px;">
+    @(Html.Kendo().Grid<ODMSModel.SparePartSale.SparePartSaleListModel>()
+          .Name("grdsparePartSale")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.IsSelected).ClientTemplate("#= onRowDataBound(SparePartSaleId)#").Title(CommonUtility.GetResourceValue("Global_Display_Select")).Width(50).Sortable(false);
+              columns.Bound(d => d.SparePartSaleId).Width(100).Sortable(true);
+              columns.Bound(d => d.SaleDate).Width(100).Format("{0:dd/MM/yyyy hh:mm}").Sortable(true);
+              columns.Bound(d => d.TotalListPrice).HtmlAttributes(new { title = "asd", style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(d => d.TotalPrice).HtmlAttributes(new { style = "text-align:right" }).Width(50).Sortable(true);
+              columns.Bound(p => p.SparePartSaleId).ClientTemplate(
+                  "<center>" +
+                  "<a href='javascript:void(0);' frameTitle='" +
+                  MessageResource.SparePartSale_Display_Refresh +
+                  "' title='" + CommonUtility.GetResourceValue("SparePartSale_Display_Refresh") + "'" +
+                  " onclick='SparePartSaleRefresh(#=SparePartSaleId#);'><img class='iconLink' style=\"width:20px; height:20px;\" src='" +
+                  Url.Content("~/Images/refresh.png") +
+                  "'/></a>").Title(MessageResource.SparePartSale_Display_Refresh).Width(50).Sortable(false).Visible(Model.SparePartSaleWaybillId == 0);
+          })
+          .Scrollable()
+          .HtmlAttributes(new { style = "height:300px" })
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .ServerOperation(true)
+                                                                .Read(read => read.Action("ListSparePartSaleWaybill", "SparePartSale").Data("Search"))
+                                        )
+    )
+
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="btn-group" style="height: 40px;">
+    @if (Model.SparePartSaleWaybillId == 0)
+    {
+        <button class="btn btn-info btnWaybill" onclick=" CreateWaybill(this) ">
+            <i class="fa fa-check"></i> &nbsp;
+            @MessageResource.Global_Display_Save
+        </button>
+    }
+    else if (Model.IsWaybilled)
+    {
+        <button class="btn btn-info btnInvoiceCopyReport" onclick=" CreateInvoiceCopyReport(this) ">
+            <i class="fa fa-check"></i> &nbsp;
+            @MessageResource.SparePartSale_Display_InvoiceCopyReport
+        </button>
+
+        <button class="btn btn-info btnInvoiceReport" onclick=" CreateInvoiceReport(this) ">
+            <i class="fa fa-check"></i> &nbsp;
+            @MessageResource.SparePartSale_Display_InvoiceReport
+        </button>
+
+        <button class="btn btn-info btnInvoiceProformaReport" onclick=" CreateInvoiceProformaReport(this) ">
+            <i class="fa fa-check"></i> &nbsp;
+            @MessageResource.SparePartSale_Display_InvoiceProformaReport
+        </button>
+    }
+
+
+</div>
+
+<script type="text/javascript">
+
+    function DisableInputs(obj) {
+        $("input,select,textarea", obj).attr("disabled", "disabled");
+    }
+    function EnableInputs(obj) {
+        $("input,select,textarea", obj).removeAttr("disabled");
+    }
+    function onRowDataBound(spsId) {
+        if (spsId == '@Model.SparePartSaleId') {
+            var grid = $('#grdsparePartSale').data("kendoGrid");
+            var list = grid.dataSource.data();
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].SparePartSaleId == spsId) {
+                    list[i].IsSelected = true;
+                } else {
+                    list[i].IsSelected = false;
+                }
+            }
+            return "<input type='checkbox' onchange='selectChange(this);' class='cbSelect' name='IsSelected' disabled checked/>";
+        } else
+            return "<input type='checkbox' onchange='selectChange(this);' class='cbSelect' name='IsSelected'/>";
+    }
+
+    function Search() {
+        return {
+            CustomerId: $("#CustomerId").val(),
+            SparePartSaleId: @Model.SparePartSaleId
+            };
+    }
+
+    function selectChange(obj) {
+        var grid = $('#grdsparePartSale').data("kendoGrid");
+        var row = $(obj).closest("tr");
+        var item = grid.dataItem(row);
+        item.IsSelected = $(obj).prop("checked");
+    }
+
+    function SparePartSaleRefresh(spsId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SparePartSaleRefresh", "SparePartSale")",
+            data: { sparePartSaleId: spsId, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function(result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    var grid = $('#grdsparePartSale').data('kendoGrid');
+                    grid.dataSource.read();
+
+                    SetSuccessMessage('@MessageResource.Global_Display_Success');
+                }
+            },
+            dataType: "json"
+        });
+    }
+
+    function CreateInvoiceReport(obj) {
+        var spswId = @Model.SparePartSaleWaybillId;
+        var dId = @Model.DealerId;
+        var spsId = @Model.SparePartSaleId;
+        var url = "";
+        if ('@Model.IsWaybilled' == 'True')
+            url = "@Url.Action("PrintInvoiceReport", "SparePartSale")?sparePartSaleId=" + spsId + "&dealerId=" + dId;
+        else
+            url = "@Url.Action("PrintWaybillReport", "SparePartSale")?sparePartSaleWaybillId=" + spswId + "&dealerId=" + dId;
+        window.open(url, '_blank');
+    }
+
+    function CreateInvoiceCopyReport(obj) {
+        var spswId = @Model.SparePartSaleWaybillId;
+        var spsId = @Model.SparePartSaleId;
+        var dId = @Model.DealerId;
+        var url = "";
+        if ('@Model.IsWaybilled' == 'True')
+            url = "@Url.Action("PrintInvoiceCopyReport", "SparePartSale")?sparePartSaleId=" + spsId + "&dealerId=" + dId;
+        else
+            url = "@Url.Action("PrintWaybillCopyReport", "SparePartSale")?sparePartSaleWaybillId=" + spswId + "&dealerId=" + dId;
+        window.open(url, '_blank');
+    }
+
+    function CreateInvoiceProformaReport(obj) {
+        var spswId = @Model.SparePartSaleWaybillId;
+        var spsId = @Model.SparePartSaleId;
+        var dId = @Model.DealerId;
+        var url = "";
+        if ('@Model.IsWaybilled' == 'True')
+            url = "@Url.Action("PrintSparePartSaleReportProforma", "SparePartSale")?sparePartSaleId=" + spsId + "&dealerId=" + dId;
+        @*else
+            url = "@Url.Action("PrintWaybillCopyReport", "SparePartSale")?sparePartSaleWaybillId=" + spswId + "&dealerId=" + dId;*@
+        window.open(url, '_blank');
+    }
+    function CreateWaybill(obj) {
+
+        $('.lockedwrapper').css('display', 'block');
+        var items = [];
+
+        $(".btnCreateWaybill").addClass("disabled");
+
+        var selectedSPS = [];
+        var grid = $('#grdsparePartSale').data("kendoGrid");
+        var list = grid.dataSource.data();
+        var index = 0;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].IsSelected == true) {
+                var selectedRow = { Value: list[i].SparePartSaleId, Text: list[i].SparePartSaleId };
+                selectedSPS[index] = selectedRow;
+                index ++;
+            }
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SparePartSaleCreateWaybill", "SparePartSale")",
+            contentType: 'application/json',
+            data: JSON.stringify({
+                SparePartSaleId: '@Model.SparePartSaleId',
+                CustomerId: '@Model.CustomerId',
+                WaybillSerialNo: $('#WaybillSerialNo').val(),
+                WaybillNo: $('#WaybillNo').val(),
+                WaybillDate: $('#WaybillDate').val(),
+                ShippingAddressId: $('#ShippingAddressId').val(),
+                InvoiceSerialNo: $('#InvoiceSerialNo').val(),
+                InvoiceNo: $('#InvoiceNo').val(),
+                InvoiceDate: $('#InvoiceDate').val(),
+                BillingAddressId: $('#BillingAddressId').val(),
+                PaymentTypeId: $('#PaymentTypeId').val(),
+                BankId: $('#BankId').val(),
+                DueDuration: $('#DueDuration').val(),
+                InstalmentNumber: $('#InstalmentNumber').val(),
+                IsWaybilled: $('#IsWaybilled').val(),
+                SparePartSaleList: selectedSPS
+            }),
+            traditional: true,
+            success: function(result) {
+                if (result.Status == 0) {
+                    SetErrorMessage(result.Message);
+                } else {
+                    @*$(".btnCreateWaybill").removeClass("disabled");
+                    var grid = $('#grdsparePartSale').data('kendoGrid');
+                    grid.dataSource.read();
+
+                    SetSuccessMessage("@MessageResource.Global_Display_Success");*@
+                    window.location.reload();
+                }
+                $('.lockedwrapper').css('display', 'none');
+            },
+            dataType: "json"
+        });
+
+    }
+    function PaymentTypeSelectionChanged() {
+        var selectedItemId = $("#PaymentTypeId").val();
+        var hiddenDataId = "PaymentType" + selectedItemId;
+        var data = $("#" + hiddenDataId);
+
+        var bankRequired = data.attr("BankRequired");
+        var instalmentRequired = data.attr("InstalmentRequired");
+        var defermentRequired = data.attr("DefermentRequired");
+
+        $("#BankRequired").val(bankRequired);
+        $("#InstalmentNumberRequired").val(instalmentRequired);
+        $("#DefermentNumberRequired").val(defermentRequired);
+        SetInputAvailability(bankRequired, instalmentRequired, defermentRequired);
+    }
+    function SetInputAvailability(bankRequired, instalmentRequired, defermentRequired) {
+        if (bankRequired == "False") {
+            $("#BankId").data("kendoComboBox").text('');
+            $("#BankId").data("kendoComboBox").enable(false);
+        } else {
+            $("#BankId").data("kendoComboBox").enable(true);
+        }
+        if (instalmentRequired == "False") {
+            $("#InstalmentNumber").data("kendoNumericTextBox").value('');
+            $("#InstalmentNumber").data("kendoNumericTextBox").enable(false);
+        } else {
+            $("#InstalmentNumber").data("kendoNumericTextBox").enable(true);
+        }
+        if (defermentRequired == "False") {
+            $("#DueDuration").data("kendoNumericTextBox").enable(false);
+            $("#DueDuration").data("kendoNumericTextBox").value('');
+        }
+        else
+            $("#DueDuration").data("kendoNumericTextBox").enable(true);
+    }
+
+    function BillingAddressDataBound() {
+        if ($("#BillingAddressId").data("kendoComboBox").dataSource.data().length == 1)
+            $("#BillingAddressId").data("kendoComboBox").select(0);
+    }
+    function ShippingAddressDataBound() {
+        if ($("#ShippingAddressId").data("kendoComboBox").dataSource.data().length == 1)
+            $("#ShippingAddressId").data("kendoComboBox").select(0);
+    }
+    function RefreshMasterGrid() {
+        if ($('#SparePartSaleId').val() != '0') {
+            if ('@ViewBag.IsCreate' == 'True') {
+                parent.ShowTabs($('#SparePartSaleId').val(), true);
+                parent.refreshGridAndselectRow(true);
+                $('#SparePartSaleId').val('');
+            }
+        }
+    }
+    function SetAddress(addressId, addressTypeId) {
+        if (addressTypeId == "1") {
+            $("#ShippingAddressId").data("kendoComboBox").dataSource.read();
+            $("#ShippingAddressId").data("kendoComboBox").value(addressId);
+        }
+        if (addressTypeId == "3") {
+            $("#BillingAddressId").data("kendoComboBox").dataSource.read();
+            $("#BillingAddressId").data("kendoComboBox").value(addressId);
+        }
+    }
+
+    function ClearAddressCombo() {
+        $("#ShippingAddressId").data("kendoComboBox").value('');
+        $("#BillingAddressId").data("kendoComboBox").value('');
+        $('#btnCreateBillingAddress').attr("disabled", "disabled");
+        $('#btnCreateShippingAddress').attr("disabled", "disabled");
+    }
+    function RefreshAddressCombo() {
+        ClearAddressCombo();
+
+        $("#ShippingAddressId").data("kendoComboBox").dataSource.read();
+        $("#BillingAddressId").data("kendoComboBox").dataSource.read();
+
+        $('#btnCreateBillingAddress').removeAttr("disabled");
+        $('#btnCreateShippingAddress').removeAttr("disabled");
+    }
+    function GetCustomerId() {
+        return {
+            CustomerId: $('#CustomerId').val()
+        };
+    }
+
+    $(document).ready(function () {
+        if ('@Model.SparePartSaleWaybillId' == '0') {
+            EnableInputs($('#divFields'));
+        } else {
+            DisableInputs($('#divFields'));
+        }
+
+        $(".btnCreateInvoiceReport").addClass("disabled");
+        $(".btnCreateInvoiceProformaReport").addClass("disabled");
+
+        $("#ShippingAddressId").data("kendoComboBox").dataSource.read();
+        $("#BillingAddressId").data("kendoComboBox").dataSource.read();
+        $('#IsWaybilled').val('@Model.IsWaybilled');
+        debugger;
+        if ('@Model.IsWaybilled' == 'True') {
+            $('#divWaybill').hide();
+            $('#divInvoice').show();
+        } else {
+            $('#divWaybill').show();
+            $('#divInvoice').hide();
+        }
+
+        $('#IsWaybilled').change(function () {
+            if (@Model.SparePartSaleWaybillId == 0) {
+                if ($(this).is(':checked')) {
+                    $('#divWaybill').hide();
+                    $('#divInvoice').show();
+                    $('#IsWaybilled').val(true);
+                } else {
+                    $('#divWaybill').show();
+                    $('#divInvoice').hide();
+                    $('#IsWaybilled').val(false);
+                }
+            }
+        });
+
+
+
+        RefreshMasterGrid();
+
+        if ($('#CustomerId').val() == 0) {
+            $('#btnCreateBillingAddress').attr("disabled", "disabled");
+            $('#btnCreateShippingAddress').attr("disabled", "disabled");
+        }
+
+        $("body").delegate(".modalClickCustomerAddress", "click", function (e) {
+
+            $('#CustomerAddressModelWindow').html('');
+            e.preventDefault();
+            var customerId = $('#CustomerId').val();
+            var billingAddressId = $("#BillingAddressId").data("kendoComboBox").value();
+            var shippingAddressId = $("#ShippingAddressId").data("kendoComboBox").value();
+            var link;
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("createNewCustomerBillingAddress")) {
+                if (billingAddressId != 0) {
+                    link = "@Url.Action("CustomerAddressUpdate", "CustomerAddress", new { id = -1 })";
+                    link = link.replace("-1", billingAddressId);
+                    frameTitle = '@MessageResource.CustomerAddress_PageTitle_Update';
+                } else {
+                    link = "@Url.Action("CustomerAddressCreate", "CustomerAddress", new { customerId = -1,
+                    customerName = Model.CustomerName,
+                    addressTypeId = 3 })";
+                    link = link.replace("-1", customerId);
+                    frameTitle = '@MessageResource.CustomerAddress_PageTitle_Create';
+                }
+            }
+            if ($(this).hasClass("createNewCustomerShippingAddress")) {
+                if (shippingAddressId != 0) {
+                    link = "@Url.Action("CustomerAddressUpdate", "CustomerAddress", new { id = -1 })";
+                    link = link.replace("-1", shippingAddressId);
+                    frameTitle = '@MessageResource.CustomerAddress_PageTitle_Update';
+                } else {
+                    link = "@Url.Action("CustomerAddressCreate", "CustomerAddress", new { customerId = -1,
+        customerName = Model.CustomerName,
+        addressTypeId = 1 })";
+                    link = link.replace("-1", customerId);
+                    frameTitle = '@MessageResource.CustomerAddress_PageTitle_Create';
+                }
+            }
+
+            $("#CustomerAddressModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#CustomerAddressModelWindow").data("kendoWindow");
+            windowWidget.wrapper.css({ width: 950, height: 350 });
+            var closeOrigin = windowWidget.close;
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+        $.mask.definitions['1'] = '[0-1]';
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

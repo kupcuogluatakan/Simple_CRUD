@@ -1,0 +1,102 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.StockCardTransaction
+
+@model StockCardTransactionListModel
+@{
+    ViewBag.Title = @MessageResource.StockCardTransaction_PageTitle_Index;
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#btnSearch").on("click", function (e) {
+            var grid = $('#gridStockCardTransaction').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+    });
+
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    function SearchTransaction() {
+        return {
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            TransactionType: $('#TransactionType').val(),
+            StockTypeId: $('#StockTypeId').val()
+        };
+    }
+    function ResetSearchTop() {
+        $("#TransactionType").data('kendoComboBox').value(null);
+        $("#StockTypeId").data('kendoComboBox').value(null);
+        $("#StartDate").val('');
+        $("#EndDate").val('');
+    }
+</script>
+<div id="searchDiv" style="display: block">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(c => c.TransactionType)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.TransactionType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.TransactionTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="labelDiv">@Html.LabelFor(c => c.StockType)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.StockTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+    </div>
+</div>
+<div class="clearfix"></div>
+<button class="k-button" id="btnReset" onclick="ResetSearchTop();"><i class=" glyphicon glyphicon-remove"></i>@MessageResource.Global_Display_Clear</button>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockCardTransaction.StockCardTransactionIndex)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<StockCardTransactionListModel>()
+          .Name("gridStockCardTransaction")
+          .Columns(columns =>
+              {
+                  columns.Bound(b => b.TransactionType).Width(160).Sortable(true);
+                  columns.Bound(b => b.TransactionDesc).Width(450).Sortable(true);
+                  columns.Bound(b => b.StockType).Width(90).Sortable(true);
+                  columns.Bound(b => b.FromWareRack).Width(180).Sortable(true);
+                  columns.Bound(b => b.ToWareRack).Width(180).Sortable(true);
+                  columns.Bound(b => b.Quantity).Width(70).Sortable(true);
+                  columns.Bound(b => b.DateTimeS).Width(120).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListStockCardTransaction", "StockCardTransaction", Model).Data("SearchTransaction"))
+                                        .Model(model => model.Field(b => b.DealerId).DefaultValue(-1)))
+          )
+
+</div>
+
+

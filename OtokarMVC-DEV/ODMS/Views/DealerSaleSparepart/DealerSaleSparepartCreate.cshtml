@@ -1,0 +1,147 @@
+﻿@model ODMSModel.DealerSaleSparepart.DealerSaleSparepartIndexViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.DealerSaleSparepart_PageTitle_Create;
+}
+ 
+
+<script type="text/javascript">
+    function GetListPrice(e) {
+
+        var IdPart = $('#IdPart').val();
+        $.ajax({
+            type: "GET",
+            data: { idPart: IdPart },
+            url: "@Url.Action("GetSparepartListPrice", "DealerSaleSparepart")",
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+
+                $('#ListPrice').data('kendoNumericTextBox').value(JSON.parse(result).ListPrice);
+
+            },
+            error: function (request, status, err) {
+                //////console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+
+        GetShipQtyAndUnit();
+    }
+
+    function ChangeDiscountRatio() {
+        var salePrice = 0;
+        var ratio = $('#DiscountRatio').data('kendoNumericTextBox').value();
+        var listPrice = $('#ListPrice').data('kendoNumericTextBox').value();
+
+        salePrice = listPrice - (ratio * listPrice / 100);
+        $('#SalePrice').data('kendoNumericTextBox').value(salePrice);
+    }
+
+    function ChangeSalePrice() {
+        var ratio = 0;
+        var listPrice = $('#ListPrice').data('kendoNumericTextBox').value();
+        var salePrice = $('#SalePrice').data('kendoNumericTextBox').value();
+
+        ratio = 100 - (100 * salePrice / listPrice);
+        $('#DiscountRatio').data('kendoNumericTextBox').value(ratio);
+    }
+
+</script>
+@Html.AntiForgeryToken()
+
+@using (Html.BeginForm("DealerSaleSparepartCreate", "DealerSaleSparepart", FormMethod.Post, new { id = "formId" }))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.IdPart)</div>
+    <div class="shortTxtDiv">
+        @{
+            Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "IdPart", CallBackFunction = "GetListPrice", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });
+        }
+    </div>
+    @Html.ValidationMessageFor(v => v.IdPart)
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ListPrice)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.ListPrice).Decimals(2).Format("{0:N}").Spinners(false).HtmlAttributes(new { type = "text"})</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SalePrice)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.SalePrice).Events(e => e.Change("ChangeSalePrice")).Decimals(2).Format("{0:N}").Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DiscountRatio)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.DiscountRatio).Events(e => e.Change("ChangeDiscountRatio")).Decimals(2).Format("{0:N}").Spinners(false).HtmlAttributes(new { type = "text", maxlength = "5", data_val_min = "0", style = "width:204px" })
+        @Html.ValidationMessageFor(v => v.DiscountRatio)
+    </div>
+               
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipQty)</div>
+    <div class="shortTxtDiv shipQty">0</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Unit)</div>
+    <div class="shortTxtDiv unit"></div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)
+        @Html.ValidationMessageFor(v => v.IsActive)
+    </div>   
+  
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartCreate, "DealerSaleSparepartCreate")          
+
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+        $("#popupContentWrapper").css("min-height", 350);//199
+        $("#popupContent").css("max-width", 650);//500
+    });
+
+    //NumericTextBox 
+    $('#ListPrice').prop('readonly', true);
+
+    var numeric = $("#ListPrice").kendoNumericTextBox({
+        //min: 0,
+        //max: 100,
+    }).data("kendoNumericTextBox");
+
+    numeric.wrapper
+           .find(".k-numeric-wrap")
+           .addClass("expand-padding")
+           .find(".k-select").hide();
+    
+
+    function GetShipQtyAndUnit() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("GetShipQtyAndUnitByPartId", "DealerSaleSparepart")",
+            data: { partId:$("#IdPart").val(), "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                $(".shipQty").text(result.ShipQty);
+                $(".unit").text(result.Unit);
+            },
+            dataType: "json"
+        });
+    }
+</script>
+
+

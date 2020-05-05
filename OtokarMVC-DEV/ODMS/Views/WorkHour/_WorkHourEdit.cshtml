@@ -1,0 +1,178 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.WorkHour
+@model WorkHourViewModel
+ 
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/x-kendo-tmpl" id="TeaBreaksTemplate">
+    <div class="ListItem" style='padding:2px 5px 0'>
+        <span data-value=#:Value#>#= Text ? Text : '' #</span>
+        <input type='hidden' name='TeaBreaks.StartTime_' value=#:StartTime#>
+        <input type='hidden' name='TeaBreaks.EndTime_' value=#:EndTime#>        
+    </div>
+</script>
+
+@Html.AntiForgeryToken()
+<div class="labelDiv">@Html.LabelFor(v => v.WeekDays)</div>
+<div style="float:left">
+    @Html.CheckBox("WeekDays[0]", Model.WeekDays[0]) @Html.Label("", WorkHourViewModel.DayOfWeek.Monday.GetStringValue(), new { @for = "WeekDays_0_" }) <span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[1]", Model.WeekDays[1]) @Html.Label("", WorkHourViewModel.DayOfWeek.Tuesday.GetStringValue(), new { @for = "WeekDays_1_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[2]", Model.WeekDays[2]) @Html.Label("", WorkHourViewModel.DayOfWeek.Wednesday.GetStringValue(), new { @for = "WeekDays_2_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[3]", Model.WeekDays[3]) @Html.Label("", WorkHourViewModel.DayOfWeek.Thursday.GetStringValue(), new { @for = "WeekDays_3_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[4]", Model.WeekDays[4]) @Html.Label("", WorkHourViewModel.DayOfWeek.Friday.GetStringValue(), new { @for = "WeekDays_4_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[5]", Model.WeekDays[5]) @Html.Label("", WorkHourViewModel.DayOfWeek.Saturday.GetStringValue(), new { @for = "WeekDays_5_" })<span style="width:15px">&nbsp;</span>
+    @Html.CheckBox("WeekDays[6]", Model.WeekDays[6]) @Html.Label("", WorkHourViewModel.DayOfWeek.Sunday.GetStringValue(), new { @for = "WeekDays_6_" })<span style="width:15px">&nbsp;</span>
+    @Html.ValidationMessageFor(c => c.WeekDays)
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.DealerName)</div>
+<div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.DealerId).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0) @Html.ValidationMessageFor(v => v.DealerId)
+</div>
+<div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(c => c.StartDate) </div>
+
+<div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })  @Html.ValidationMessageFor(c => c.EndDate)  </div>
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.StatusOfWork)</div>
+<div class="shortTxtDiv">
+    @if (Model == null)
+    {
+        @Html.RadioButtonFor(c => c.StatusOfWork, "Works", new { id = "StatusOfWork_Works", @checked = "checked" })
+        @Html.LabelFor(c => c.StatusOfWork, MessageResource.WorkHour_StatusOfWork_Works, new { @for = "StatusOfWork_Works" })
+        <span style="padding-right: 15px;"></span>
+        @Html.RadioButtonFor(c => c.StatusOfWork, "NotWorks", new { id = "StatusOfWork_NotWorks"  })
+        @Html.LabelFor(c => c.StatusOfWork, MessageResource.WorkHour_StatusOfWork_NotWorks, new { @for = "StatusOfWork_NotWorks" })
+    }
+    else
+    {
+        if (Model.StatusOfWork == WorkHourViewModel.WorkStatus.Works)
+        {
+            @Html.RadioButtonFor(c => c.StatusOfWork, "Works", new { id = "StatusOfWork_Works", @checked = "checked" })
+            @Html.LabelFor(c => c.StatusOfWork, MessageResource.WorkHour_StatusOfWork_Works, new { @for = "StatusOfWork_Works" })
+            <span style="padding-right: 15px;"></span>
+            @Html.RadioButtonFor(c => c.StatusOfWork, "NotWorks", new { id = "StatusOfWork_NotWorks"})
+            @Html.LabelFor(c => c.StatusOfWork, MessageResource.WorkHour_StatusOfWork_NotWorks, new { @for = "StatusOfWork_NotWorks" })
+        }
+        else
+        {
+            @Html.RadioButtonFor(c => c.StatusOfWork, "Works", new { id = "StatusOfWork_Works" })
+            @Html.LabelFor(c => c.StatusOfWork, MessageResource.WorkHour_StatusOfWork_Works, new { @for = "StatusOfWork_Works" })
+            <span style="padding-right: 15px;"></span>
+            @Html.RadioButtonFor(c => c.StatusOfWork, "NotWorks", new { id = "StatusOfWork_NotWorks", @checked = "checked"  })
+            @Html.LabelFor(c => c.StatusOfWork, MessageResource.WorkHour_StatusOfWork_NotWorks, new { @for = "StatusOfWork_NotWorks" })
+        }
+    }
+
+</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.MeetingInterval)</div>
+<div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(b => b.MeetingInterval).Format("{0:#}").Spinners(false).Decimals(0).HtmlAttributes(new{ type = "text", maxlength =2,style="width:204px"}) @Html.ValidationMessageFor(c => c.MeetingInterval)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Description)</div>
+<div class="shortTxtDiv">@Html.TextAreaFor(c => c.Description) @Html.ValidationMessageFor(c => c.Description)</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.Priority)</div>
+<div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c=>c.Priority).Decimals(0).Format("{0:#}").Spinners(false).HtmlAttributes(new{ type = "text", maxlength ="2",data_val_min="0",style="width:204px"})
+                                        @Html.ValidationMessageFor(v => v.Priority)</div>
+
+<div class="clearDiv">&nbsp;</div>
+
+<div class="labelDiv">@Html.LabelFor(c => c.WorkStartHour)</div>
+<div class="shortTxtDiv">@Html.Kendo().TimePickerFor(c => c.WorkStartHour).Interval(15).Value(Model==null?"08:00":Model.WorkStartHour.ToString()).HtmlAttributes(new { style = "width:100px" }) @Html.ValidationMessageFor(c => c.WorkStartHour)</div>
+<div class="labelDiv">@Html.LabelFor(c => c.WorkEndHour)</div>
+<div class="shortTxtDiv">@Html.Kendo().TimePickerFor(c => c.WorkEndHour).Interval(15).Value(Model == null ? "17:00" : Model.WorkEndHour.ToString()).HtmlAttributes(new { style = "width:100px" }) @Html.ValidationMessageFor(c => c.WorkEndHour)</div>
+<div class="clearDiv">&nbsp;</div>
+
+
+<div class="labelDiv">@Html.LabelFor(c => c.LaunchBreakStartHour)</div>
+<div class="shortTxtDiv">@Html.Kendo().TimePickerFor(c => c.LaunchBreakStartHour).Interval(15).Value(Model == null ? "12:00" : Model.LaunchBreakStartHour.ToString()).HtmlAttributes(new { style = "width:100px" }) @Html.ValidationMessageFor(c => c.LaunchBreakStartHour)</div>
+<div class="labelDiv">@Html.LabelFor(c => c.LaunchBreakEndHour)</div>
+<div class="shortTxtDiv">@Html.Kendo().TimePickerFor(c => c.LaunchBreakEndHour).Interval(15).Value(Model == null ? "13:00" : Model.LaunchBreakEndHour.ToString()).HtmlAttributes(new { style = "width:100px" }) @Html.ValidationMessageFor(c => c.LaunchBreakEndHour)</div>
+<div class="clearDiv">&nbsp;</div>
+<div id="teabreak">
+    <div class="labelDiv"><label>@MessageResource.WorkHour_Display_TeaBreak</label></div> 
+    <div class="shortTxtDiv" style="width:100px;">@Html.Kendo().TimePicker().Name("TeaBreakStart").Interval(5).HtmlAttributes(new { style = "width:100px" })</div>
+    <span  style="float:left;padding: 0 10px; font-weight: bolder">-</span>
+    <div class="shortTxtDiv" style="width: 120px">@Html.Kendo().TimePicker().Name("TeaBreakEnd").Interval(5).HtmlAttributes(new { style = "width:100px" })</div>
+    <table style="width:50px;float:left;">
+        <tr><td><a onclick="AddTeaBreak();" class="btn-default k-button btn-success"><i class="glyphicon-plus"></i></a></td></tr>
+        <tr><td><a onclick="RemoveTeaBreak();" class="btn-default k-button btn-danger "><i class="glyphicon-minus"></i></a></td></tr>
+    </table> 
+    <div style="float:left">
+     @(Html.Kendo().ListView<ODMSModel.WorkHour.TeaBreakModel>()
+          .Name("TeaBreaksList")
+          .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+          .ClientTemplateId("TeaBreaksTemplate")
+          .TagName("div")
+          .AutoBind(true)
+          .DataSource(ds => ds.Read(read =>
+              read.Action("TeaBreakList", "WorkHour", new { workHourId = Model.WorkHourId }))).Events(d => d.DataBound("ArrangeTeaBreakList"))
+          .HtmlAttributes(new { style = "width:200px; height:80px; overflow-y:auto;" })
+          )
+    @Html.ValidationMessageFor(c=>c.TeaBreaks)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+<div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive) </div>
+@Html.HiddenFor(c => c.DealerId)
+@Html.HiddenFor(c => c.StartDate)
+
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function ArrangeTeaBreakList() {
+        $(".ListItem", "#TeaBreaksList").each(function (i, e) {
+            var hdn_tbs = $("input[type=hidden]", e).eq(0);
+            var hdn_tbe = $("input[type=hidden]", e).eq(1);
+
+            if (hdn_tbs != "" && hdn_tbe != "") {
+                hdn_tbs.attr("name", "TeaBreaks[" + i + "].StartTime");
+                hdn_tbe.attr("name", "TeaBreaks[" + i + "].EndTime");
+            }
+        });
+    }
+    function AddTeaBreak() {
+        var tbs = $("#TeaBreakStart").val();
+        var tbe = $("#TeaBreakEnd").val();
+        var arr_SDate = tbs.split(':');
+        var arr_EDate = tbe.split(':');
+        var s_Date = new Date(2000, 1, 1, parseInt(arr_SDate[0]), parseInt(arr_SDate[1]), 0);
+        var e_Date = new Date(2000, 1, 1, parseInt(arr_EDate[0]), parseInt(arr_EDate[1]), 0);
+
+        if (tbs != "" && tbe != "" && e_Date>s_Date) {
+            var html = "<div class='ListItem' style='padding:2px 5px 0'>" +
+            " <span>" + tbs + " - " + tbe + "</span>" +
+            "<input type='hidden' name='TeaBreaks.StartTime_' value='"+tbs+":00'>"+
+            "<input type='hidden' name='TeaBreaks.EndTime_' value='"+tbe+":00' >"+
+            "</div> ";
+           $("#TeaBreaksList").append(html);
+            ArrangeTeaBreakList();
+        }
+
+
+    }
+    function RemoveTeaBreak() {
+        $(".k-state-selected", "#TeaBreaksList").each(function (i, e) {
+            $(e).remove();
+            ArrangeTeaBreakList();
+        });
+    }
+</script>
+

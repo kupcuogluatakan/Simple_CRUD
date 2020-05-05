@@ -1,0 +1,140 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.BodyworkDetail
+@model BodyworkDetailViewModel
+@{
+    ViewBag.Title = MessageResource.BodyworkDetail_PageTitle_Index;
+}
+ 
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.BodyworkCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.BodyworkCode)</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", null)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickBodywork createBodywork", CommonUtility.GetResourceValue("Labour_PageTitle_Create"), ODMSCommon.CommonValues.PermissionCodes.Labour.LabourCreate)
+<script>
+
+    function Search() {
+        return {
+            BodyworkCode : $("#BodyworkCode").val()
+        };
+    }
+    $(document).ready(function () {
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#BodyworkDetailGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClickBodywork", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("update")) {
+                link = "@Url.Action("BodyworkDetailUpdate", "BodyworkDetail", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            if ($(this).hasClass("createBodywork") == true) {
+                link = "@Url.Action("BodyworkDetailCreate", "BodyworkDetail", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+    });
+    function DeleteBodyworkDetail(id) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("BodyworkDetailDelete", "BodyworkDetail")",
+                data: { id: id, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#BodyworkDetailGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#BodyworkDetailGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<BodyworkDetailListModel>()
+          .Name("BodyworkDetailGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.BodyworkCode).ClientTemplate("<center><a class='update modalClickBodywork' id='#=BodyworkCode#' frameTitle='" + @CommonUtility.GetResourceValue("BodyworkDetail_PageTitle_Update") + "' href='/BodyworkDetail/BodyworkDetailUpdate/#=BodyworkCode#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleModel.VehicleModelUpdate));
+                  columns.Bound(o => o.BodyworkCode).ClientTemplate("<center><a onclick='DeleteBodyworkDetail(\"#=BodyworkCode#\")' href='javascript:void(0);' id='#=BodyworkCode#' frameTitle='" + @CommonUtility.GetResourceValue("BodyworkDetail_PageTitle_Delete") + "'><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleModel.VehicleModelDelete));
+                  columns.Bound(p => p.BodyworkCode).Width(180).Sortable(true);
+                  columns.Bound(p => p.BodyworkCodeName).Width(380).Sortable(true);
+                  columns.Bound(p => p.Description).Width(380).Sortable(true);
+
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListBodyworkDetail", "BodyworkDetail", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.BodyworkCode).DefaultValue(-1)))
+
+          )
+</div>

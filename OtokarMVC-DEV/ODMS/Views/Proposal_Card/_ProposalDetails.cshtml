@@ -1,0 +1,779 @@
+﻿@using System.Linq
+@using ODMSCommon.Resources
+@using ODMSModel.ProposalCard
+@*@using ODMSModel.WorkOrderCard*@
+@model ODMSModel.ProposalCard.ProposalCardModel
+@{
+    Layout = null;
+    bool HasMaint = Model.Details.Any(c => c.MaintenanceId > 0); 
+}
+
+
+
+<table id="tblProposalDetails" class="table table-striped table-bordered" style="width: 100%; margin:10px auto 0;">
+    <thead>
+        <tr class="menu">
+            <th class="text-center">
+               @MessageResource.WorkOrderCard_Display_Indicator @MessageResource.Global_Display_Id / GIF NO
+            </th>
+            <th>@MessageResource.WorkOrderCard_Display_IndicatorStatus</th>
+            <th>@MessageResource.WorkOrderCard_Display_Part</th>
+            <th>@MessageResource.WorkOrderCard_Display_Labour</th>
+            <th>@MessageResource.WorkOrderCard_Display_TechnicalDescription</th>
+            @if (Model.Details.Any(c => c.IsCampaign))
+            {
+                <th>
+                    @MessageResource.WorkOrderCard_Display_CampaingPartRequest
+                </th>
+            }
+            <th>@MessageResource.Global_Display_Cancel</th>
+            <th>@MessageResource.AppointmentIndicatorFailureCode_Display_Code</th>
+            <th>@MessageResource.WorkOrderCard_Display_Type</th>
+            <th>@MessageResource.WorkOrderCard_Display_PartLabourCode</th>
+            <th>@MessageResource.WorkOrderCard_Display_Description</th>
+            <th>@MessageResource.WorkOrderCard_Display_CountTime</th>
+            <th>@MessageResource.WorkOrderCard_Display_UnitPrice</th>
+            <th>@MessageResource.WorkOrderCard_Display_DiscountRatio</th>
+            <th>@MessageResource.WorkOrderCard_Display_TotalPrice</th>
+            <th>@MessageResource.WorkOrderCard_Display_WarrantyRatio</th>
+            <th>@MessageResource.GuaranteeRequestApprove_Display_WarrantyTotal</th>
+            <th class="teksatir" style="vertical-align:middle">
+                @*@if ((bool)ViewBag.IsVehicleLeft == false && Model.Details.Any(c => c.ReservedQuantity > 0))
+                {
+                    <a style="margin-left: 10px; color: #ff0000;" class="k-link picking blink_me" onclick=" PickDetailParts(0, this) ">
+                        <i class="glyphicon glyphicon-plus-sign"></i>@MessageResource.WokrOrderCard_Display_Pick
+                    </a>
+                    <span class="ajax-loading hide"></span>
+                }*@
+            </th>
+        </tr> 
+    </thead>
+    <tbody>
+        @if ((bool)ViewBag.IsVehicleLeft == false)
+        {
+            foreach (var item in Model.DetailList.Where(c => c.InvoiceId.HasValue == false && !c.WarrantyStatus.In(1,4,5))) 
+            {
+                <tr class="@(item.IsCanceled ? Html.Raw("danger") : Html.Raw("info")) text-center">
+                    <td>
+                        @item.ProposalDetailId / @item.GifNo
+                    </td>
+                    <td>
+                        @if (item.GosApprovalNeed)
+                        {
+                            @item.WarrantyStatusDesc
+                            if (item.WarrantyStatus.In(3, 6))
+                            {
+                                <a class="k-link bstooltip" title="@item.GuaranteeConfirmDesc">
+                                    <i class="glyphicon glyphicon-info-sign"></i>
+                                </a>
+                            }
+                        }
+                        @if (item.InvoiceId.HasValue)
+                        {
+                            <span style="display:inline-block" class="bold text-success">@MessageResource.WorkOrderCard_Display_Invoiced</span>
+                        }
+                        else if (item.InvoiceId == null && item.IsBillable && item.InvoiceCancel && !Model.VehicleLeaveDate.HasValue)
+                        {
+                            <span style="display: inline-block" class="bold text-success">@MessageResource.WorkOrderCard_Not_Invoice</span>
+                        }
+
+                    </td>
+                    <!--Basılmamış etiketleri bas || Etiket bas-->
+                    <td class="text-center">
+                        @if (item.IndicatorType==ODMSModel.WorkOrderCard.IndicatorType.BreakDown && !item.WarrantyStatus.In(4, 5))
+                        {
+                            <a class="k-link" onclick="AddPart(@item.ProposalDetailId, this); ">
+                                <img src="@Url.Content("~/Images/add2.png")" />
+                            </a>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (item.IndicatorType == ODMSModel.WorkOrderCard.IndicatorType.BreakDown && !item.WarrantyStatus.In(4, 5))
+                        {
+                            <a class="k-link" onclick="AddLabour(@item.ProposalDetailId, @ViewBag.VehicleId, this); ">
+                                <img src="@Url.Content("~/Images/add2.png")" />
+                            </a>
+                        }
+                    </td>
+                    <td class="text-center">
+             
+                        <a class="k-link bstooltip" title="@item.TechicalDescription" onclick="AddTechnicalDetail(@item.ProposalDetailId, this); ">
+                            <img src="@Url.Content("~/Images/edit.png")" />
+                        </a>
+                    </td>
+                    @if (Model.Details.Any(c => c.IsCampaign))
+                    {
+                        <td>
+                            @if (Model.Details.Any(c => c.IsCampaign && c.ProposalDetailId == item.ProposalDetailId && c.HasOtokarCampaignStock == false && c.CampaignRequestId == null))
+                            {
+                                <a class="k-link" onclick="CreateCampaignRequest(@item.ProposalDetailId, this) ">@MessageResource.CampaignRequest_PageTitle_Create</a>
+                                <span class="ajax-loading hide"></span>
+                            }
+                            else if (Model.Details.Any(c => c.IsCampaign && c.ProposalDetailId == item.ProposalDetailId && c.HasOtokarCampaignStock == false && c.CampaignRequestId != null))
+                            {
+                                <a class="k-link" onclick="OpenCampaignRequestDetails(@item.ProposalDetailId, @Model.Details.FirstOrDefault(c => c.IsCampaign && c.ProposalDetailId == item.ProposalDetailId).CampaignRequestId, this) ">@MessageResource.CampaignRequest_PageTitle_Details</a>
+                            }
+
+                        </td>
+                    }
+
+                    <td class="text-center">
+
+                        @{
+                            var campaignRequestId = Model.Details.Any(c => c.IsCampaign && c.ProposalDetailId == item.ProposalDetailId && c.HasOtokarCampaignStock == false && c.CampaignRequestId != null) ?
+                                Model.Details.FirstOrDefault(c => c.IsCampaign && c.ProposalDetailId == item.ProposalDetailId).CampaignRequestId
+                                : 0;
+                        }
+                        @if (campaignRequestId == 0)
+                        {
+                            <a class="k-link" onclick="CancelProposalDetail(@item.ProposalDetailId, @(!((int)item.IndicatorType).In((int)ODMSModel.WorkOrderCard.IndicatorType.BreakDown,(int)ODMSModel.WorkOrderCard.IndicatorType.Campaign)?Html.Raw("true"):Html.Raw("false")), this) ">
+                                @MessageResource.Global_Display_Cancel
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="k-link" onclick="CancelProposalDetailWithCampaignRequest(@item.ProposalDetailId, @campaignRequestId, this) ">
+                                @MessageResource.Global_Display_Cancel
+                            </a>
+
+                        }
+                    </td>
+                    <td>
+                        <a class="bstooltip k-link" title="@item.FailureCodeDescription">@item.FailureCode</a>
+                        @if (item.AllowFailureCodeChange)
+                        {
+                            <span>&nbsp; - &nbsp;</span>
+
+                            <a class="k-link" onclick="UpdateFailureCode(@item.ProposalDetailId, '@item.FailureCode', this); "><i class="glyphicon glyphicon-edit"></i></a>
+                        }
+                    </td>
+                    <td>@item.ProcessType&nbsp; - &nbsp;</td>
+                    <td>@item.Code</td>
+                    <td>@item.Description</td>
+                    <td>
+                        @if (Model.Details.Any(c => c.ProposalDetailId == item.ProposalDetailId && (c.Type == "PART" && c.ReservedQuantity == 0)))
+                        {
+                            @*<a class="k-link" href="javascript:void(0);" onclick="ReservDetailParts(@item.ProposalDetailId, this); "><i style="padding-right: 6px;" class="glyphicon glyphicon-repeat"></i>Rezerv Et</a>*@
+                        }
+
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-center text-danger">                
+
+                        @*@if (Model.VehicleLeaveDate.HasValue == false && item.GuarantyAuthorizationNeed && item.WarrantyStatus.In(0, 3) && Model.Details.Any(c => c.ProposalDetailId == item.ProposalDetailId && c.Type != "INDICATOR"))
+                        {
+                            <a class="k-link bstooltip" onclick="SendToWarrantyPreAppoval(@item.ProposalDetailId, this);" title="@MessageResource.WorkOrderCard_Message_WarrantyPreAppoval">
+
+                                <span class="blink_me" style="color:red">@MessageResource.WorkOrderCard_Display_SendToPreWarranty</span>
+                            </a>
+                            <span class="ajax-loading hide"></span>
+                        }*@
+
+
+                    </td>
+                    <td class="teksatir">
+                        @*<a class="k-link picking" onclick="PickDetailParts(@item.ProposalDetailId, this) ">
+                            <i class="glyphicon glyphicon-plus-sign"></i>@MessageResource.WokrOrderCard_Display_Pick
+                        </a>
+                        <span class="ajax-loading hide"></span>
+                        &nbsp;-&nbsp;
+                        <a class="k-link picking" onclick="ReturnParts(@item.ProposalDetailId, this) ">
+                            <i class="glyphicon glyphicon-hand-left"></i>@MessageResource.Global_Display_Return
+                        </a>
+                        <span class="ajax-loading hide"></span>*@
+                    </td>
+                </tr>
+                foreach (var detail in Model.Details.Where(c => c.ProposalDetailId == item.ProposalDetailId && c.Type != "INDICATOR"))
+                {
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td class="text-center">
+                            @*@if (detail.Type == "PART")
+                            {
+                                <a class="k-link bstooltip" title="@MessageResource.WorkOrderCard_Display_DismentledPart" onclick="OpenPartRemovalWindow(@item.ProposalDetailId, @detail.Id, this); "><i class="glyphicon glyphicon-edit"></i></a>
+                            }*@
+
+                        </td>
+                    
+                            <td></td>
+                        
+                        <td class="text-center"></td>
+                        @if (Model.Details.Any(c => c.IsCampaign))
+                        {
+                            <td></td>
+                        }
+                        <td>
+                            @if (!detail.IsCampaign && detail.MaintenanceId == 0 && item.IndicatorType != ODMSModel.WorkOrderCard.IndicatorType.Pdi)
+                            {
+                                <a class="k-link" title="@MessageResource.Global_Display_Delete" onclick="DeleteItem(@item.ProposalDetailId, @detail.Id, '@detail.Type', this); "> <i class="glyphicon glyphicon-trash"></i></a>
+                            }
+                            else if (detail.MaintenanceId > 0 && !detail.IsMust)
+                            {
+                                <a class="k-link" title="@MessageResource.Global_Display_Delete" onclick="RemoveMaintItem(@detail.MaintenanceId ,@item.ProposalDetailId, @detail.Id, '@detail.Type', this); "> <i class="glyphicon glyphicon-trash"></i></a>
+                            }
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>  @(detail.Type == "LABOUR" ? detail.IsExternalLabour ? MessageResource.WorkOrderCard_Display_ExternalLabour : MessageResource.WorkOrderCard_Display_Labour : MessageResource.WorkOrderCard_Display_Part)
+                        </td>
+                        <td class="@Html.Raw(detail.Type == "LABOUR"?"labourCode" :"partCode")">@detail.Code</td>
+                        <td> @if (detail.Type == "PART")
+                             {
+                                 @detail.Name
+                                 <a class="k-link bstooltip" title="@detail.StockType">
+                                     <i class="glyphicon glyphicon-info-sign"></i>
+                                 </a>
+                             }
+                             else
+                             {
+                                 @detail.Name
+                             }
+
+                        </td>
+                        <td class="@(detail.Type == "PART" ? GetPartTdClass(detail.RequiredQuantity, detail.ReservedQuantity, detail.PickedQuantity, detail.ReturnedQuantity) : @Html.Raw(""))">
+                            @if (detail.Type == "PART")
+                            {
+                                @detail.RequiredQuantity
+                            }
+                            else
+                            {
+                                <span>@Convert.ToInt32(detail.Quantity) / @detail.Duration</span>
+                            }
+                             @if (!detail.IsCampaign && item.IndicatorType!=ODMSModel.WorkOrderCard.IndicatorType.Pdi)
+                            {
+                                if (item.DetailType != ODMSModel.WorkOrderCard.DetailType.Meintenance)
+                                {
+                                    @Html.Raw("&nbsp; - &nbsp;")
+                                    <a class="k-link" onclick="AddDetailQuantity(@detail.ProposalDetailId, @detail.Id, '@detail.Type', this); ">@MessageResource.Global_Display_Add</a>
+                                }
+                                else
+                                {
+                                    @Html.Raw("&nbsp; - &nbsp;")
+                                    <a class="k-link" onclick="EditMaintenanceQuantity(@detail.ProposalDetailId, @detail.Id, '@detail.Type', @detail.MaintenanceId, this); "><i class="glyphicon glyphicon-edit"></i></a>
+                                }
+                            }
+                             
+                            @if (detail.Type == "PART")
+                            {
+                                <a class="part-tooltip" title="@(GetPartToolTipHtml(detail.RequiredQuantity, detail.ReservedQuantity, detail.PickedQuantity, detail.ReturnedQuantity))">
+                                    <i class="glyphicon glyphicon-info-sign"></i>
+                                </a>
+                            }
+                        </td>
+                        <td>@detail.Price.RoundUp(2)
+                            @if (!detail.IsCampaign)
+                            {
+                                @Html.Raw("&nbsp; - &nbsp;")
+                                <a class="k-link" onclick="ChangePriceList(@detail.ProposalDetailId, @detail.Id, '@detail.Type', this); "><i class="glyphicon glyphicon-edit"></i></a>
+
+                                if (detail.Type == "LABOUR" && item.ProcessTypeCode == "PT_M")
+                                {
+                                    <a class="k-link" onclick="AddLabourPrice(@detail.ProposalDetailId, @detail.Id, '@detail.Type', this); "><i class="glyphicon glyphicon-plus-sign"></i></a>
+                                }
+                            }
+                            <a class="part-tooltip" title="@(GetPriceToolTipHtml(detail))">
+                                <i class="glyphicon glyphicon-info-sign"></i>
+                            </a>
+                        </td>
+                        @if (detail.Type == "PART" && !detail.IsCampaign)
+                        {
+                            <td title="@GetDiscountTdTitle(detail.DiscountPrice, detail.DealerPrice, detail.ProfitMarginRatio)" class="@GetDiscountTdClass(detail.DiscountPrice, detail.DealerPrice, detail.ProfitMarginRatio) bstooltip">
+                                @detail.DiscountRatio
+                                @if (!detail.IsCampaign && detail.WarrantyRatio.GetValueOrDefault(0) == 0)
+                                {
+                                    @Html.Raw("&nbsp; - &nbsp;")
+                                    <a class="k-link" onclick="AddDetailDiscount(@detail.ProposalDetailId, @detail.Id, '@detail.Type', this); ">@MessageResource.Global_Display_Add</a>
+                                }
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                @detail.DiscountRatio
+                                @if (!detail.IsCampaign && detail.WarrantyRatio.GetValueOrDefault(0) == 0)
+                                {
+                                    @Html.Raw("&nbsp; - &nbsp;")
+                                    <a class="k-link" onclick="AddDetailDiscount(@detail.ProposalDetailId, @detail.Id, '@detail.Type', this); ">@MessageResource.Global_Display_Add</a>
+                                }
+                            </td>
+                        }
+
+                        <td>@detail.TotalPrice.RoundUp(2)</td>
+                        <td>@detail.WarrantyRatio</td>
+                        <td>@detail.WarrantyTotal</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                 }
+             }
+        }
+         @Html.Partial("_ProposalInvoicedDetails",Model)
+    </tbody>
+
+</table>
+
+            <div class="panel-footer">
+    <div class="panel panel-default ">
+        <div class="panel-heading">
+            <a class="k-link" data-toggle="collapse" data-parent="#accordion" data-target="#collapseCustomerTotal">
+
+
+                <strong style="font-size: 16px;">
+                    @MessageResource.WorkOrderCard_Display_TotalCustomer
+                </strong>
+            </a>
+
+        </div>
+        <div class="panel-body panel-collapse collapse" id="collapseCustomerTotal" style="height: 0px">
+
+
+
+            <table class="table table-bordered table-zipped">
+                <tbody>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.PDIInvoiceList_Display_TotalPartPrice : </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "PART" ? c.TotalCustomerPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.PDIInvoiceList_Display_TotalLabourPrice :</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.TotalCustomerPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_CustomerTotalPrice :</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.TotalCustomerPrice).RoundUp(2)</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_DiscountPartPrice :</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "PART" ? c.TotalDiscount : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_DiscountLabourPrice :</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.TotalDiscount : 0).RoundUp(2) </td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_DiscountTotalPrice :</th>
+                        <td class="col-md-2" colspan="3">@Model.Details.Sum(c => c.TotalDiscount).RoundUp(2)</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Discounted_Total_SparePart_Price</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "PART" ? (c.TotalPrice) : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Discounted_Total_Labour_Price :</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "LABOUR" ? (c.TotalPrice) : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Discounted_Total_Customer_Price :</th>
+                        <td class="col-md-2" colspan="3">@Model.Details.Sum(c => c.TotalPrice).RoundUp(2)</td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="panel panel-default ">
+        <div class="panel-heading">
+            <a class="k-link" data-toggle="collapse" data-parent="#accordion" data-target="#collapseWarrantyTotal">
+
+
+                <strong style="font-size: 16px;">
+                    @MessageResource.WorkOrderCard_Display_TotalWarranty
+                </strong>
+            </a>
+
+        </div>
+        <div class="panel-body panel-collapse collapse" id="collapseWarrantyTotal" style="height: 0px">
+
+            <table class="table table-bordered table-zipped">
+                <tbody>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.PDIInvoiceList_Display_TotalPartPrice :  </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "PART" ? c.TotalWarrantyPriceWithoutDeduction : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.PDIInvoiceList_Display_TotalLabourPrice : </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.TotalWarrantyPriceWithoutDeduction : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_WarrantyTotalPrice :</th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.TotalWarrantyPriceWithoutDeduction).RoundUp(2)</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Deduction_Total_SparePart_Price :  </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "PART" ? c.TotalWarrantyDeductionPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Deduction_Total_Labour_Price :  </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.TotalWarrantyDeductionPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Deduction_Total_Guarantee_Price :</th>
+                        <td class="col-md-2 ">@Model.Details.Sum(c => c.TotalWarrantyDeductionPrice).RoundUp(2)</td>
+
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_WarrantyPartGeneralPrice :  </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "PART" ? c.TotalWarrantyPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_WarrantyLabourGeneralPrice :  </th>
+                        <td class="col-md-2">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.TotalWarrantyPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_WarrantyGeneralPrice :</th>
+                        <td class="col-md-2 ">@Model.Details.Sum(c => c.TotalWarrantyPrice).RoundUp(2)</td>
+
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="panel panel-default ">
+        <div class="panel-heading">
+            <a class="k-link" data-toggle="collapse" data-parent="#accordion" data-target="#collapseWOTotal">
+
+
+                <strong style="font-size: 16px;">
+                    @MessageResource.WorkOrderCard_Display_WOTotal
+                </strong>
+            </a>
+
+        </div>
+        <div class="panel-body panel-collapse collapse" id="collapseWOTotal" style="height: 0px">
+
+            <table class="table table-bordered table-zipped">
+                <tbody>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> @MessageResource.WorkOrderCard_Display_TotalPart : </th>
+                        <td class="col-md-3">@Model.Details.Where(c => c.Type == "PART").Sum(c => c.RequiredQuantity) </td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_TotalLabour :</th>
+                        <td class="col-md-7" colspan="3">@Model.Details.Where(c => c.Type == "LABOUR").Count()</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_Deduction_And_Discount_Before_Price : </th>
+                        <td class="col-md-7" colspan="3">@Model.Details.Sum(c => (c.TotalCustomerPrice + c.TotalWarrantyPriceWithoutDeduction)).RoundUp(2)</td>
+                    </tr>
+                    <tr>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> @MessageResource.PDIInvoiceList_Display_TotalPartPrice : </th>
+                        <th class="col-md-3">@Model.Details.Sum(c => c.Type == "PART" ? c.TotalPrice + c.TotalWarrantyPrice : 0).RoundUp(2)</th>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.PDIInvoiceList_Display_TotalLabourPrice : </th>
+                        <td class="col-md-3" colspan="3">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.TotalPrice + c.TotalWarrantyPrice : 0).RoundUp(2)</td>
+                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i>@MessageResource.WorkOrderCard_Display_WOTotal : </th>
+                        <td class="col-md-3" colspan="3">@Model.Details.Sum(c => c.TotalPrice + c.TotalWarrantyPrice).RoundUp(2)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+                <div class="panel panel-default ">
+                    <div class="panel-heading">
+                        <a class="k-link" data-toggle="collapse" data-parent="#accordion" data-target="#collapseTechnicianDesc">
+                            <strong style="font-size: 16px;">
+                                @MessageResource.Proposal_Card_Tab_Title_Technician_Description
+                            </strong>
+                        </a>
+                    </div>
+                    <div class="panel-body panel-collapse collapse" id="collapseTechnicianDesc" style="height: 0px">
+                        @using (Html.BeginForm("SaveTechnicianInfo", "Proposal_Card", FormMethod.Post))
+
+                        { @Html.HiddenFor(x => x.ProposalId)
+                            @Html.HiddenFor(x => x.ProposalSeq)
+                            <div class="row clearfix">
+                                <div class="col-md-11 column">
+                                    <table class="table table-bordered table-hover" id="tab_logic">
+                                        <thead>
+                                        <tr>
+                                            <th class="text-center">
+                                                Madde No
+                                            </th>
+                                            <th class="text-center">
+                                                Madde Açıklaması
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @{
+                                            var count = Model.TechnicialDescList.Length;
+                                        }
+                                        @for (int i = 0; i < Model.TechnicialDescList.Length; i++)                                                                                                                                                                                                                                                                                                                                                               
+                                        {
+                                            <tr id="@string.Format("{0}{1}","addr",i)">
+                                                <td>@string.Format("{0}", i + 1)</td>
+                                                <td>
+                                                    <input name="TechnicalDesc[@i]" type='text' placeholder="@string.Format("{0}",i+1). Madde Açıklaması" style="width:98%;" class="form-control input-md" value="@Model.TechnicialDescList[i]" required />
+                                                </td>
+                                            </tr>
+                                        }
+                                        @if (count == 0)
+                                        {
+                                            <input name="TechnicalDesc[0]" type='text' placeholder="1. Madde Açıklaması" style="width:98%;" class="form-control input-md" value="" required />}
+
+                                        <tr id="@string.Format("{0}{1}","addr",count)"></tr>
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="" id="warning" style="display:none">
+                                <strong style="font-size: 16px;">
+                                    <i>Teknik açıklamalar için en fazla 10 kayıt girebilirsiniz.</i>
+                                </strong><br /><br />
+                            </div>
+                            <a id="add_row" class="btn btn-default pull-left">@MessageResource.Add_Item</a>
+                            <a id='delete_row' class="pull-left btn btn-default" style="margin-left:10px;">@MessageResource.Delete_Item</a>
+
+                                <script>
+                                    $(document).ready(function(){
+                                        var i=@count;
+                                        $("#add_row").click(function(){
+                                            $('#addr'+i).html("<td>"+(i+1)+"</td><td><input name='TechnicalDesc["+i+"]' type='text' placeholder='"+(i+1)+". "+"@MessageResource.Description_Item" +" ' style='width:98%;' class='form-control input-md' required  /> </td>");
+
+                                            $('#tab_logic').append('<tr id="addr'+(i+1)+'"></tr>');
+                                            i++;
+                                            if (i == 10) {
+                                                $("#add_row").hide();
+                                                $("#warning").show();
+                                            }
+                                        });
+                                        $("#delete_row").click(function(){
+                                            if(i>=1){
+                                                $("#addr"+(i-1)).html('');
+                                                i--;
+                                                if(i<10){
+                                                    $("#add_row").show();
+                                                    $("#warning").hide();
+                                                }
+                                            }
+                                        });
+
+                                    });
+                                </script>
+
+
+
+                                <button type="submit" class="btn btn-info" style="margin-top:10px;float:right;">@MessageResource.ClaimDismantledParts_Display_Save</button>
+
+
+
+
+
+                                                }
+                    </div>
+                </div>
+
+                <div class="panel panel-default ">
+                    <div class="panel-heading">
+                        <a class="k-link" data-toggle="collapse" data-parent="#accordion" data-target="#collapseGeneralDesc">
+
+
+                            <strong style="font-size: 16px;">
+                                @MessageResource.Proposal_Card_Tab_Title_General_Description
+                            </strong>
+                        </a>
+
+                    </div>
+                    <div class="panel-body panel-collapse collapse" id="collapseGeneralDesc" style="height: 0px">
+                        @using (Html.BeginForm("SaveGeneralInfos", "Proposal_Card", FormMethod.Post))
+
+                        {
+                            @Html.HiddenFor(x => x.ProposalId)
+                            @Html.HiddenFor(x => x.ProposalSeq)
+                            <table class="table table-bordered table-zipped">
+
+                                <tbody>
+                                    <tr>
+                                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> 1: </th>
+                                        <td class="col-md-3">
+                                            @(MessageResource.ProposalDetails_Matter1)
+
+                                        @Html.TextBoxFor(x => x.Matter1, htmlAttributes: new { @style = "text-decoration:underline;width:70px;" }) @("gün geçerlidir.")
+                                    </td>
+
+                                    </tr>
+                                    <tr>
+                                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> 2: </th>
+                                        <td class="col-md-3">@(MessageResource.ProposalDetails_Matter2_1) @Html.TextBoxFor(x => x.Matter2, htmlAttributes: new { @style = "text-decoration:underline;width:70px;" }) @(MessageResource.ProposalDetails_Matter2_2)</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> 3: </th>
+                                        <td class="col-md-3">@(MessageResource.Parts_Delivery_Description)</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> 4: </th>
+                                        <td class="col-md-3">@("Teklifte yer alan parça ve işçiliklerdeki değişiklik müşteri onayına istinaden yapılır.")</td>
+                                        @*<td class="col-md-3">@(MessageResource.ProposalDetails_Matter3_1) @Html.TextBoxFor(x => x.Matter3, htmlAttributes: new { @style = "text-decoration:underline;width:70px;" })@(MessageResource.ProposalDetails_Matter3_2)</td>*@
+                                    </tr>
+                                    <tr>
+                                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> 5: </th>
+                                        <td class="col-md-3">@(MessageResource.Expertise_Billing_Detail_Proposal_Detail)</td>
+                                    </tr>
+                                    @*<tr>
+                                        <th class="col-md-1 teksatir t-customhead"><i class="fa fa-caret-right"></i> 6: </th>
+                                        <td class="col-md-3">@(MessageResource.ProposalDetails_Matter4_1)@Html.DropDownListFor(x => x.Matter4, Model.TypeList) <text id="type1">tarafından / <s>taraflarca</s></text><text id="type2" style="display:none"><s>tarafından</s> / taraflarca</text> @(MessageResource.ProposalDetails_Matter4_1)</td>
+                                    </tr>*@
+                                </tbody>
+                            </table>
+                            <br/><br/>
+                            <div class="labelDiv">@Html.LabelFor(v => v.WitholdingStatusName)</div>
+                            <div class="shortTxtDiv">@Html.DisplayFor(v => v.WitholdingStatusName) &nbsp;</div>
+                            <div class="labelDiv">@Html.LabelFor(v => v.WitholdingId)</div>
+                            <div class="shortTxtDiv">@Html.DisplayFor(v => v.WitholdingName)</div>
+                                <button type="submit" class="btn btn-info" style="margin-top:10px;float:right;">@MessageResource.ClaimDismantledParts_Display_Save</button>
+
+                        }
+
+                    </div>
+                </div>
+
+
+    @*<div class="row">
+            <div class="col-md-4">
+                <div class="col-sm-4 bold" style="width: 9%">@MessageResource.WorkOrderCard_Display_TotalPart : </div>
+                <div class="col-sm-8" style="width: 9%">@Model.Details.Count(c => c.Type == "PART")</div>
+            </div>
+            <div class="col-md-4">
+                <div class="col-sm-4 bold" style="width: 9%">@MessageResource.WorkOrderCard_Display_TotalLabour :</div>
+                <div class="col-sm-8" style="width: 9%">@Model.Details.Count(c => c.Type == "LABOUR")</div>
+            </div>
+
+
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+
+            <div class="col-sm-2 bold" style="width: 9%">@MessageResource.WorkOrderCard_Display_TotalPartPrice :</div>
+            <div class="col-sm-1" style="width: 9%">
+
+                @Model.Details.Sum(c => c.Type == "PART" && Model.DetailList.Any(k=> c.WorkOrderDetailId == k.WorkOrderDetailId  && k.ProcessTypeCode=="PT_M") ? c.Price*c.RequiredQuantity*((100 - c.DiscountRatio)/100) : 0).RoundUp(2)
+            </div>
+            <div class="col-sm-2 bold" style="width: 9%">@MessageResource.WorkOrderCard_Display_TotalLabourPrice :</div>
+            <div class="col-sm-1" style="width: 9%">@Model.Details.Sum(c => c.Type == "LABOUR" && Model.DetailList.Any(k => c.WorkOrderDetailId == k.WorkOrderDetailId && k.ProcessTypeCode == "PT_M") ? c.Price*c.Quantity*(c.Duration/100)*((100 - c.DiscountRatio)/100) : 0).RoundUp(2)</div>
+            <div class="col-sm-2 bold" style="width: 9%">@MessageResource.WorkOrderCard_Display_NondiscountedPrice :</div>
+            <div class="col-sm-1" style="width: 9%">@Model.Details.Sum(c => c.Type == "LABOUR" ? c.Price*c.Quantity*(c.Duration/100) : (c.Type == "PART" ? c.Price*c.RequiredQuantity : 0)).RoundUp(2)</div>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>*@
+</div>
+
+
+<script>
+    
+  
+    $(function() {
+        $('.menu').addClass('original').clone().insertAfter('.menu').addClass('cloned').css('position', 'fixed').css('top', '0').css('margin-top', '0').css('z-index', '500').removeClass('original').hide();
+                
+        stickIt();
+        $(window).resize(stickIt);
+    });
+</script>
+@helper GetPartTdClass(decimal required, decimal reserved, decimal picked, decimal returned)
+{
+if (returned > 0)
+{
+        @Html.Raw(" warning ")
+    return;
+}
+else
+{
+        @Html.Raw(" danger ")
+    return;
+}
+}
+
+@helper GetPartToolTipHtml(decimal required, decimal reserved, decimal picked, decimal returned)
+{
+if (returned > 0) {
+    @Html.Raw("<div class=\"part-detail-tooltip\"> " +
+        "<ul>" +
+           " <li><span class=\"bold\">" + MessageResource.WorkOrderCard_Display_Stock + "</span>"+
+       "</ul>" +
+    "</div>")}
+else
+{
+        @Html.Raw("<div class=\"part-detail-tooltip\"> " +
+        "<ul>" +
+           " <li><span class=\"bold\">" + MessageResource.WorkOrderCard_Display_NoStock + "</span>"+
+        "</ul>" +
+    "</div>")
+}
+}
+@helper GetDiscountTdClass(decimal discountPrice, decimal? dealerPrice, decimal? profitMarginRatio)
+{
+    if (dealerPrice.GetValueOrDefault(0) > discountPrice)
+    {
+        @Html.Raw("danger")
+        return;
+    }
+    if (profitMarginRatio.GetValueOrDefault() > 0)
+    {
+        if ((dealerPrice * (1 + (profitMarginRatio / 100))) < discountPrice)
+        {
+            @Html.Raw("warning")
+        }
+    }
+    
+}
+@helper GetDiscountTdTitle(decimal discountPrice, decimal? dealerPrice, decimal? profitMarginRatio)
+{
+    if (dealerPrice.GetValueOrDefault(0) > discountPrice)
+    {
+        @Html.Raw(MessageResource.WorkOrderWard_Message_DiscountLessThanDealerPrice)
+        return;
+    }
+    if (profitMarginRatio.GetValueOrDefault() > 0)
+    {
+        if ((dealerPrice * (1 + (profitMarginRatio / 100))) < discountPrice)
+        {
+            @Html.Raw(MessageResource.WorkOrderWard_Message_DiscountLessThanProfitMargin)
+        }
+    }
+
+}
+@helper GetPriceToolTipHtml(ProposalDetailModel detail)
+{
+    <table>
+        @if (detail.Type == "PART")
+        {
+            <tr>
+                <th style="padding-right: 8px">@MessageResource.StockCard_Display_AvgDealerPrice </th><td>: @detail.DealerPrice</td>
+            </tr>
+        }
+        <tr>
+            <th style="padding-right:8px">@MessageResource.WorkOrderCard_Display_WarrantyPrice </th>
+            <td>: @detail.WarrantyPrice</td>
+        </tr>
+    </table>
+} 
+@helper GetLabourTdClass(sbyte id,bool isExternal)
+{
+    if (isExternal)
+    {
+        @Html.Raw(" success ")
+        return;
+    }
+    if (id == -1 || id == 0)
+    {
+        @Html.Raw(" danger ")
+        return;
+    }
+    else if (id == 4)
+    {
+        @Html.Raw(" success ")
+        return;
+    }
+    else
+    {
+        @Html.Raw(" warning ")
+    }
+}
+@helper GetLabourTdTitle(ProposalDetailModel detail)
+{
+    if (detail.LabourWorkStatusId != 4)
+    {
+        @Html.Raw(detail.LabourWorkStatus)
+    }
+    else
+    {
+        <table>
+            <tr>
+                <th style="padding-right:8px">@MessageResource.LabourTechnician_Display_UserNameSurname </th>
+                <td>: @detail.LabourTechnician</td>
+            </tr>
+            @if (detail.LabourStartDate != DateTime.MinValue)
+            {
+                <tr>
+                    <th style="padding-right: 8px">@MessageResource.LabourTechnician_Display_StartDate </th>
+                    <td>: @detail.LabourStartDate.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+                <tr>
+                    <th style="padding-right: 8px">@MessageResource.LabourTechnician_Display_EndDate </th>
+                    <td>
+                        : @detail.LabourFinishDate.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+}

@@ -1,0 +1,82 @@
+﻿@{
+    Layout = null;
+}
+@using ODMSCommon.Resources
+@model ODMSModel.WorkOrderCard.PartReservationDTO
+<div id="warning-wrap" class="alert" style="display:none"><strong></strong></div>
+    
+
+    @using (Ajax.BeginForm("ReservDetailParts", "Proposal_Card", new AjaxOptions {HttpMethod = "POST", OnComplete = "SetAjaxMessage"}))
+    {
+        <input type="hidden" name="ProposalDetailId" value="@ViewBag.DetailId"/>
+        <div class="labelDiv"><label>@MessageResource.TechnicianOperationViewModel_Display_ProcessType</label></div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBox().Name("ProcessType").DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(Model.ProcessTypeList).Enable(string.IsNullOrEmpty(Model.CurrentProcessType)).AutoBind(true).Value(Model.CurrentProcessType)
+
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <button class="k-button" onclick="HideDisplays()">
+            <i class="glyphicon glyphicon-send"></i> @MessageResource.Global_Display_Send
+        </button>
+        
+    }
+<div id="results" class="panel panel-primary hide" style="margin-top:10px;">
+    <div class="panel-heading">@MessageResource.WorkOrderCard_Display_PartReservInfo</div>
+    <div class="panel-body">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        @MessageResource.CampaignPart_Display_PartCode
+                    </th>
+
+                    <th class="bold">
+                        @MessageResource.SparePart_Display_PartName
+                    </th>
+                    <th class="bold">
+                        @MessageResource.WorkOrderCard_Display_RequiredQuantity
+                    </th>
+                    <th class="bold">
+                        @MessageResource.WorkOrderCard_Display_ReservedQuantity
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+    function SetAjaxMessage(content) {
+        var json = JSON.parse(content.responseText);
+        if (json.Result == false) {
+            $("#warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+            $("#warning-wrap  strong").html(json.Message);
+        } else {
+            $("#warning-wrap").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+            $("#warning-wrap  strong").html(json.Message);
+            SetResultsTable(json.List);
+        }
+        $('#warning-wrap').slideDown();
+    }
+
+    function SetResultsTable(list) {
+        //console.log(list);
+        if (Object.prototype.toString.call(list) === '[object Array]') {
+            var html = '';
+            $(list).each(function(i, e) {
+                html += "<tr><td>"+e.PartCode+"</td><td>" + e.PartName + "</td><td>" + e.RequiredQuantity + "</td><td>" + e.ReservedQuantity + "</td></tr>";
+            });
+            $("#results table tbody").html(html);
+            $("#results").removeClass("hide");
+        }
+    }
+    function HideDisplays() {
+        $("#results").addClass("hide");
+        $('#warning-wrap').slideUp();
+    }
+
+</script>

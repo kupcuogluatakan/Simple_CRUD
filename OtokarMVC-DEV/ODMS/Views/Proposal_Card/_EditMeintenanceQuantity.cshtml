@@ -1,0 +1,251 @@
+﻿ @{
+     Layout = null;
+}
+@using ODMSCommon.Resources
+@model ODMSModel.ProposalCard.ProposalMaintenanceQuantityDataModel
+<style>
+    a:focus {
+        outline: none;
+        outline-offset: -2px;
+    }
+    .infoWrap {
+        padding: 5px;
+        margin-top: 6px;
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
+    }
+</style>
+
+<script id="changePartTemplate" type="text/x-kendo-template">
+ <table style="width:100%">
+    <tr>
+    <td>#=Text#</td>
+    <td style="text-align:right;padding-right:8px;">
+    #if(Selected){#
+     <span style='color:\#3e9a13'>@MessageResource.SparePart_Display_Original</span>
+    #}#
+    </td>
+    </tr>
+    </table>
+ </script>    
+
+<div id="warning-wrap" class="alert alert-warning" style="display:none">
+        <strong></strong>
+        </div>
+<div id="allWrap">
+@Html.HiddenFor(c => c.ProposalId)
+@Html.HiddenFor(c => c.Type)
+@Html.HiddenFor(c => c.ProposalDetailId)
+@Html.HiddenFor(c => c.ItemId)
+@Html.HiddenFor(c => c.MaintenanceId)
+
+    <ul class="nav nav-tabs">
+        @if (Model.Type == "PART")
+        {
+            @*<li class="active"><a href="#quantity" onclick=" activeTab = 1; " data-toggle="tab">@MessageResource.AppointDetailsParts_Display_Quantity</a></li>*@
+    <li class="active"><a href="#remove-part" onclick=" activeTab = 2; " data-toggle="tab">@MessageResource.WorkOrderCard_Display_RemovePart</a></li>
+            if (Model.AlternateAllowed || Model.DiffrentBrandAllowed)
+            {
+                 <li><a href="#change-part" onclick=" activeTab = 3; " data-toggle="tab">@MessageResource.WorkOrderCard_Display_ChangePart</a></li>
+             }
+        }
+        else
+        {
+            @*<li class="active"><a href="#quantity" onclick=" activeTab = 1; " data-toggle="tab">@MessageResource.AppointDetailsParts_Display_Quantity</a></li>*@
+            <li class="active"><a href="#duration" onclick=" activeTab = 2; " data-toggle="tab">@MessageResource.LabourDuration_Display_Duration</a></li>
+            <li><a href="#remove-labour" onclick=" activeTab = 3; " data-toggle="tab">@MessageResource.WorkOrderCard_Display_RemoveLabour</a></li>
+        }
+   
+    </ul>
+
+<div id="tabWrap" class="tab-content" style="background-color: white; padding:10px;border-right: 1px solid #dddddd;border-left: 1px solid #dddddd;border-bottom: 1px solid #dddddd">
+    @if (Model.Type == "PART")
+    {
+        @*<div class="tab-pane active" id="quantity">
+        
+            <div class="labelDiv">@MessageResource.AppointDetailsParts_Display_Quantity</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Quantity)</div>
+            <button class="k-button" onclick=" UpdateQuantity(); "><i class="glyphicon glyphicon-ok"></i> &nbsp;@MessageResource.Global_Display_Save</button>
+        </div>*@
+        <div class="tab-pane active" id="remove-part">
+
+            @if (Model.IsMust)
+            {
+                <div class="alert alert-danger">
+                    <strong>@MessageResource.WorkOrderCard_Display_PartIsMust</strong>
+                </div>
+            }
+            else
+            {
+                <button class="k-button" onclick=" RemoveItem(); "><i class="glyphicon glyphicon-remove"></i> &nbsp;@MessageResource.Global_Display_Save</button>
+            }
+            
+        </div>
+        if (Model.AlternateAllowed || Model.DiffrentBrandAllowed)
+         {
+             <div class="tab-pane" id="change-part">
+
+                 @*@if (Model.AlternateAllowed==false)
+                 {
+                     <div class="alert alert-danger">
+                         <strong>@MessageResource.ProposalCard_Display_PartAlternateAllowedMessage</strong>
+                     </div>
+                 }
+                 else
+                 {
+                     *@<div class="labelDiv">@MessageResource.ChangePart_Display_Old</div>
+                 <div class="shortTxtDiv">@Model.Name </div><div class="clearDiv">&nbsp;</div>
+                 <div class="labelDiv">@MessageResource.ChangePart_Display_New</div>
+                
+                 <div class="shortTxtDiv">@(Html.Kendo().ComboBox().Name("NewPartId")
+                                                .DataValueField("Value").DataTextField("Text")
+                                                .TemplateId("changePartTemplate")
+                                                .Placeholder(MessageResource.Global_Display_Choose)
+                                                .HtmlAttributes(new {style = "width:300px;"})
+                                                .DataSource(ds => ds.Read(a => a.Action("ListAlternateParts", "Proposal_Card", new {partId = Model.ItemId, maintId = Model.MaintenanceId,ProposalDetailId=Model.ProposalDetailId}).Type(HttpVerbs.Post))))</div> 
+                 <div class="clearDiv"></div>
+                 <button class="k-button" onclick=" ChangePart(); "><i class="glyphicon glyphicon-ok"></i> &nbsp;@MessageResource.Global_Display_Save</button>
+                 
+            
+             </div>
+         }
+
+    }
+    else
+    {
+     @*<div class="tab-pane active" id="quantity">
+        
+            <div class="labelDiv">@MessageResource.AppointDetailsParts_Display_Quantity</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Quantity)</div>
+            <button class="k-button" onclick=" UpdateQuantity(); "><i class="glyphicon glyphicon-ok"></i> &nbsp;@MessageResource.Global_Display_Save</button>
+        </div>*@   
+      <div class="tab-pane active" id="duration">
+        @if (Model.LabourDealerDurationCheck)
+        {
+            <div class="labelDiv">@MessageResource.LabourDuration_Display_Duration</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Duration)</div>
+            <button class="k-button" onclick=" UpdateDuration(); "><i class="glyphicon glyphicon-ok"></i> &nbsp;@MessageResource.Global_Display_Save</button>
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                    <strong>@MessageResource.WorkOrderCard_Display_LabourDealerDurationCheck</strong>
+                </div>
+        }
+        </div>   
+        <div class="tab-pane" id="remove-labour">
+
+            @if (Model.IsMust)
+            {
+                <div class="alert alert-danger">
+                    <strong>@MessageResource.WorkOrderCard_Display_LabourIsMust</strong>
+                </div>
+            }
+            else
+            {
+                <button class="k-button" onclick=" RemoveItem(); "><i class="glyphicon glyphicon-remove"></i> &nbsp;@MessageResource.Global_Display_Save</button>
+            }
+            
+        </div>
+    }
+</div>
+@*<div class="infoWrap">
+    <h5>@MessageResource.ProposalCard_Display_CalculationSummary &nbsp;&nbsp;<a class="k-link"><img style="width:14px;" src="@Url.Content("~/Images/refresh.png")" /></a></h5>
+    <div style="margin-left:12px">
+        
+    </div>
+</div>*@
+    </div>
+<script>
+    var activeTab = 2;
+    $(document).ready(function() {
+       activeTab = 2;
+
+    });
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        setTimeout(function () { $("#warning-wrap").fadeOut(200); }, 100);
+    });
+
+    function UpdateDuration() {
+        var formValues = { Quantity: $('#Duration').val() };
+        $.extend(formValues, GetAdditionalValues());
+
+        mvc.build("@Url.Action("UpdateDuration", "Proposal_Card")", "", "", formValues, false, "json");
+        mvc.post(null, HandleResult, null);
+    }
+   
+    function UpdateQuantity() {
+        var formValues = {Quantity:$('#Quantity').val()};
+        $.extend(formValues, GetAdditionalValues());
+
+        mvc.build("@Url.Action("UpdateQuantity", "Proposal_Card")", "", "", formValues, false, "json");
+        mvc.post(null,HandleResult, null);
+    }
+
+    function RemoveItem() {
+        mvc.build("@Url.Action("RemoveItem", "Proposal_Card")", "", "", GetAdditionalValues(), false, "json");
+        mvc.post(null, HandleResult, null);
+        $('#allWrap').html('');
+    }
+
+    function ChangePart() {
+        var formValues = { NewPartId: $('#NewPartId').val() };
+        if (formValues.NewPartId == "") {
+            HandleResult({ Result: false, Message: "@MessageResource.WorkOrderCard_Message_SelectNewPart" });
+            return;
+        }
+        $.extend(formValues, GetAdditionalValues());
+        mvc.build("@Url.Action("ChangePart", "Proposal_Card")", "", "",formValues , false, "json");
+        mvc.post(null, HandleResultNonDisplayRemove, null);
+    }
+
+    function HandleResult(json) {
+        if (json.Result == false) {
+            $("#warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+            $("#warning-wrap  strong").html(json.Message);
+        } else {
+            $("#warning-wrap").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+            $("#warning-wrap  strong").html(json.Message);
+        }
+        $("#warning-wrap").fadeIn();
+        setTimeout(function (){$("#warning-wrap").fadeOut(1000);}, 3000);
+    }
+
+    function HandleResultNonDisplayRemove(json) {
+        if (json.Result == false) {
+            $("#warning-wrap").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+            $("#warning-wrap  strong").html(json.Message);
+        } else {
+            $("#warning-wrap").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+            $("#warning-wrap  strong").html(json.Message);
+        }
+        $("#warning-wrap").fadeIn();
+    }
+
+    function GetAdditionalValues() {
+        return {
+            ProposalId: $('#ProposalId').val(),
+            Type: $('#Type').val(),
+            ProposalDetailId: $('#ProposalDetailId').val(),
+            ItemId: $('#ItemId').val(),
+            MaintenanceId: $('#MaintenanceId').val()
+        };
+    }
+    $.fn.serializeObject = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+   
+</script>

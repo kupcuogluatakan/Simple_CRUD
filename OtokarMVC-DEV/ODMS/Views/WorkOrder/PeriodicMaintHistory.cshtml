@@ -1,0 +1,43 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeRequestApproveDetail
+@{
+    ViewBag.Title = @MessageResource.PeriodicMaint_History_Index;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+    #popupContentWrapper {
+        height: 450px !important;
+    }
+
+    #popupContent {
+        width: 97% !important;
+    }
+</style>
+<script>
+    //$(document).ready(function() {
+    //    $("#popupContentWrapper").css("min-height", 500);
+    //});
+    function Search() {
+        return {
+            id:@ViewBag.id
+            };
+    }
+</script>
+<div class="kendoGridDiv" id="gridPeriodicMaintHistory">
+    @(Html.Kendo().Grid<PeriodicMaintHistoryModel>()
+          .Name("gridPeriodicMaintHistory")
+          .Columns(columns =>
+          {
+              columns.Bound(b => b.AdminDesc).Width(50).Sortable(true);
+
+          })
+          .Sortable().Scrollable()
+    .DataSource(dataSource => dataSource
+    .Ajax()
+    .ServerOperation(true)
+    .Read(read => read.Action("ListPeriodicMaintHistory", "WorkOrder").Data("Search")))
+    )
+</div>
+
+
+

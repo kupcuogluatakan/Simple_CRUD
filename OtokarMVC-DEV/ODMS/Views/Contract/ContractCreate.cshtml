@@ -1,0 +1,45 @@
+﻿@model ODMSModel.Contract.ContractViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Contract_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@using (Html.BeginForm("ContractCreate", "Contract", FormMethod.Post))
+{
+    @*<div class="labelDiv">@Html.LabelFor(v => v.IdContract)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.IdContract) @Html.ValidationMessageFor(c => c.IdContract)</div>*@
+    <div class="labelDiv">@Html.LabelFor(v => v.ContractName)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.ContractName) @Html.ValidationMessageFor(v => v.ContractName)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Duration)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Duration) @Html.ValidationMessageFor(c => c.Duration)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })@Html.ValidationMessageFor(v => v.StartDate)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })@Html.ValidationMessageFor(v => v.EndDate)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)@Html.ValidationMessageFor(c => c.IsActive)  </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DocName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().Upload().Name("attachments").Messages(x => x.Select(ODMSCommon.Resources.MessageResource.Global_Display_SelectFile))@Html.ValidationMessageFor(c => c.DocId)</div>
+    <div class="clearDiv">&nbsp;</div>
+
+
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Contract.ContractCreate, "ContractCreate")
+}
+
+<script type="text/javascript">
+    //$(function () {
+    //    $('.k-widget').addClass('input-validation-valid');
+    //    $(".k-widget").removeClass("input-validation-error");
+    //});
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

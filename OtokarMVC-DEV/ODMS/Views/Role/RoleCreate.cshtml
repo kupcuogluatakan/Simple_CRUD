@@ -1,0 +1,20 @@
+﻿
+@model ODMSModel.Role.RoleIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Role_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+ 
+@using (Html.BeginForm("RoleCreate", "Role", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.RoleTypeName)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage",new { DefaultText = "",IsEnabled = true });  }  @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc) @Html.ValidationMessageFor(v => v.AdminDesc) </div>
+    <div class="clearDiv">&nbsp;</div>
+    <br/>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Role.RoleTypeCreate,"RoleCreate")        
+}
+                                  

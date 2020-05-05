@@ -1,0 +1,473 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.PurchaseOrder.PurchaseOrderListModel
+
+@{
+    ViewBag.Title = MessageResource.PurchaseOrder_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<script src="~/Scripts/Json2.js"></script>
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.PoType)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.PoType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.PoTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.Status)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.Status).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.PoStatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v._PoNumber)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c._PoNumber).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.PoList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IdStockType)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IdStockType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.OrderLocation)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.OrderLocation).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.OrderLocationList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.PartCode) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.PartName) </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+
+@if (UserManager.UserInfo.GetUserDealerId() != null)
+{
+}
+
+@Html.HiddenFor(v => v.IdDealer)
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.PurchaseOrder_PageTitle_Create, CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderCreate)
+
+<a class="k-button" target="_blank" href="@Url.Action("DealerPurchaseOrderIndex", "DealerPurchaseOrder")">@MessageResource.PurchaseOrderInquiry_Display_PurchaseFromDealer </a>
+
+@ODMSHelpers.LinkButton("btnOtokar", CommonUtility.GetResourceValue("PurchaseOrderInquiry_Display_PurchaseFromOtokar"), "Create", "modalClick fromOtokar", CommonUtility.GetResourceValue("PurchaseOrderInquiry_Display_PurchaseFromOtokar"), string.Empty)
+
+@ODMSHelpers.LinkButton("btnSupplier", CommonUtility.GetResourceValue("PurchaseOrderInquiry_Display_PurchaseFromSupplier"), "Create", "modalClick fromSupplier", CommonUtility.GetResourceValue("PurchaseOrderInquiry_Display_PurchaseFromSupplier"), string.Empty)
+
+@ODMSHelpers.LinkButton("btnDealer", CommonUtility.GetResourceValue("PurchaseOrderInquiry_Display_PurchaseFrom_Dealer"), "Create", "modalClick fromDealer", CommonUtility.GetResourceValue("PurchaseOrderInquiry_Display_PurchaseFrom_Dealer"), string.Empty)
+
+@if (!String.IsNullOrEmpty(Model.CreditLimit))
+{
+    <div style="float: right">
+        <div class="labelDiv" style="width: 100px">@Html.LabelFor(v => v.CreditLimit)</div>
+        <div class="shortTxtDiv" style="width: 100px">@Html.DisplayFor(v => v.CreditLimit) </div>
+    </div>
+}
+<br />
+<div id="PurchaseOrderModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("PurchaseOrderModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(935)//950
+    .Height(461)//550
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+
+        var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+
+        $('#divDetails').hide();
+
+    }"))
+    )
+</div>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.PurchaseOrder.PurchaseOrderListModel>()
+          .Name("PurchaseOrderGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.PoNumber).Width(70).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(#=PoNumber#, false)' id='#=PoNumber#' status='#=Status#' manuelPriceAllow='#=ManuelPriceAllow#' supplyType='#=SupplyType#'><img class=iconLink src='"
+                  + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrderDetail.PurchaseOrderDetailIndex));
+              columns.Bound(b => b.DealerBranchSSID).Width(70).ClientTemplate("#if(Status==1 && Location=='OTOKAR'){#<center><a class='clssHref' href='javascript:void(0);' frameTitle='"
+                  + MessageResource.PurchaseOrder_Display_QueryStatus
+                  + "' onclick='QueryPurchaseOrder(\"#=uid#\",#=PoNumber#);'><img class='iconLinkChange' style=\"width:20px; height:20px;\" src='"
+                  + Url.Content("~/Images/query.gif") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Search).Sortable(false);
+              columns.Bound(b => b.PoNumber).Width(70).ClientTemplate("#if((SupplyTypeId == 3 && Status==0 && (SupplierDealerConfirm == 0 || SupplierDealerConfirm == 2 || SupplierDealerConfirm == 3)) " +
+                                                            "|| (SupplyTypeId != 3 && Status==0)){#<center><a href='javascript:void(0);' frameTitle='"
+                  + MessageResource.PurchaseOrder_Display_CompleteOrder
+                  + "' onclick='CompletePurchaseOrder(this,#=PoNumber#);'><img class='iconLink' style=\"width:20px; height:20px;\" src='"
+                  + Url.Content("~/Images/choose.ico") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Complete).Sortable(false).Visible(
+                  ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderUpdate));
+              columns.Bound(p => p.PoNumber).Width(70).ClientTemplate("<center><a class='details modalClick' poNumber='#=PoNumber#' frameTitle='"
+                  + CommonUtility.GetResourceValue("PurchaseOrder_PageTitle_Details")
+                  + "' href='/PurchaseOrder/PurchaseOrderDetails/#=PoNumber#'><img class=iconLink src='"
+                  + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Sortable(false).Visible(
+                  ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderDetails));
+              columns.Bound(p => p.PoNumber).Width(70).ClientTemplate("#if(Status==0){#<center><a class='edit modalClick' poNumber='#=PoNumber#' frameTitle='"
+                  + CommonUtility.GetResourceValue("PurchaseOrder_PageTitle_Update")
+                  + "' href='/PurchaseOrder/PurchaseOrderUpdate/#=PoNumber#'><img class=iconLink src='"
+                  + @Url.Content("~/Images/edit.png") + "'></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Sortable(false).Visible(
+                  ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderUpdate));
+              columns.Bound(p => p.PoNumber).Width(70).ClientTemplate(
+                  // Bayi/Servis
+                  "#if((SupplyTypeId == 3 && ((Status == 0 && !IsProposal) || (IsProposal && SupplierDealerConfirm == 0)))"
+                  // Otokar
+                  + " || (SupplyTypeId == 1 && Status == 0)"
+                   // Tedarikçi
+                   + " || (SupplyTypeId == 2 && Status != 2 && TotalReceivedQuantity == 0 && TotalShipmentQuantity == 0)){#"
+                 + "<center><a href='javascript:void(0);' frameTitle='"
+                  + CommonUtility.GetResourceValue("PurchaseOrder_PageTitle_Delete")
+                  + "' onclick='DeletePurchaseOrder(this,#=PoNumber#);'><img class='iconLink' src='"
+                  + Url.Content("~/Images/delete.png") + "'/></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Sortable(false).Visible(
+                  ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderDelete));
+              columns.Bound(p => p.PoNumber).Width(70).ClientTemplate(
+                 // Bayi/Servis
+                 "#if((SupplyTypeId == 3 && ((Status == 0) || (Status == 1 && (SupplierDealerConfirm == 0 || SupplierDealerConfirm == 1 || SupplierDealerConfirm == 2 || SupplierDealerConfirm == 3))))"
+                 // Otokar
+                 + " || (SupplyTypeId == 1 && Status != 2 && Status != 9)"
+                 // Tedarikçi
+                 + " || (SupplyTypeId == 2 && Status != 2 && Status != 9)){#"
+                    + "<center><a href='javascript:void(0);' frameTitle='"
+                  + CommonUtility.GetResourceValue("PurchaseOrder_PageTitle_Cancel")
+                  + "' onclick='CancelPurchaseOrder(this,#=PoNumber#);'><img class='iconLink' src='"
+                  + Url.Content("~/Images/passive.png") + "'/></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Cancel")).Sortable(false).Visible(
+                  ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PurchaseOrder.PurchaseOrderCancel));
+              columns.Bound(p => p.OrderDate).Title(MessageResource.Global_Display_Date).Sortable(true).Format("{0:dd/MM/yyyy}").Width(100);
+              columns.Bound(p => p.PoNumber).Title(MessageResource.Global_Display_Order_Number).Width(100).Sortable(true);
+              columns.Bound(p => p.SapOfferNo).Title("SAP No").Sortable(true).Width(100);
+              columns.Bound(p => p.StockType).Sortable(true).Width(100);
+              columns.Bound(p => p.PoTypeName).Title(MessageResource.Global_Display_Order_Type).Sortable(true).Width(100);
+              columns.Bound(p => p.Location).Title(MessageResource.Global_Display_Supplier).Sortable(false).Width(100);
+              columns.Bound(p => p.VinNo).Sortable(true).ClientTemplate("#=VinNo#").Width(150);
+              columns.Bound(p => p.DesiredShipDate).Sortable(true).Format("{0:dd/MM/yyyy}").Visible(false);
+              columns.Bound(p => p.StatusName).Sortable(true).Width(100);
+              columns.Bound(p => p.IsBranchOrderName).Sortable(false).Width(100);
+              columns.Bound(p => p.IsProposalName).Sortable(false).Width(100);
+              columns.Bound(p => p.TotalPrice).Sortable(true).Width(100).HtmlAttributes(new { style = "text-align:right" });
+
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .AutoBind(false)
+          .Events(c => c.DataBound("setSelectedIndex"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListPurchaseOrder", "PurchaseOrder", Model).Data("PurchaseOrderSearch"))
+
+                                        .Model(model => model.Field(o => o.PoNumber).DefaultValue(-1)))
+
+    )
+</div>
+<div id="divDetails">
+    @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.PurchaseOrderDetail_PageTitle_Index))
+    )
+    <div id="TabContent" style="padding: 0 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script src="~/Scripts/custom.js"></script>
+<script type="text/javascript">
+
+
+    var selectedRowIndex = -1;
+
+    function setSelectedIndex() {
+        if (selectedRowIndex > -1)
+            $('#PurchaseOrderGrid').find('tbody tr').eq(selectedRowIndex).addClass('k-state-selected');
+    }
+
+    function refreshGridAndselectRow(isSelected) {
+        var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+        //grid.dataSource.page(1);
+        if (isSelected) grid.element.find('tbody tr:first').addClass('k-state-selected');
+    }
+
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    function DeletePurchaseOrder(obj, aId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeletePurchaseOrder", "PurchaseOrder")",
+                data: { PoNumber: aId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        $('#divDetails').hide();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    function CancelPurchaseOrder(obj, aId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        CustomConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CancelPurchaseOrder", "PurchaseOrder")",
+                data: { PoNumber: aId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        $('#divDetails').hide();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        }, '@MessageResource.Global_Display_CancelConfirmTitle', '@MessageResource.PurchaseOrder_Message_CancelConfirm', '@MessageResource.Global_Display_Yes', '@MessageResource.Global_Display_No');
+    }
+
+
+    function CompletePurchaseOrder(obj, poNumber) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("PurchaseOrderComplete", "PurchaseOrder")",
+                data: { PoNumber: poNumber, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    //console.log(result);
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        $('#divDetails').hide();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        }
+
+        function DetailsPurchaseOrder(obj, poNumber, idDealer) {
+            $('#modelWindow').html('');
+            var frameTitle = $(obj).attr("frameTitle");
+            var link = "@Url.Action("PurchaseOrderDetails", "PurchaseOrder", new { PoNumber = "poNumber" })";
+            link = link.replace("poNumber", poNumber);
+
+            ShowPopup(frameTitle, link);
+        }
+
+        function UpdatePurchaseOrder(obj, poNumber, idDealer) {
+            $('#modelWindow').html('');
+            var frameTitle = $(obj).attr("frameTitle");
+            var link = "@Url.Action("PurchaseOrderUpdate", "PurchaseOrder", new { PoNumber = "poNumber" })";
+            link = link.replace("poNumber", poNumber);
+
+            ShowPopup(frameTitle, link);
+        }
+
+        function ShowPopup(frameTitle, link) {
+            $("#PurchaseOrderModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#PurchaseOrderModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        }
+
+        $(document).ready(init);
+        function PurchaseOrderSearch() {
+            return {
+                PoType: $('#PoType').val(),
+                Status: $('#Status').val(),
+                _PoNumber: $("#_PoNumber").data('kendoMultiSelect').value().toString(),
+                StartDate: $('#StartDate').val(),
+                EndDate: $('#EndDate').val(),
+                IdStockType: $('#IdStockType').val(),
+                OrderLocation: $('#OrderLocation').val(),
+                PartName: $("#PartName").val(),
+                PartCode: $("#PartCode").val(),
+                CampaignCode:'@Model.CampaignCode'
+            };
+        }
+        function ShowHideSearchArea() {
+            var IsVisible = Boolean($("#showSearch").hasClass("searchVisible"));
+
+            if (IsVisible) {
+                $("#showSearch").html('@MessageResource.Global_Display_Search_Criteria');
+                $("#showSearch").removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            } else {
+                $("#showSearch").html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $("#showSearch").addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+        }
+        function init() {
+
+            $("body").delegate("#showSearch", "click", function (e) {
+                ShowHideSearchArea();
+            });
+
+            var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+            $('#divDetails').hide();
+
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#PurchaseOrderGrid').data('kendoGrid');
+                grid.dataSource.page(1);
+                $('#divDetails').hide();
+            });
+
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#PurchaseOrderModelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("poNumber");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("edit") == true) {
+                    link = "@Url.Action("PurchaseOrderUpdate", "PurchaseOrder", new { poNumber = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("PurchaseOrderDetails", "PurchaseOrder", new { poNumber = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("PurchaseOrderCreate", "PurchaseOrder")";
+                }
+                else if ($(this).hasClass("fromSupplier")) {
+                    link = "@Url.Action("PurchaseOrderCreate", "PurchaseOrder", new { supplierTypeId = 2 })";
+                } else if ($(this).hasClass("fromOtokar")) {
+                    link = "@Url.Action("PurchaseOrderCreate", "PurchaseOrder", new { supplierTypeId = 1 })";
+                } else if ($(this).hasClass("fromDealer")) {
+                    link = "@Url.Action("PurchaseOrderCreate", "PurchaseOrder", new { supplierTypeId = 3 })";
+                }
+
+                $("#PurchaseOrderModelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#PurchaseOrderModelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+
+        }
+        function loadTabs(poNumber, ocp) {
+            $('#TabContent').html('');
+            $("#Tabs").data("kendoTabStrip").select(0);
+            $('#divDetails').show();
+            $('#TabContent').show();
+
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("PurchaseOrderDetailIndex", "PurchaseOrderDetail")",
+                data: { purchaseOrderNumber: poNumber, openCreatePopup: ocp },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $('#TabContent').html(result);
+                },
+                error: function (request, status, err) {
+                    //console.log(arguments);
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            $('#divDetails').show();
+        }
+
+        function QueryPurchaseOrder(uid, poNumberParam) {
+            var grid = $("#PurchaseOrderGrid").data("kendoGrid");
+
+            $('tr[data-uid="' + uid + '"] td').find('.iconLinkChange').attr('src', '@Url.Content("~/Images/ajax-loader.gif")');
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("PurchaseOrderQuery", "PurchaseOrder")",
+                data: { poNumber: poNumberParam },
+                traditional: true,
+                success: function (result) {
+                    if (result.isError == 0) {
+                        $('tr[data-uid="' + uid + '"] td').find('.clssHref').html(result.value).attr("onClick", "").removeAttr("href");
+                    } else if (result.isError == 1) {
+                        SetErrorMessage(result.value);
+                        $('tr[data-uid="' + uid + '"] td').find('.iconLinkChange').attr('src', '@Url.Content("~/Images/query.gif")');
+                    }
+                    var link = "@Url.Action("PurchaseOrderSearchIndex", "PurchaseOrder", new { poNumber = -1 })";
+                    link = link.replace("-1", poNumberParam);
+
+                    $("#PurchaseOrderModelWindow_wnd_title").html('@MessageResource.PurchaseOrderSearch_PageTitle_Index');
+
+                    var windowWidget = $("#PurchaseOrderModelWindow").data("kendoWindow");
+                    var closeOrigin = windowWidget.close;
+
+                    windowWidget.wrapper.css({
+                        width: 1400,
+                        height: 350
+                    });
+
+                    windowWidget.refresh({
+                        url: link
+                    }).center();
+                    windowWidget.open();
+
+                },
+                dataType: "json"
+            });
+
+        }
+
+</script>
+<div id="ShipmentDetailsWindow" style="background-color: #EDF1F4 !important" class="hide"></div>

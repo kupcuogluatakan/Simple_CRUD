@@ -1,0 +1,46 @@
+﻿@model ODMSModel.VehicleModel.VehicleModelIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("VehicleModel_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+
+@using (Html.BeginForm("VehicleModelUpdate", "VehicleModel", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelKod)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleModelKod) </div>
+     
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleGroupName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleGroupName) </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    @*<div class="labelDiv">@Html.LabelFor(v => v.VehicleModelSSID)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.VehicleModelSSID) @Html.ValidationMessageFor(v => v.VehicleModelSSID)</div> *@
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleModelName) </div>        
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsCouponCheck)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsCouponCheck) </div>    
+    
+    <div class="clearDiv">&nbsp;</div>   
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsPDICheck)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsPDICheck) </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive) </div>
+    
+    <div class="clearDiv">&nbsp;</div>   
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsBodyWorkDetailCheck)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsBodyWorkDetailCheck) </div>
+
+    @Html.HiddenFor(v => v.VehicleModelKod)
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), ODMSCommon.CommonValues.PermissionCodes.VehicleModel.VehicleModelUpdate, "VehicleModelUpdate")
+}
+

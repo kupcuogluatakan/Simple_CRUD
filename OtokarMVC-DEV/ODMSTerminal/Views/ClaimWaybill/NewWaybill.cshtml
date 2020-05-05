@@ -1,0 +1,61 @@
+﻿@using ODMSBusiness.Terminal.ClaimWaybill.Dtos
+@using ODMSBusiness.Terminal.Common
+@model ClaimWaybillInfo
+@{
+    ViewBag.Title = MessageResource.Terminal_ClaimWaybill_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+}
+@section header{
+    @Html.Partial("_subheader")
+}
+<div class="margin-3 pageContent">
+
+    @using (Html.BeginForm("CreateWaybill", "ClaimWaybill", FormMethod.Post))
+    {
+        @Html.HiddenFor(c => c.ClaimRecallPeriodId)
+        <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+            <tbody>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillNo</td>
+                <td class="bold">:</td>
+                <td width="60%">
+                  @Html.TextBoxFor(c=>c.WaybillNo)
+                </td>
+                <td class="last-child">&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillDate</td>
+                <td class="bold">:</td>
+                <td width="60%">
+                    @Html.TextBoxFor(c => c.WaybillDate)
+                </td>
+                <td class="last-child">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillSerialNo</td>
+                <td class="bold">:</td>
+                <td width="60%">
+                    @Html.TextBoxFor(c => c.WaybillSerialNo)
+                </td>
+                <td class="last-child">&nbsp;</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table border="0" cellspacing="1" width="100%" class="readonly">
+            <tr>
+                <td class="last-child"><input id="btnGo" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Save"></td>
+            </tr>
+        </table>
+    }
+</div>
+@section scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function() {
+            KS.Common.Focus("#WaybillNo");
+        });
+    </script>
+}

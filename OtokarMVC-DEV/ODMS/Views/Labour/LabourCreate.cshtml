@@ -1,0 +1,85 @@
+﻿@model ODMSModel.Labour.LabourViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Labour_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("LabourCreate", "Labour", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourMainGroupId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.LabourMainGroupId).Events(e=>e.Change("SetLabourCode")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.LMGSelectList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  @Html.ValidationMessageFor(v => v.LabourMainGroupId)</div> 
+    
+    <div class="labelDiv">@Html.LabelFor(c => c.LabourSubGroupId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.LabourSubGroupId).Events(e=>e.Change("SetLabourCode")).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListSubGroup", "Labour")
+                                 .Data("GetLabourMainGroupId"))
+                                 .ServerFiltering(true)).Enable(false).AutoBind(false).CascadeFrom("LabourMainGroupId")  @Html.ValidationMessageFor(v => v.LabourSubGroupId)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.RepairCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.RepairCode, new { @onchange = "SetLabourCode();"}) @Html.ValidationMessageFor(v => v.RepairCode)</div> 
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourTypeId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.LabourTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.LaborTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  @Html.ValidationMessageFor(v => v.LabourTypeId)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourName)</div>
+    <div class="shortTxtDiv">
+        <div style="float:left;width:70%">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = "", IsEnabled = true }); }</div>
+       <div style="float:left;width:20%;margin-top:50px">@Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)    </div> 
+    </div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.LabourCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.LabourCode, new { @readonly="true" }) @Html.ValidationMessageFor(v => v.LabourCode)</div>  
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc) @Html.ValidationMessageFor(v => v.AdminDesc)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsDealerDuration)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsDealerDuration)@Html.ValidationMessageFor(v => v.IsDealerDuration)</div>
+      
+
+     <div class="labelDiv">@Html.LabelFor(v => v.IsExternal)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsExternal)@Html.ValidationMessageFor(v => v.IsExternal)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), ODMSCommon.CommonValues.PermissionCodes.Labour.LabourCreate, "LabourCreate")        
+}
+<script type="text/javascript">
+    function SetLabourCode() {
+        $('#LabourCode').val($('#LabourMainGroupId').val() + $('#LabourSubGroupId').val() + $('#RepairCode').val());
+    }
+
+    $(document).ready(function () {
+        if ($('#LabourCode').val() == 0) {
+            $("#LabourMainGroupId").data("kendoComboBox").text('');
+            $("#LabourSubGroupId").data("kendoComboBox").text('');
+        }
+
+        $("#popupContentWrapper").css("min-height", 480);
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function GetLabourMainGroupId() {
+        return {
+            id: $("#LabourMainGroupId").val()
+        };
+    }
+
+</script>

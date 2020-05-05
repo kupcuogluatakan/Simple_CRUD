@@ -1,0 +1,242 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.ClaimSupplier
+
+@model ODMSModel.ClaimSupplier.ClaimSupplierListModel
+
+@{
+    ViewBag.Title = MessageResource.ClaimSupplier_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.SupplierCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SupplierCode) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.SupplierName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SupplierName) </div>
+
+    </div>
+    <br />
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.ClaimSupplier.ClaimSupplierIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.ClaimSupplier_PageTitle_Create, CommonValues.PermissionCodes.ClaimSupplier.ClaimSupplierCreate)
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+
+
+<br />
+<div id="ClaimSupplierModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("ClaimSupplierModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#ClaimSupplierGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+
+    function DeleteClaimSupplier(supplierCode) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteClaimSupplier","ClaimSupplier")",
+                data: { SupplierCode: supplierCode, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#ClaimSupplierGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    function UpdateClaimSupplier(obj, supplierCode) {
+        $('#modelWindow').html('');
+        var frameTitle = $(obj).attr("frameTitle");
+        var link = "@Url.Action("ClaimSupplierUpdate", "ClaimSupplier",new { SupplierCode = "supplierCode"})";
+        link = link.replace("supplierCode", supplierCode);
+
+        ShowPopup(frameTitle, link);
+    }
+
+    function ShowPopup(frameTitle, link) {
+        $("#ClaimSupplierModelWindow_wnd_title").html(frameTitle);
+
+        var windowWidget = $("#ClaimSupplierModelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+    $(document).ready(init);
+    function GetParameters() {
+        return {
+            ReportType: 20,
+            Columns: "SupplierCode,SupplierName,ClaimRackCode"
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#ClaimSupplierGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#ClaimSupplierModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("supplierCode");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit") == true) {
+                link = "@Url.Action("ClaimSupplierUpdate", "ClaimSupplier", new { supplierCode = -1})";
+                link = link.replace("-1", clickedId);
+
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("ClaimSupplierCreate", "ClaimSupplier")";
+            }
+            $("#ClaimSupplierModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#ClaimSupplierModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+        //Excel Visibility
+        if (parseInt(@ODMSCommon.Security.UserManager.UserInfo.GetUserDealerId()) > 0) {
+            $(excelVisibility).css("display", "none");
+        } else {
+            $(excelVisibility).css("display", "block");
+        }
+    }
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.ClaimSupplier.ClaimSupplierListModel>()
+          .Name("ClaimSupplierGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.SupplierCode).ClientTemplate("<center><a class='loadTab' onclick='ShowTabs(\"#=SupplierCode#\")' id='#=SupplierCode#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(80).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimSupplierPart.ClaimSupplierPartIndex));
+                  columns.Bound(p => p.SupplierCode).ClientTemplate("<center><a class='edit modalClick' supplierCode='#=SupplierCode#' frameTitle='" + CommonUtility.GetResourceValue("ClaimSupplier_PageTitle_Update") + "' href='/ClaimSupplier/ClaimSupplierUpdate/#=SupplierCode#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimSupplier.ClaimSupplierUpdate));
+                  columns.Bound(p => p.SupplierCode).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("ClaimSupplier_PageTitle_Delete") + "' onclick='DeleteClaimSupplier(\"#=SupplierCode#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimSupplier.ClaimSupplierDelete));
+                  columns.Bound(p => p.SupplierCode).Sortable(true);
+                  columns.Bound(p => p.SupplierName).Sortable(true);
+                  columns.Bound(p => p.ClaimRackCode).Sortable(true);
+
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListClaimSupplier", "ClaimSupplier", Model).Data("GetParameters"))
+                                        .Model(model => model.Field(o => o.SupplierCode).DefaultValue(-1)))
+
+    )
+</div>
+
+<div id="excelVisibility">
+    <h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br /> @using (Html.BeginForm("ClaimSupplierIndex", "ClaimSupplier", FormMethod.Post))
+        {
+            @Html.Kendo().Upload().Name("excelFile").TemplateId("fileTemplate").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+            <div id="divExcelUpload">
+                @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+            </div>
+        }
+    </div>
+</div>
+         @Html.HiddenFor(c=>c.SupplierCode)
+<div id="divDetails" style="display:none">
+    @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+                          .Items(tabstrip => tabstrip.Add().Text(MessageResource.ClaimSupplierPart_PageTitle_Index).Selected(true).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("ClaimSupplierPartIndex", "ClaimSupplierPart") + "');" })))
+    <div id="TabContent" style="padding: 0 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+</div>
+<script>
+    var SupplierCode;
+    function ShowTabs(supplierCode) {
+        SupplierCode = supplierCode;
+        $('#TabContent').html('');
+        $("#Tabs").data("kendoTabStrip").select(0);
+        $('#divDetails').show();
+        LoadTabContent('@Url.Action("ClaimSupplierPartIndex", "ClaimSupplierPart")');
+    }
+    function LoadTabContent(url) {
+        $('#TabContent').html('');
+        $.ajax({
+            type: "GET",
+            url: url + '?supplierCode=' + SupplierCode,
+            data: {},
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $('#TabContent').html(result);
+            },
+            error: function (request, status, err) {
+                //////console.log(arguments);
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+</script>

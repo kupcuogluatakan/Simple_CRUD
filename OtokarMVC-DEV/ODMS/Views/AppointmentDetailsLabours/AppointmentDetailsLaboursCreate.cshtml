@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.Title = MessageResource.AppointmentDetails_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@model ODMSModel.AppointmentDetailsLabours.AppointmentDetailsLaboursViewModel
+@if (ViewBag.HideElements == true)
+{
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SetErrorMessage("@MessageResource.Error_DB_NoRecordFound");
+        });
+    </script>
+}
+else
+{
+
+using (Html.BeginForm("AppointmentDetailsLaboursCreate", "AppointmentDetailsLabours", FormMethod.Post))
+ {
+     Html.RenderPartial("_AppointmentDetailsLaboursEdit", Model);
+     <input type="hidden" name="AppointmentId" id="AppointmentId" value="@Model.AppointmentId"/>
+     <input type="hidden" name="AppointmentIndicatorId" id="AppointmentIndicatorId" value="@Model.AppointmentIndicatorId"/>
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.AppointmentDetailsLabours.AppointmentDetailsLaboursCreate, "AppointmentDetailsLaboursCreate")
+ }
+
+}
+<style type="text/css">
+    #popupContentWrapper{ min-height: 330px !important;}
+</style>

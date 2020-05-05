@@ -1,0 +1,355 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.LabourTechnician
+@model LabourTechnicianViewModel
+@Html.AntiForgeryToken()
+<br />
+<div id="modelWindowTechConfirmDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindowDetConfirm")
+     .Draggable()
+    .Resizable()
+    .Width(450)
+    .Height(250)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+    }"))
+    )
+</div>
+<script>
+    var deneme = 0;
+    $(document).ready(function () {
+        $('#Start').hide();
+        $('#Pause').hide();
+        $('#End').hide();
+    });
+    
+    function ReturnSelectedWaitingId() {
+        var grid = $('#TechnicianOperationWaitingGrid').data("kendoGrid");
+        var strSelectedIds = "";
+        var ischecked = grid.tbody.find(":checked");
+        $.each(ischecked, function () {
+            var claimDismantlePartId = $(this).attr("id");
+            if (strSelectedIds != "") {
+                strSelectedIds += "," + claimDismantlePartId;
+            } else {
+                strSelectedIds += claimDismantlePartId;
+            }
+        });
+        return strSelectedIds;
+    }
+    function ReturnSelectedContinuedId() {
+        var grid = $('#TechnicianOperationContinuedGrid').data("kendoGrid");
+        var strSelectedIds = "";
+        var ischecked = grid.tbody.find(":checked");
+        $.each(ischecked, function () {
+            var claimDismantlePartId = $(this).attr("id");
+            if (strSelectedIds != "") {
+                strSelectedIds += "," + claimDismantlePartId;
+            } else {
+                strSelectedIds += claimDismantlePartId;
+            }
+        });
+        return strSelectedIds;
+    }
+    function RefreshGrid(gridName) {
+        var grid = $('#' + gridName).data('kendoGrid');
+        grid.dataSource.read();
+    }
+    function OnDataboundCBWaiting(workOrderId, isSelected) {
+        return "<input type='checkbox' id='" + workOrderId + "' value='" + isSelected
+            + "' onClick='SelectRowWaiting(" + workOrderId + ")'></input>";
+    }
+    function OnDataboundCBContinued(workOrderId, isSelected) {
+        return "<input type='checkbox' id='" + workOrderId + "' value='" + isSelected
+            + "' onClick='SelectRowContinued(" + workOrderId + ")'></input>";
+    }
+
+    function SelectRowWaiting(id) {
+        var isValid = true;
+        var grid = $("#TechnicianOperationWaitingGrid").data("kendoGrid");
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) {
+            var rowId = list[i].LabourTechnicianId;
+            var checked = $("#" + list[i].LabourTechnicianId).prop("checked");
+            if (rowId == id) {
+                var strSelectedWaitingIds = ReturnSelectedWaitingId();
+                var strSelectedContinuedIds = ReturnSelectedContinuedId();
+                if (checked && (strSelectedWaitingIds.indexOf(",") != -1 || strSelectedContinuedIds.length != 0)) {
+                    SetErrorMessage("@MessageResource.TechnicianOperationDetail_Warning_MultipleRowSelected");
+                    isValid = false;
+                } else {
+                    if (checked) {
+                        if (strSelectedContinuedIds.length != 0) {
+                            $('#Start').hide();
+                            $('#Pause').show();
+                            $('#End').show();
+                        }
+                        if (strSelectedWaitingIds.length != 0) {
+                            {
+                                $('#Start').show();
+                                $('#Pause').hide();
+                                $('#End').hide();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $('#Start').hide();
+                        $('#Pause').hide();
+                        $('#End').hide();
+                    }
+                }
+                if (isValid) {
+                    list[i].IsSelected = checked;
+                    $("#" + list[i].LabourTechnicianId).attr("checked", checked);
+                } else {
+                    $("#" + list[i].LabourTechnicianId).attr("checked", false);
+                }
+            }
+
+        }
+    }
+
+    function SelectRowContinued(id) {
+        var isValid = true;
+        var grid = $("#TechnicianOperationContinuedGrid").data("kendoGrid");
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) {
+            var rowId = list[i].LabourTechnicianId;
+            var checked = $("#" + list[i].LabourTechnicianId).prop("checked");
+            if (rowId == id) {
+                var strSelectedWaitingIds = ReturnSelectedWaitingId();
+                var strSelectedContinuedIds = ReturnSelectedContinuedId();
+                if (checked && (strSelectedContinuedIds.indexOf(",") != -1 || strSelectedWaitingIds.length != 0)) {
+                    SetErrorMessage("@MessageResource.TechnicianOperationDetail_Warning_MultipleRowSelected");
+                    isValid = false;
+                } else {
+                    if (checked) {
+                        if (strSelectedContinuedIds.length != 0) {
+                            $('#Start').hide();
+                            $('#Pause').show();
+                            $('#End').show();
+                        }
+                        if (strSelectedWaitingIds.length != 0) {
+                            {
+                                $('#Start').show();
+                                $('#Pause').hide();
+                                $('#End').hide();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $('#Start').hide();
+                        $('#Pause').hide();
+                        $('#End').hide();
+                    }
+                }
+                if (isValid) {
+                    list[i].IsSelected = checked;
+                    $("#" + list[i].LabourTechnicianId).attr("checked", checked);
+                } else {
+                    $("#" + list[i].LabourTechnicianId).attr("checked", false);
+                }
+
+            }
+        }
+    }
+    function Search() {
+        RefreshGrid("TechnicianOperationWaitingGrid");
+        RefreshGrid("TechnicianOperationContinuedGrid");
+        $('#Start').hide();
+        $('#Pause').hide();
+        $('#End').hide();
+    }
+    function Operation(opId) {
+        deneme = opId;
+        OpenTCIdentityConfirmPopupDet();
+    }
+    function OpenTCIdentityConfirmPopupDet() {
+        $('#modelWindowDetConfirm').html('');
+
+        var linkDet;
+        var frameTitle = '@MessageResource.TCIdentityConfirm_PageTitle_Index';
+
+        linkDet = "@Url.Action("UserTCIdentityConfirm", "User", new { userId = -1, index = 2 })";
+        linkDet = linkDet.replace("-1", '@Model.UserID');
+        $("#modelWindowDetConfirm_wnd_title").html(frameTitle);
+
+        var windowWidgetDet = $("#modelWindowDetConfirm").data("kendoWindow");
+        var closeOrigin = windowWidgetDet.close;
+
+        windowWidgetDet.refresh({
+            url: linkDet
+        }).center();
+        windowWidgetDet.center();
+        windowWidgetDet.open();
+    }
+    function SetTCIdentityConfirmationResultDet(isConfirmed) {
+        $("#modelWindowDetConfirm").data("kendoWindow").close();
+        if (isConfirmed) {
+            if (deneme == 1)
+                Start();
+            if (deneme == 2)
+                Pause();
+            if (deneme == 3)
+                End();
+        } else {
+            SetErrorMessage('@MessageResource.TechnicianOperationDetail_Warning_TCIdentityControl');
+        }
+    }
+    
+    function Start() {
+        var strSelectedWaitingIds = ReturnSelectedWaitingId();
+        if (strSelectedWaitingIds.length == 0) {
+            SetErrorMessage("@MessageResource.TechnicianOperationDetail_Warning_NoRowSelectedWaiting");
+            return false;
+        } else {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            CustomConfirm(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("StartLabourTechnicianDetails", "TechnicianOperationDetail")",
+                    data: { userId: @Model.UserID, idList: strSelectedWaitingIds, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            Search();
+                            SetSuccessMessage('@MessageResource.Global_Display_Success');
+                        }
+                    },
+                    dataType: "json"
+                });
+            },  "@MessageResource.TechnicianOperationDetail_Display_Start", "@MessageResource.TechnicianOperationDetail_Warning_Start", 
+                "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+            return true;
+        }
+    }
+    function Pause() {
+        var strSelectedContinuedIds =  ReturnSelectedContinuedId();
+        if (strSelectedContinuedIds.length == 0) {
+            SetErrorMessage("@MessageResource.TechnicianOperationDetail_Warning_NoRowSelectedContinued");
+            return false;
+        } else {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            CustomConfirm(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("PauseLabourTechnicianDetails", "TechnicianOperationDetail")",
+                    data: { userId: @Model.UserID, idList: strSelectedContinuedIds, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            Search();
+                            SetSuccessMessage('@MessageResource.Global_Display_Success');
+                        }
+                    },
+                    dataType: "json"
+                });
+            }, "@MessageResource.TechnicianOperationDetail_Display_Pause", "@MessageResource.TechnicianOperationDetail_Warning_Pause", 
+                "@MessageResource.Global_Display_Yes", 
+                "@MessageResource.Global_Display_No");
+        }
+    }
+    function End() {
+        var strSelectedContinuedIds =  ReturnSelectedContinuedId();
+        if (strSelectedContinuedIds.length == 0) {
+            SetErrorMessage("@MessageResource.TechnicianOperationDetail_Warning_NoRowSelectedContinued");
+            return false;
+        } else {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            CustomConfirm(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("EndLabourTechnicianDetails", "TechnicianOperationDetail")",
+                    data: { userId: @Model.UserID, idList: strSelectedContinuedIds, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            Search();
+                            SetSuccessMessage('@MessageResource.Global_Display_Success');
+                        }
+                    },
+                    dataType: "json"
+                });
+            }, "@MessageResource.TechnicianOperationDetail_Display_End", "@MessageResource.TechnicianOperationDetail_Warning_End", 
+                "@MessageResource.Global_Display_Yes", 
+                "@MessageResource.Global_Display_No");
+        }
+    }
+</script>
+
+@Html.HiddenFor(p => p.UserID)
+@ODMSHelpers.Button("Search", CommonUtility.GetResourceValue("Global_Display_Search"), string.Empty, "TechnicianOperationDetailIndex", "Search();")
+
+@ODMSHelpers.Button("Start", CommonUtility.GetResourceValue("TechnicianOperationDetail_Display_Start"), string.Empty, "TechnicianOperationDetailIndex", "Operation(1);")
+@ODMSHelpers.Button("Pause", CommonUtility.GetResourceValue("TechnicianOperationDetail_Display_Pause"), string.Empty, "TechnicianOperationDetailIndex", "Operation(2);")
+@ODMSHelpers.Button("End", CommonUtility.GetResourceValue("TechnicianOperationDetail_Display_End"), string.Empty, "TechnicianOperationDetailIndex", "Operation(3);")
+
+<div class="kendoGridDiv" id="grdWaiting">
+
+    @(Html.Kendo().Grid<LabourTechnicianViewModel>()
+          .Name("TechnicianOperationWaitingGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.LabourTechnicianId).ClientTemplate("#= OnDataboundCBWaiting(LabourTechnicianId, IsSelected)#").Width(30).Sortable(false).Title("");
+              columns.Bound(p => p.WorkOrderId).Width(50).Sortable(true);
+              columns.Bound(p => p.LabourName).Width(200).Sortable(true);
+              columns.Bound(p => p.CustomerName).Width(200).Sortable(true);
+              columns.Bound(p => p.VinNo).Width(200).Sortable(true);
+              columns.Bound(p => p.Plate).Width(200).Sortable(true);
+              columns.Bound(p => p.StatusName).Width(200).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListWaitingLabours", "TechnicianOperationDetail", Model))
+              .Model(model => model.Field(o => o.LabourTechnicianId).DefaultValue(-1)))
+
+          )
+
+</div>
+<div class="kendoGridDiv" id="grdContinued">
+
+    @(Html.Kendo().Grid<LabourTechnicianViewModel>()
+          .Name("TechnicianOperationContinuedGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.LabourTechnicianId).ClientTemplate("#= OnDataboundCBContinued(LabourTechnicianId, IsSelected)#").Width(30).Sortable(false).Title("");
+              columns.Bound(p => p.WorkOrderId).Width(50).Sortable(true);
+              columns.Bound(p => p.LabourName).Width(200).Sortable(true);
+              columns.Bound(p => p.CustomerName).Width(200).Sortable(true);
+              columns.Bound(p => p.VinNo).Width(200).Sortable(true);
+              columns.Bound(p => p.Plate).Width(200).Sortable(true);
+              columns.Bound(p => p.StatusName).Width(200).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListContinuedLabours", "TechnicianOperationDetail", Model))
+              .Model(model => model.Field(o => o.LabourTechnicianId).DefaultValue(-1)))
+
+          )
+
+</div>

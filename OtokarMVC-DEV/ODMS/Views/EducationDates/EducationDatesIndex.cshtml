@@ -1,0 +1,137 @@
+﻿@using ODMSModel.EducationDates
+@model EducationDatesViewModel
+@{
+    ViewBag.Title =  CommonUtility.GetResourceValue("EducationDates_PageTitle_Index");
+}
+ 
+@if (Model.IsRequestRoot)
+{
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickEducationDates createNewEducationDates", CommonUtility.GetResourceValue("EducationDates_PageTitle_Create"),CommonValues.PermissionCodes.EducationDates.EducationDatesCreate)  
+}
+@Html.AntiForgeryToken()
+<script>
+    $(document).ready(function () {
+        $("body").delegate(".modalClickEducationDates", "click", function (e) {
+            $('#modelWindowEducationDates').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var clickedRowId = $(this).attr("idrow");
+            var frameTitle = $(this).attr("frameTitle");
+            var width = "950";
+            var height = "350";
+            if ($(this).hasClass("edit")) {
+                link = "@Url.Action("EducationDatesUpdate", "EducationDates", new { id = -1,rowId = -2 })";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-2", clickedRowId);
+                height = "355";
+            }
+            else if ($(this).hasClass("createNewEducationDates")) {
+                link = "@Url.Action("EducationDatesCreate", "EducationDates", new {id = Model.EducationCode})";
+                height = "355";
+
+            }
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("EducationDatesDetails", "EducationDates", new { id = -1,rowId = -2 })";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-2", clickedRowId);
+            }
+            if ($(this).hasClass("cont") == true) {
+                link = "@Url.Action("EducationContributersCreate", "EducationContributers", new { id = -1,rowId = -2 })";
+                link = link.replace("-1", clickedId);
+                link = link.replace("-2", clickedRowId);
+
+            }
+            $("#modelWindowEducationDates_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindowEducationDates").data("kendoWindow");
+            windowWidget.wrapper.css({
+                width: width,
+                height: height
+            });
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+    });
+    function DeleteEduDate(eduCode, rowId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("EducationDatesDelete", "EducationDates")",
+                data: { eduCode: eduCode, rowId: rowId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#EducationDatesGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindowEducationDates")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#EducationDatesGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+        grid.dataSource.read();
+        var grid = $('#EducationContributersGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<EducationDatesListModel>()
+          .Name("EducationDatesGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.EducationCode).ClientTemplate("<center><a class='details modalClickEducationDates' id='#=EducationCode#' idrow='#=RowNumber#' frameTitle='" + @CommonUtility.GetResourceValue("EducationDates_PageTitle_Details") + "' href='/EducationDates/EducationDatesDetails?id=#=EducationCode#&rowId=#=RowNumber# '><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.EducationDates.EducationDatesDetails));
+                  columns.Bound(p => p.EducationCode).ClientTemplate("<center><a class='edit modalClickEducationDates' id='#=EducationCode#' idrow='#=RowNumber#' frameTitle='" + @CommonUtility.GetResourceValue("EducationDates_PageTitle_Update") + "' href='/EducationDates/EducationDatesUpdate?id=#=EducationCode#&rowId=#=RowNumber# '><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.EducationDates.EducationDatesUpdate));
+                  columns.Bound(o => o.EducationCode).ClientTemplate("<center><a onclick='DeleteEduDate(\"#=EducationCode#\",#=RowNumber#)' href='javascript:void(0);'  id='#=EducationCode#' idrow='#=RowNumber#' frameTitle='" + @CommonUtility.GetResourceValue("EducationDates_PageTitle_Delete") + "' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.EducationDates.EducationDatesDelete));
+                  columns.Bound(p => p.EducationCode).ClientTemplate("<center><a class='cont modalClickEducationDates' id='#=EducationCode#' idrow='#=RowNumber#' frameTitle='" + @CommonUtility.GetResourceValue("EducationCont_PageTitle_Upload") + "' href='/EducationContributers/EducationContributersCreate?id=#=EducationCode#&rowId=#=RowNumber# '><img class=iconLink src='" + @Url.Content("~/Images/add.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("EducationCont_PageTitle_Upload")).Width(120).Sortable(false);
+                  columns.Bound(p => p.EducationCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.EducationDateTime).Width(150).Sortable(true).Format("{0:dd/MM/yyyy}");
+                  columns.Bound(p => p.EducationPlace).Width(130).Sortable(true);
+                  columns.Bound(p => p.Instructor).Width(130).Sortable(true);
+                  columns.Bound(p => p.Note).Width(100).Sortable(true);     
+                  columns.Bound(p => p.MaximumAtt).Sortable(true).Width(200);
+                  columns.Bound(p => p.MinimumAtt).Sortable(true).Width(200);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListEducationDates", "EducationDates", Model))
+                                        .Model(model => model.Field(o => o.EducationCode).DefaultValue(-1)))
+
+          )
+</div>

@@ -1,0 +1,169 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.DealerGuaranteeRatio.DealerGuaranteeRatioListModel
+
+@{
+    ViewBag.Title = MessageResource.DealerGuaranteeRatio_PageTitle_Index;
+}
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv" style="width: 120px">@Html.Label(@MessageResource.DealerGuaranteeRatio_Display_IdDealer)</div>
+
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IdDealer).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.GuaranteeRatio)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.GuaranteeRatio) </div>
+        <br /><br />
+        </div>
+        <br />
+    </div>
+
+    @ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerGuaranteeRatio.DealerGuaranteeRatioIndex)
+@{
+    if (!Model.IdDealer.HasValue)//(@Model.IdDealer.GetValueOrDefault() == null)
+    {        
+        @ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.DealerGuaranteeRatio_PageTitle_Create, CommonValues.PermissionCodes.DealerGuaranteeRatio.DealerGuaranteeRatioCreate)
+    }   
+}
+
+<br />
+<div id="DealerGuaranteeRatioModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("DealerGuaranteeRatioModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#DealerGuaranteeRatioGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    $(document).ready(init);
+    function DealerGuaranteeRatioSearch()
+    {
+        return {
+            IdDealer: $('#IdDealer').val(),
+            GuaranteeRatio: $('#GuaranteeRatio').val()
+        };
+    }
+
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#DealerGuaranteeRatioGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                }
+                else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#DealerGuaranteeRatioModelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                 if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("DealerGuaranteeRatioUpdate", "DealerGuaranteeRatio", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                 }else if ($(this).hasClass("createNew")) {
+                     link = "@Url.Action("DealerGuaranteeRatioCreate", "DealerGuaranteeRatio")";
+                 }
+                            
+                $("#DealerGuaranteeRatioModelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#DealerGuaranteeRatioModelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+                
+            });
+
+        //Excel Visibility 
+        if (parseInt (@UserManager.UserInfo.GetUserDealerId())>0) 
+        {
+            $(excelVisibility).css("display","none");
+        }else {
+            $(excelVisibility).css("display","block");
+        }
+}
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.DealerGuaranteeRatio.DealerGuaranteeRatioListModel>()
+          .Name("DealerGuaranteeRatioGrid")
+
+          .Columns(columns =>
+              {
+                  if (!Model.IdDealer.HasValue)
+                  {
+                      columns.Bound(p => p.IdDealer).ClientTemplate("<center><a class='edit modalClick' id='#=IdDealer#' frameTitle='" + @CommonUtility.GetResourceValue("DealerGuaranteeRatio_PageTitle_Update") + "' href='/DealerGuaranteeRatio/DealerGuaranteeRatioUpdate/#=IdDealer#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(75).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerGuaranteeRatio.DealerGuaranteeRatioUpdate));
+                  }
+                  columns.Bound(p => p.DealerName).Sortable(true);
+                  columns.Bound(p => p.DealerSSID).Sortable(true);
+                  columns.Bound(p => p.GuaranteeRatio).Sortable(true).Format("{0:N}");
+
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerGuaranteeRatio", "DealerGuaranteeRatio", Model).Data("DealerGuaranteeRatioSearch"))
+                                        .Model(model => model.Field(o => o.IdDealer).DefaultValue(-1)))
+
+          )
+</div>
+<br />
+
+@*style="visibility:@(Model.IdDealer.HasValue == true?"hidden":"block")"*@
+<div id="excelVisibility">
+    <h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br /> @using (Html.BeginForm("DealerGuaranteeRatioIndex", "DealerGuaranteeRatio", FormMethod.Post))
+               {
+                   @Html.Kendo().Upload().Name("excelFile").TemplateId("fileTemplate").Events(e => e.Select("onSelect")).Multiple(false).Messages(m=>m.Select(MessageResource.Global_Display_SelectFile))
+                   <div id="divExcepUpload">
+                       @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+                   </div>
+               }
+    </div>
+</div>

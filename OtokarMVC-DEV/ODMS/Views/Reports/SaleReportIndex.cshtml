@@ -1,0 +1,224 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model SaleReportFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.SaleReport_PageTitle_Index;
+}
+<input type="hidden" id="firstCall" value="1" />
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(b => b.SaleType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SaleType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.SaleTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">
+            @Html.LabelFor(v => v.InvoiceBeginDate)<br /> @MessageResource.Global_Display_StartDate
+        </div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.InvoiceBeginDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">
+            @Html.LabelFor(v => v.InvoiceEndDate)<br /> @MessageResource.Global_Display_EndDate
+        </div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.InvoiceEndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.CustomerId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CustomerId).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CustomerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Value("")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CreateBeginDate) <br /> @MessageResource.Global_Display_StartDate</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CreateBeginDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CreateEndDate) <br /> @MessageResource.Global_Display_EndDate</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CreateEndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerId).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.InvoiceNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(f => f.InvoiceNo)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(f => f.VinNo)</div>
+
+
+        <div class="labelDiv">@Html.LabelFor(b => b.PurchaseStatus)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.PurchaseStatus).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.SaleStatusList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.VehicleModel)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModel).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.VehicleType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        @{
+            Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = Model.PartCodeList, DefaultValue = Model.PartId, CallbackFunction = "GetValues" });
+        }
+        @Html.HiddenFor(m => m.PartCodeList)
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.SaleTypeLookVal)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.SaleTypeLookVal).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.SaleTypeLookValList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.SaleReportIndex)
+
+@Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+
+@using (Html.BeginForm("SaleReportIndex", "Reports", FormMethod.Post))
+{
+    @Html.HiddenFor(m => m.PartCodeList)
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample","StockCard")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+    </div>
+    <div class="labelDiv">@Html.LabelFor(d => d.PartCodeList) </div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+    </div>
+    <div id="divExcepUpload">
+        @ODMSHelpers.Button("StockCardSearch", CommonUtility.GetResourceValue("Global_Display_Search"), CommonValues.PermissionCodes.StockCard.StockCardSearch, "SaleReportIndex")
+    </div>
+
+    <br />
+    <div class="clearDiv">&nbsp;</div>
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<SaleReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.SaleType).ClientTemplate("#= SaleType==1?' İş emri':'YP satış'#").Width(100);
+              columns.Bound(p => p.PartCode).Sortable(true).Width(300);
+              columns.Bound(p => p.PartName).Sortable(true).Width(300);
+              columns.Bound(p => p.DealerRegionName).Sortable(true).Width(200);
+              columns.Bound(p => p.DealerName).Sortable(true).Width(300);
+              columns.Bound(p => p.WorkOrderId).Sortable(true).Width(200);
+              columns.Bound(p => p.RecordDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.InvoiceNo).Sortable(true).Width(150);
+              columns.Bound(p => p.InvoiceDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.WayBillNo).Sortable(true).Width(150);
+              columns.Bound(p => p.WayBillDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.OriginalPartCode).Sortable(true).Width(150);
+              columns.Bound(p => p.OriginalPartName).Sortable(true).Width(150);
+              columns.Bound(p => p.Quantity).Sortable(true).Width(150);
+              columns.Bound(p => p.Unit).Sortable(true).Width(150);
+              columns.Bound(p => p.ListPrice).Sortable(true).Width(150);
+              columns.Bound(p => p.DiscountRatio).Sortable(true).Width(150);
+              columns.Bound(p => p.DiscountPrice).Sortable(true).Width(150);
+              columns.Bound(p => p.DiscountedPrice).Sortable(true).Width(150);
+              columns.Bound(p => p.VatRatio).Sortable(true).Width(150);
+              columns.Bound(p => p.VatPrice).Sortable(true).Width(150);
+              columns.Bound(p => p.DealerPrice).Sortable(true).Width(150);
+              columns.Bound(p => p.CustomerName).Sortable(true).Width(150);
+              columns.Bound(p => p.VehicleLeaveDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.InvoiceUpdateDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.CustomerId).Sortable(true).Width(150);
+              columns.Bound(p => p.CurrencyCode).Sortable(true).Width(150);
+              columns.Bound(p => p.VinNo).Sortable(true).Width(150);
+              columns.Bound(p => p.VehicleCode).Sortable(true).Width(150);
+              columns.Bound(p => p.VehicleModel).Sortable(true).Width(150);
+              columns.Bound(p => p.VehicleType).Sortable(true).Width(150);
+              columns.Bound(p => p.TotalDealerPrice).Sortable(true).Width(150);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                        .Read(read => read.Action("ListSaleReport", "Reports", Model).Data("GetParameters"))
+                                        )
+
+    )
+</div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+<script type="text/javascript">
+
+    $(document).ready(init);
+
+    function GetValues()
+    {
+        var partCode = $("#txtPartId").val();
+        if (partCode.indexOf("/") > -1) {
+            $("#txtPartId").val(partCode.split("/")[0]);
+        }
+    }
+
+    function onDataBinding(e) {
+        if ($("#txtPartId").val() != "")
+        {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+        else{
+            if ($("#InvoiceBeginDate").val() == "" || $("#InvoiceEndDate").val() == "") {
+                SetErrorMessage('@MessageResource.Sale_Report_InvoiceDate_Required');
+                e.preventDefault();
+            } else {
+                SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+            }
+        }
+    }
+
+    function GetParameters() {
+        return {
+            FirstCall: $("#firstCall").val(),
+            InvoiceBeginDate: $("#InvoiceBeginDate").val(),
+            InvoiceEndDate: $("#InvoiceEndDate").val(),
+            SaleType: $("#SaleType").data('kendoComboBox').value().toString(),
+            CustomerId: $("#CustomerId").data('kendoMultiSelect').value().toString(),
+            VehicleModel: $("#VehicleModel").data('kendoMultiSelect').value().toString(),
+            VehicleType: $("#VehicleType").data('kendoMultiSelect').value().toString(),
+            DealerId: $("#DealerId").val() != null ? $("#DealerId").data('kendoMultiSelect').value().toString() : $("#_DealerId").val(),
+            PurchaseStatus: $("#PurchaseStatus").data('kendoComboBox').value().toString(),
+            CreateBeginDate: $("#CreateBeginDate").val(),
+            CreateEndDate: $("#CreateEndDate").val(),
+            InvoiceNo: $("#InvoiceNo").val(),
+            VinNo: $("#VinNo").val(),
+            PartCode: $("#PartCode").val(),
+            SaleTypeLookVal: $("#SaleTypeLookVal").data('kendoMultiSelect').value().toString(),
+            PartCodeList: $("#txtPartId").val(),
+            ReportType: 1,
+            Columns: "SaleTypeName,PartCode,PartName,DealerRegionName,DealerName,WorkOrderId,RecordDate,InvoiceNo,InvoiceDate,WayBillNo,WayBillDate,OriginalPartName,Quantity,Unit,ListPrice,DiscountRatio,DiscountPrice,DiscountedPrice,VatRatio,VatPrice,DealerPrice,CustomerId,CustomerName,VehicleLeaveDate,InvoiceUpdateDate,CurrencyCode,VinNo,VehicleCode,VehicleModel,VehicleType,TotalDealerPrice"
+        };
+    }
+
+    function init() {
+        $("#searchDiv").show("slow");
+        $("body").delegate("#btnSearch", "click", function (e) {
+            $("#firstCall").val("0");
+            $("#PartCodeList").val("");
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#DealerId").data('kendoMultiSelect').value('');
+            $("#CustomerId").data('kendoMultiSelect').value('');
+            $("#VehicleModel").data('kendoMultiSelect').value('');
+            $("#VehicleType").data('kendoMultiSelect').value('');
+            $("#SaleTypeLookVal").data('kendoMultiSelect').value('');
+            $("#PartCodeList").val("");
+        });
+
+        var partCodeList = "@Model.PartCodeList";
+        if (partCodeList != "")
+            setTimeout(function () {
+                var grid = $('#gridReport').data('kendoGrid');
+                $("#firstCall").val("0");
+                grid.dataSource.page(1);
+            }, 1000);
+
+    }
+
+</script>

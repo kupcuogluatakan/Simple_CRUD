@@ -1,0 +1,45 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Menu.MenuIndexViewModel
+@{
+    ViewBag.Title = MessageResource.Menu_PageTitle_Update;
+        
+    CommonUtility.GetResourceValue("Menu_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+ 
+@using (Html.BeginForm("MenuUpdate", "Menu", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.LinkName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.LinkName)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.OrderNo)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.OrderNo)  @Html.ValidationMessageFor(v => v.OrderNo) </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.MenuText)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = true }); }</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Status)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Status) </div>
+    @Html.HiddenFor(v => v.MenuId)
+    @Html.HiddenFor(v => v.Status)
+    @Html.HiddenFor(v => v.LinkName)
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Menu.MenuUpdate, "MenuUpdate")
+    
+}
+
+<script>
+    $(document).ready(function() {
+        $("#popupContentWrapper").css("min-height", 370);
+        $("#popupContentWrapper").css("width", 470);
+    });
+</script>

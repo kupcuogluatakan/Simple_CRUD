@@ -1,0 +1,18 @@
+﻿@using ODMSCommon.Resources
+@{
+    ViewBag.Title = MessageResource.Global_Display_Warning;
+    Layout = "~/Views/Shared/NoMenu_Layout.cshtml";
+}
+<h4> @MessageResource.Global_Display_Warning</h4>
+
+<p>
+    @MessageResource.SystemAdministration_Warning_AnotherUser
+</p>
+<p>
+    <a class="btn btn-success" href="@Url.Action("ContinueWithThisUser")">
+        @MessageResource.SystemAdministration_Display_ContinueWithThisUser
+    </a> &nbsp;
+    <a class="btn btn-danger" href="@Url.Action("Exit")">
+        @MessageResource.SystemAdministration_Display_Exit
+    </a>
+</p>

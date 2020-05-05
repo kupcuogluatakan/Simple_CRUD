@@ -1,0 +1,155 @@
+﻿@using ODMSCommon.Resources
+
+@model Int32
+@{
+    ViewBag.Title = "Test Araç";//@MessageResource.GuaranteeAuthorityGroupVehicle_PageTitle_Index;
+    Layout = null;
+}
+ 
+@Html.AntiForgeryToken()
+<script>
+    $(function () {
+        RegisterEventHandlers();
+    });
+
+    function RegisterEventHandlers() {
+
+        $("body").delegate("#btnAdd", "click", AddGuaranteeAuthorityGroupVehicleClickHandler);
+        $("body").delegate("#btnRemove", "click", RemoveGuaranteeAuthorityGroupVehicleClickHandler);
+        $("#btnSave").unbind("click",SaveGuaranteeAuthorityGroupVehicleClickHandler);//Grid üzerindeki sadece son değişikliği yapması sağlanıyor
+        $("#btnSave").bind("click",SaveGuaranteeAuthorityGroupVehicleClickHandler);
+        $("body").delegate("#btnAddAll", "click", AddAllGuaranteeAuthorityGroupVehicleClickHandler);
+        $("body").delegate("#btnRemoveAll", "click", RemoveAllGuaranteeAuthorityGroupVehicleClickHandler);
+    }
+    
+    // Used in kendo listview read action
+    function GetSelectedIdGroup() {
+        return {
+            idGroup : @Model
+        };
+    }
+    // Called when kendo combobox changed event is fired
+    function SelectedRoleChanged() {
+        var includedVehiclelist = $("#lstGuaranteeAuthorityGroupVehicleIncluded").data("kendoListView");
+        var notIncludedVehiclelist = $("#lstGuaranteeAuthorityGroupVehicleNotIncluded").data("kendoListView");
+
+        includedVehiclelist.dataSource.read();
+        notIncludedVehiclelist.dataSource.read();
+    }
+    
+    function AddGuaranteeAuthorityGroupVehicleClickHandler() {
+        $(".k-state-selected", "#lstGuaranteeAuthorityGroupVehicleNotIncluded").each(function (i, e) {
+            $("#lstGuaranteeAuthorityGroupVehicleIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function AddAllGuaranteeAuthorityGroupVehicleClickHandler() {
+        $(".ListItem", "#lstGuaranteeAuthorityGroupVehicleNotIncluded").each(function (i, e) {
+            $("#lstGuaranteeAuthorityGroupVehicleIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+    
+    function RemoveGuaranteeAuthorityGroupVehicleClickHandler() {
+        $(".k-state-selected", "#lstGuaranteeAuthorityGroupVehicleIncluded").each(function (i, e) {
+            $("#lstGuaranteeAuthorityGroupVehicleNotIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function RemoveAllGuaranteeAuthorityGroupVehicleClickHandler() {
+        $(".ListItem", "#lstGuaranteeAuthorityGroupVehicleIncluded").each(function (i, e) {
+            $("#lstGuaranteeAuthorityGroupVehicleNotIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+    
+    // IE'nin HTML 5 desteklemeyen versiyonlarinda jquery'nin data fonksiyonu calismayabilir. 
+    // test etmemiz lazim
+    function SaveGuaranteeAuthorityGroupVehicleClickHandler() {
+        var idGroup = @Model;
+        if (idGroup == "") // If no role is selected just return.
+            return;
+        //alert(112);
+        var selectedVehicleIds = [];
+        $("#lstGuaranteeAuthorityGroupVehicleIncluded").children().each(function (i, e) {
+            var selectedIdRoleType = $("span", e).data("modelkod");//don't change idroletype ! - Orhan
+            selectedVehicleIds[i] = selectedIdRoleType;
+        });
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SaveGuaranteeAuthorityGroupVehicle", "GuaranteeAuthorityGroupVehicle")",
+            data: { id: idGroup, ModelKodList : selectedVehicleIds,"__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else
+                    SetSuccessMessage(result.Message);
+            },error:function(e){},
+            dataType: "json"
+        });
+    }
+    
+</script>
+<script type="text/x-kendo-tmpl" id="GuaranteeAuthorityGroupVehicleItemTemplate">
+    <div class="ListItem">
+        <table>
+            <tr>
+                <td style="width:400px"><span data-modelKod=#:ModelKod#>#:ModelName# - #:ModelKod#</span></td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+
+<div style="height:300px; overflow:auto; margin-left:30px;">
+    <div> 
+        <h4>
+            @MessageResource.GuaranteeAuthorityGroupDealers_Display_DealersNotInclude
+        </h4>
+
+        <h4 style="margin-left:400px; margin-top:-30px; margin-bottom:0px;">
+            @MessageResource.GuaranteeAuthorityGroupDealers_Display_DealersInclude
+        </h4>
+    </div> 
+    
+    <div>      
+        @(Html.Kendo().ListView<ODMSModel.GuaranteeAuthorityGroupVehicleModels.GuaranteeAuthorityGroupVehicleListModel>()
+                .Name("lstGuaranteeAuthorityGroupVehicleIncluded")
+                .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+                .ClientTemplateId("GuaranteeAuthorityGroupVehicleItemTemplate")
+                .TagName("div")
+                .DataSource(ds => ds.Read(read =>
+                    read.Action("ListGuaranteeAuthorityGroupVehicle", "GuaranteeAuthorityGroupVehicle").Data("GetSelectedIdGroup")))
+                .HtmlAttributes(new {@style = "position: absolute; float: left; width: 300px; height: 200px; margin-top: 20px; margin-left: 420px; overflow:auto;"})
+                )
+    </div>
+     
+    @ODMSHelpers.LinkButton("btnAdd", "&rsaquo;", "", "arrow-btn", "","", "position: absolute; margin-left: 340px; margin-top: 60px; width: 40px; height: 25px; ")
+    @ODMSHelpers.LinkButton("btnRemove", "&lsaquo;", "", "arrow-btn", "","", "position: absolute; margin-left: 340px; margin-top: 90px; width: 40px; height: 25px;")
+    @ODMSHelpers.LinkButton("btnAddAll", "&raquo;", "", "arrow-btn", "","", "position: absolute; margin-left: 340px; margin-top: 120px; width: 40px; height: 25px;")
+    @ODMSHelpers.LinkButton("btnRemoveAll", "&laquo;", "", "arrow-btn", "","", "position: absolute; margin-left: 340px; margin-top: 150px; width: 40px; height: 25px;")
+
+    <div>
+        @(Html.Kendo().ListView<ODMSModel.GuaranteeAuthorityGroupVehicleModels.GuaranteeAuthorityGroupVehicleListModel>()
+                .Name("lstGuaranteeAuthorityGroupVehicleNotIncluded")
+                .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+                .ClientTemplateId("GuaranteeAuthorityGroupVehicleItemTemplate")
+                .TagName("div")
+                .DataSource(ds => ds.Read(read =>
+                    read.Action("ListGuaranteeAuthorityGroupVehicleNotInclude", "GuaranteeAuthorityGroupVehicle").Data("GetSelectedIdGroup")))
+                .HtmlAttributes(new {@style = "width: 300px; height: 200px;  margin-top: 20px; margin-left: 0px;overflow:auto;"})
+                )          
+    </div>
+
+    <div style="position: absolute; height: 35px; width:850px">
+    @ODMSHelpers.LinkButton("btnSave", @MessageResource.Global_Display_Save, "", "Button", "","", "float: left; margin-top: 5px; width: 55px; height: 25px;")
+    </div>
+
+</div>
+
+

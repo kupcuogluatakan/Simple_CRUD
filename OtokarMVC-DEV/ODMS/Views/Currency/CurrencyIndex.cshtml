@@ -1,0 +1,147 @@
+﻿@model ODMSModel.Currency.CurrencyIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Currency_PageTitle_Index");
+}
+ 
+
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.CurrencyName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CurrencyName) </div>
+                <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Currency.CurrencyDetails)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("Currency_PageTitle_Create"), CommonValues.PermissionCodes.Currency.CurrencyCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    function Search() {
+        return {
+            CurrencyName: $('#CurrencyName').val(),
+            IsActive: $('#IsActive').val()
+        };
+    }
+    $(document).ready(function () {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("CurrencyDetails", "Currency", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("CurrencyUpdate", "Currency", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("CurrencyCreate", "Currency")";
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+            
+        });
+
+    });
+    function DeleteCurrency(cCode) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteCurrency", "Currency")",
+                data: { currencyCode: cCode, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.ListModel.CurrencyListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.CurrencyCode).ClientTemplate("<center><a class='details modalClick' id='#=CurrencyCode#' frameTitle='" + @CommonUtility.GetResourceValue("Currency_PageTitle_Details") + "' href='/Currency/CurrencyDetails/#=CurrencyCode#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Currency.CurrencyDetails));
+                  columns.Bound(p => p.CurrencyCode).ClientTemplate("<center><a class='edit modalClick' id='#=CurrencyCode#' frameTitle='" + @CommonUtility.GetResourceValue("Currency_PageTitle_Update") + "' href='/Currency/CurrencyUpdate/#=CurrencyCode#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Currency.CurrencyUpdate));
+                  columns.Bound(o => o.CurrencyCode).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("Currency_PageTitle_Delete") + "' onclick='DeleteCurrency(\"#=CurrencyCode#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Currency.CurrencyDelete));
+                  columns.Bound(p => p.CurrencyCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.CurrencyName).Width(100).Sortable(true);
+                  columns.Bound(p => p.DecimalPartName).Width(100).Sortable(true);
+                  columns.Bound(p => p.ListOrder).Width(100).Sortable(true);
+                  columns.Bound(p => p.AdminName).Width(100).Sortable(true);
+                  columns.Bound(p => p.IsActiveName).Width(100).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListCurrency", "Currency", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.CurrencyCode).DefaultValue(-1)))
+
+          )
+</div>

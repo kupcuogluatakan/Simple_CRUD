@@ -1,0 +1,104 @@
+﻿@model IEnumerable<BireyselCalisma2.Models.DB.Kategori>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 style="color:black">Kategori Listesi</h1>
+
+<p>
+    @Html.ActionLink("Yeni Kategori Oluştur", "Add", new { }, new { @class = "btn btn-outline-primary" })
+</p>
+
+<br />
+<div>
+    @using (Html.BeginForm("Index", "Category", FormMethod.Get))
+    {
+        <div class="row" style="float:left">
+            <div class="col-md-8">
+                @Html.TextBox("searching", null, null, new { @class = "form-control" })
+            </div>
+            <div class="col-md-2">
+                <input type="submit" class="btn btn-primary" value="Ara" />
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-info" href="/Article/Listele"> Temizle </a>
+            </div>
+
+        </div>
+    }
+</div>
+<br />
+@*<div class="input-group mb-3">
+        @using (Html.BeginForm("Index", "Category", FormMethod.Get))
+        {
+
+            @Html.TextBox("searching")<input type="submit" class="btn btn-primary" value="Ara" />
+            <a class="btn btn-info" href="/Category/Index"> Temizle  </a>
+        }
+    </div>*@
+
+
+<table class="tbl table table-bordered">
+    <tr>
+        <th>
+            <h3 style="color:black">Kategori Türü</h3>
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td style="font-size:x-large">
+                @Html.DisplayFor(modelItem => item.categoryType)
+            </td>
+            <td style="text-align:right">
+                <div style="width:100px; float:right;">
+                    @Html.ActionLink("Edit", "Edit", new { id = item.CategoryID }, new { @class = "btn btn-block btn-outline-success" })
+
+                    @*<button class="btn btn-block btn-outline-danger" href="#" onclick="deleteKategori(this,@item.CategoryID);">Sil</button>*@ @*tıkladığımı ifade ediyor*@
+                    <input type="button" value="Sil" data-id="@item.CategoryID" class="delete-row btn btn-block btn-outline-danger" />
+
+                </div>
+
+            </td>
+        </tr>
+    }
+
+</table>
+
+<script type="text/javascript" src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".delete-row").click(function () {
+            var id = $(this).attr("data-id");
+            var closestTR = $(this).closest("tr");
+            var confirmDelete = confirm('ID\'si' + id + ' olan kayıdı silmek istediğinizden emin misiniz?');
+            if (confirmDelete) {
+                $.ajax({
+                    url: '/Category/Delete/' + id,
+                    type: 'POST',
+                    success: function (result) {
+                        if (result == "true") {
+                            closestTR.fadeOut(1000, function () {
+                                closestTR.remove();
+                            });
+                        }
+                        else alert("Silme işlemi sırasında hata oluştu");
+                    }
+                });
+            }
+
+        });
+
+    });
+    //sayfaya refresh atma işlemi
+    //$(document).ready(function () {
+    //    $('#RefreshPage').click(function () {
+    //        location.reload();
+    //    });
+    //});
+
+</script>

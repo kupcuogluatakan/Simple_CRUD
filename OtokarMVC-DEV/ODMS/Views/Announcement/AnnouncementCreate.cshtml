@@ -1,0 +1,98 @@
+﻿@model ODMSModel.Announcement.AnnouncementViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Announcement_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<style>
+
+    #checkMail {
+        width: 150px !important;
+    }
+
+    #checkUrgent {
+        width: 60px !important;
+    }
+
+    #checkSlide {
+        width: 100px !important;
+    }
+
+    .shortTxtDivCheck {
+        width: 200px !important;
+    }
+</style>
+
+@using (Html.BeginForm("AnnouncementCreate", "Announcement", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.DocName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().Upload().Name("attachments").Messages(x => x.Select(ODMSCommon.Resources.MessageResource.Global_Display_SelectFile))</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Title)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(v => v.Title) @Html.ValidationMessageFor(c => c.Title)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Body)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.Body, new { style = "width: 650px; height: 250px" }) @Html.ValidationMessageFor(c => c.Body)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().DateTimePickerFor(v => v.StartDate).Culture("en-GB").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" })@Html.ValidationMessageFor(v => v.StartDate)
+
+        @*@Html.DropDownList("StartHour", (List<SelectListItem>)ViewBag.TimeList)*@
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().DateTimePickerFor(v => v.EndDate).Culture("en-GB").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" })@Html.ValidationMessageFor(v => v.EndDate)
+
+        @*@Html.DropDownList("EndHour", (List<SelectListItem>)ViewBag.TimeList)*@
+    </div>
+
+
+
+    <div class="clearDiv">&nbsp;</div>
+    <div id="checkUrgent" class="labelDiv Announchecks">@Html.LabelFor(v => v.IsUrgentName)</div>
+    <div class="shortTxtDiv shortTxtDivCheck">@Html.CheckBoxFor(v => v.IsUrgent) @Html.ValidationMessageFor(c => c.IsUrgent)</div>
+    <div id="checkMail" class="labelDiv Announchecks">@Html.LabelFor(v => v.SendMailName)</div>
+    <div class="shortTxtDiv shortTxtDivCheck">@Html.CheckBoxFor(v => v.SendMail) @Html.ValidationMessageFor(c => c.SendMail)</div>
+    <div id="checkSlide" class="labelDiv Announchecks">@Html.LabelFor(v => v.IsSlideName)</div>
+    <div class="shortTxtDiv shortTxtDivCheck">@Html.CheckBoxFor(v => v.IsSlide) @Html.ValidationMessageFor(c => c.IsSlide)</div>
+
+    
+
+
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Announcement.AnnouncementCreate, "AnnouncementCreate")
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#IsUrgent').change(function () {
+            var isChecked = $(this).is(':checked');
+            document.getElementById("SendMail").checked = isChecked;
+            if (isChecked) {
+                $("#SendMail").attr("disabled", "true");
+            }
+            else {
+                $("#SendMail").removeAttr("disabled");
+            }
+        });
+
+        $(function () {
+            $('.k-widget').addClass('input-validation-valid');
+            $(".k-widget").removeClass("input-validation-error");
+        });
+
+        if ($('#Title').val() == '') {
+            $('#StartDate').data('kendoDatePicker').value('');
+            $('#EndDate').data('kendoDatePicker').value('');
+        }
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

@@ -1,0 +1,26 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SparePartSale.SparePartSaleViewModel
+@{
+    ViewBag.Title = MessageResource.SparePartSale_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<script>
+    $('body').css('overflow', 'hidden');
+</script>
+<link href="~/Style/Content.css" rel="stylesheet" />
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/custom.js"></script>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerId)</div>
+<div class="shortTxtDivObjectSearch">@Html.DisplayFor(v => v.CustomerName) </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerTypeId)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.CustomerType)</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.SaleDate)</div>
+<div class="shortTxtDiv">@Model.SaleDate</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(c => c.VehicleName)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleName) </div>
+<div class="clearDiv">&nbsp;</div>
+
+

@@ -1,0 +1,155 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.DeliveryGoodsPlacement
+
+@model DeliveryGoodsPlacementListModel
+
+@{
+    ViewBag.Title = MessageResource.DeliveryGoodsPlacement_PageTitle_Index;
+}
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.StatusId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLDeliveryStatus as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsPlaced)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(p => p.IsPlaced)</div>
+
+        <div class="clearfix"></div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.WayBillNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(p => p.WayBillNo)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.WayBillDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.WayBillDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })</div>
+
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", null)
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+    function SearchDeliveryGoodsPlacement() {
+        return {
+            StatusId: $('#StatusId').val(),
+            WayBillNo: $('#WayBillNo').val(),
+            WayBillDate: $('#WayBillDate').val(),
+            IsPlaced: $('#IsPlaced').is(":checked")
+        };
+    }
+</script>
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<DeliveryGoodsPlacementListModel>()
+          .Name("gridDeliveryGoodsPlacement")
+          .Columns(columns =>
+    {
+        columns.Bound(p => p.DeliveryId).ClientTemplate("<center><a class='loadTab' onclick='loadTabs(#=DeliveryId#,#=StatusId#,#=IsPlaced#)' id='#=DeliveryId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementIndex));
+        columns.Bound(p => p.DeliveryId).ClientTemplate("#if(StatusId==3 || StatusId==2 ){#<center><a href='" + Url.Action("PrintPartPlacementForm", "DeliveryGoodsPlacement") + "?deliveryId=#=DeliveryId#' frameTitle='" + @CommonUtility.GetResourceValue("DeliveryGoodsPlacement_Display_Form") + "' href='javascript:void(0);'><img class=iconLink style=\"width:20px; height:20px;\" src='" + @Url.Content("~/Images/form.ico") + "'></a></center>#}#").Title(CommonUtility.GetResourceValue("DeliveryGoodsPlacement_Display_Form")).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DeliveryGoodsPlacement.DeliveryGoodsPlacementIndex)).Width(50);
+        columns.Bound(p => p.DeliveryId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("Global_Display_Cancel") + "' onclick='DeliveryCancel(#=DeliveryId#);'><img class='iconLink' src='" + Url.Content("~/Images/passive.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Cancel")).Width(40).Sortable(false);
+        columns.Bound(p => p.Status).Sortable(true);
+        columns.Bound(p => p.IsPlacedS).Sortable(true);
+        columns.Bound(p => p.SapDeliveryNo).Sortable(true);
+        columns.Bound(p => p.WayBillNo).Sortable(true);
+        columns.Bound(p => p.AcceptedByUser).Sortable(true);
+        columns.Bound(p => p.WayBillDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+    })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(ODMSCommon.CommonValues.GridPageSize.Short)
+              .ServerOperation(true)
+              .Read(read => read.Action("ListDeliveryGoodsPlacement", "DeliveryGoodsPlacement", Model).Data("SearchDeliveryGoodsPlacement")))
+
+    )
+</div>
+
+
+<div id="divDetails">
+    @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.DeliveryListPart_PageTitle_Index).LoadContentFrom(Url.Action("PartsPlacementIndex", "DeliveryGoodsPlacement")).Selected(true))
+    )
+
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#divDetails').hide();
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridDeliveryGoodsPlacement').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+    });
+    function loadTabs(sId, statusId, isPlaced) {
+        if (sId != null) {
+
+            var tabStrip = $('#Tabs').kendoTabStrip().data("kendoTabStrip");
+
+            var detailTab = tabStrip.contentElements[0];
+
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("PartsPlacementIndex", "DeliveryGoodsPlacement")",
+                data: { deliveryId: sId, statusId: statusId, isPlaced: isPlaced },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $(detailTab).html(result);
+                    tabStrip.select(tabStrip.tabGroup.children("li").eq(0));
+                },
+                error: function (request, status, err) {
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+
+            $('#divDetails').show();
+        } else {
+            $('#divDetails').hide();
+        }
+    }
+
+
+    function DeliveryCancel(Id) {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DoReverseTransaction", "DeliveryGoodsPlacement")",
+            data: { deliveryId: Id },
+            traditional: true,
+            dataType: "json",
+            success: function (result) {
+                if (result.Status == 1) {
+                    SetSuccessMessage('@MessageResource.Global_Display_Success');
+
+                    var gridDeliveryGoodsPlacement = $('#gridDeliveryGoodsPlacement').data('kendoGrid');
+                    gridDeliveryGoodsPlacement.dataSource.page(1);
+
+                    $('#divDetails').hide();
+                } else {
+                    SetErrorMessage(result.Message);
+                }
+            }
+        });
+    }
+</script>

@@ -1,0 +1,199 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.BreakdownDefinition;
+
+@model ODMSModel.BreakdownDefinition.BreakdownDefinitionListModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("BreakdownDefinition_PageTitle_Index");
+}
+@Html.AntiForgeryToken()
+ 
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.PdiBreakdownCode)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.PdiBreakdownCode).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(source => source.Read(read => read.Action("ListPdiBreakdownCode", "BreakdownDefinition")).ServerFiltering(true)).Enable(true).AutoBind(true)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+
+    </div>
+</div>
+
+@Html.HiddenFor(v => v.PdiBreakdownCode)
+
+@ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.BreakdownDefinition.BreakdownDefinitionIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.BreakdownDefinition_PageTitle_Create, CommonValues.PermissionCodes.BreakdownDefinition.BreakdownDefinitionCreate)
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+
+<br />
+<div id="BreakdownDefinitionModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("BreakdownDefinitionModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#BreakdownDefinitionGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+         var combo = $('#PdiBreakdownCode').data('kendoComboBox');
+        combo.dataSource.read();
+
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    
+    function DeleteBreakdownDefinition(aId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteBreakdownDefinition", "BreakdownDefinition")",
+                data: { pdiBreakdownCode: aId ,"__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#BreakdownDefinitionGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+
+    $(document).ready(init);
+    function GetParameters()
+    {
+        return {
+            ReportType: 9,
+            Columns: "PdiBreakdownCode,AdminDesc,BreakdownName,IsActive",
+            PdiBreakdownCode: $('#PdiBreakdownCode').val(),
+            AdminDesc: $('#AdminDesc').val(),
+            IsActive: $('#IsActive').val()
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#BreakdownDefinitionGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#BreakdownDefinitionModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("BreakdownDefinitionDetails", "BreakdownDefinition", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            } else {
+                if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("BreakdownDefinitionUpdate", "BreakdownDefinition", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("BreakdownDefinitionCreate", "BreakdownDefinition")";
+                }
+        }
+            $("#BreakdownDefinitionModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#BreakdownDefinitionModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+
+        if (parseInt (@ODMSCommon.Security.UserManager.UserInfo.GetUserDealerId())>0) 
+        {
+            $(excelVisibility).css("display","block");
+        }else {
+            $(excelVisibility).css("display","none");
+        }
+    }
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.BreakdownDefinition.BreakdownDefinitionListModel>()
+          .Name("BreakdownDefinitionGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.PdiBreakdownCode).ClientTemplate("<center><a class='details modalClick' id='#=PdiBreakdownCode#' frameTitle='" + CommonUtility.GetResourceValue("BreakdownDefinition_PageTitle_Details") + "' href='/BreakdownDefinition/BreakdownDefinitionDetails/#=PdiBreakdownCode#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.BreakdownDefinition.BreakdownDefinitionDetails));
+                  columns.Bound(p => p.PdiBreakdownCode).ClientTemplate("<center><a class='edit modalClick' id='#=PdiBreakdownCode#' frameTitle='" + CommonUtility.GetResourceValue("BreakdownDefinition_PageTitle_Update") + "' href='/BreakdownDefinition/BreakdownDefinitionUpdate/#=PdiBreakdownCode#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.BreakdownDefinition.BreakdownDefinitionUpdate));
+                  columns.Bound(o => o.PdiBreakdownCode).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("MessageResource.BreakdownDefinition_PageTitle_Delete") + "' onclick='DeleteBreakdownDefinition(\"#=PdiBreakdownCode#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.BreakdownDefinition.BreakdownDefinitionDelete));
+                  columns.Bound(p => p.PdiBreakdownCode).Sortable(true);
+                  columns.Bound(p => p.AdminDesc).Sortable(true);
+                  columns.Bound(p => p.BreakdownName).Sortable(true);
+                  columns.Bound(p => p.IsActive).ClientTemplate("#if(IsActive){#" + MessageResource.Global_Display_Active + "#}else{#" + MessageResource.Global_Display_Passive + "#}#").Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListBreakdownDefinition", "BreakdownDefinition", Model).Data("GetParameters"))
+                                        .Model(model => model.Field(o => o.PdiBreakdownCode).DefaultValue(-1)))
+
+          )
+</div>
+<br />
+<div id="excelVisibility">
+    <h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+        @using (Html.BeginForm("BreakdownDefinitionIndex", "BreakdownDefinition", FormMethod.Post))
+        {
+            @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+            <div id="divExcepUpload">
+                @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+            </div>
+        }
+    </div>
+</div>

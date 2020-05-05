@@ -1,0 +1,60 @@
+﻿@model ODMSModel.SparePartCountryVatRatio.SparePartCountryVatRatioViewModel
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.SparePartCountryVatRatio_PageTitle_Create;
+}
+
+
+@using (Html.BeginForm("SparePartCountryVatRatioCreate", "SparePartCountryVatRatio", FormMethod.Post))
+{
+           
+    <div class="labelDiv">@Html.LabelFor(v => v.IdPart)</div> 
+    <div class="shortTxtDiv">
+        @{
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "IdPart", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });@Html.ValidationMessageFor(v => v.IdPart)
+        }
+    </div>
+        
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IdCountry)</div>  
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.IdCountry).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.CountryList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.IdCountry)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>  
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.VatRatio).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VatRatioList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(c => c.VatRatio)
+    </div>
+    
+
+   <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+  
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.SparePartCountryVatRatio.SparePartCountryVatRatioCreate, "SparePartCountryVatRatioCreate")          
+
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if ($('#IdPart').val() == "" || $('#IdPart').val() == 0) {
+            $("#IdCountry").data("kendoComboBox").text('');
+            $("#VatRatio").data("kendoComboBox").text('');
+        }
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+</script>
+
+

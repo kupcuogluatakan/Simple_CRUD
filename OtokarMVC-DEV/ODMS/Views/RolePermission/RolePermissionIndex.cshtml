@@ -1,0 +1,232 @@
+﻿@using ODMSCommon.Resources
+<style>
+    .listSearch {
+        margin: 4px 1px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        width: 500px;
+    }
+
+        .listSearch input {
+            border: 0 none;
+            width: 480px;
+            padding: 4px 0px;
+        }
+</style>
+<script src="~/Scripts/custom.js"></script>
+@model List<ODMSModel.Shared.RoleListModel>
+@{
+    ViewBag.Title = @MessageResource.RolePermission_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<script type="text/x-kendo-tmpl" id="PermissionItemTemplate">
+    <div class="ListItem">
+        <table>
+            <tr>
+                <td style="width:400px"><span data-permissionid=#:PermissionId#>#:PermissionName#</span></td>
+                <td style="width:60px"><a onclick="deneme(#:PermissionId#);">(@MessageResource.Global_Display_Details)</a></td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<div>
+    @Html.Label(@MessageResource.RolePermissions_Display_RoleList)
+    @(Html.Kendo().ComboBox()
+          .Name("cmbRoles")
+          .Placeholder(CommonUtility.GetResourceValue("RolePermissions_Display_SelectRole"))
+          .BindTo(Model)
+          .DataTextField("RoleTypeName")
+          .DataValueField("RoleId")
+          .Events(e => e.Change("SelectedRoleChanged"))
+          .HtmlAttributes(new { @class = "ComboBox", @style = "width: 300px;" })
+    )
+</div>
+
+@ODMSHelpers.LinkButton("btnSave", @MessageResource.Global_Display_Save, "", "Button", "", "", "float: left; margin-top: -23px; margin-left: 390px;")
+<div class="clearfix"></div>
+<div>
+    <div class="listSearch" style="margin-left: 550px;margin-top: 5px;overflow: auto;position: absolute;">
+        <input type="text" id="includedListSearch" />
+        <i class="glyphicon glyphicon-search"></i>
+    </div>
+    @(Html.Kendo().ListView<ODMSModel.Shared.PermissionListModel>()
+          .Name("lstPermissionsIncludedInRole")
+          .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+          .ClientTemplateId("PermissionItemTemplate")
+          .TagName("div")
+          .DataSource(ds => ds.Read(read =>
+              read.Action("ListPermissionsIncludedInRole", "RolePermission").Data("GetSelectedRoleId")))
+          .HtmlAttributes(new { @style = @"  float: left;
+                                            height: 300px;
+                                            margin-left: 550px;
+                                            margin-top: 35px;
+                                            overflow: auto;
+                                            position: absolute;
+                                            width: 500px;" })
+    )
+</div>
+
+<div>
+    <div class="listSearch">
+        <input type="text" id="excludedListSearch" />
+        <i class="glyphicon glyphicon-search"></i>
+    </div>
+    @(Html.Kendo().ListView<ODMSModel.Shared.PermissionListModel>()
+          .Name("lstPermissionsNotIncludedInRole")
+          .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+          .ClientTemplateId("PermissionItemTemplate")
+          .TagName("div")
+          .DataSource(ds => ds.Read(read =>
+              read.Action("ListPermissionsNotIncludedInRole", "RolePermission").Data("GetSelectedRoleId")))
+          .HtmlAttributes(new { @style = "width: 500px; height: 300px; margin-top: 0px; margin-left: 0px;overflow:auto;" })
+    )
+</div>
+
+<div style="position: absolute; height: 35px; width:850px">
+    @ODMSHelpers.LinkButton("btnAdd", @MessageResource.Global_Display_Add, "", "Button", "", "", "position: absolute; margin-top: 5px")
+    @ODMSHelpers.LinkButton("btnRemove", @MessageResource.Global_Display_Remove, "", "Button", "", "", "position: absolute; margin-left: 550px; margin-top: 5px;")
+
+</div>
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Permission")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    )
+</div>
+<script>
+    function deneme(clickedId) {
+        $('#modelWindow').html('');
+
+        var link = "@Url.Action("PermissionDetails", "Permission", new { id = -1 })";
+        link = link.replace("-1", clickedId);
+
+        $("#modelWindow_wnd_title").html('@MessageResource.Permission_PageTitle_Details');
+
+        var windowWidget = $("#modelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+
+    $(function () {
+        RegisterEventHandlers();
+        $("#excludedListSearch").listSearch("lstPermissionsNotIncludedInRole", {
+            textField: "PermissionName",
+            valueField: "PermissionId",
+            cascadeControlId: "cmbRoles",
+            disableButtons: false
+        });
+        $("#includedListSearch").listSearch("lstPermissionsIncludedInRole", {
+            textField: "PermissionName",
+            valueField: "PermissionId",
+            cascadeControlId: "cmbRoles",
+            disableButtons: false
+        });
+    });
+
+    function RegisterEventHandlers() {
+        $("body").delegate("#btnAdd", "click", AddPermissionClickHandler);
+        $("body").delegate("#btnRemove", "click", RemovePermissionClickHandler);
+        $("body").delegate("#btnSave", "click", SavePermissionClickHandler);
+    }
+
+    // Used in kendo listview read action
+    function GetSelectedRoleId() {
+        return {
+            roleId : $("#cmbRoles").val()
+        };
+    }
+
+    // Called when kendo combobox changed event is fired
+    function SelectedRoleChanged() {
+        //var includedRolelist = $("#lstPermissionsIncludedInRole").data("kendoListView");
+        //var notIncludedRolelist = $("#lstPermissionsNotIncludedInRole").data("kendoListView");
+
+        //includedRolelist.dataSource.read();
+        //notIncludedRolelist.dataSource.read();
+    }
+
+    function AddPermissionClickHandler() {
+        var notIncludedInRoleList = $('#lstPermissionsNotIncludedInRole').data("kendoListView");
+        var includedInRoleList = $('#lstPermissionsIncludedInRole').data("kendoListView");
+
+        var includedArr = [];
+
+        var selected = notIncludedInRoleList.select();
+
+        for (var i = 0; i < notIncludedInRoleList.select().length; i++) {
+            var uid = notIncludedInRoleList.select()[i].getAttribute("data-uid");
+            var objectFound = notIncludedInRoleList.dataSource.getByUid(uid);
+
+            includedArr.push(objectFound);
+        }
+
+        for (var a = 0; a < includedArr.length; a++) {
+            notIncludedInRoleList.dataSource.remove(includedArr[a]);
+            includedInRoleList.dataSource.add(includedArr[a]);
+        }
+
+
+    }
+
+    function RemovePermissionClickHandler() {
+        var notIncludedInRoleList = $('#lstPermissionsNotIncludedInRole').data("kendoListView");
+        var includedInRoleList = $('#lstPermissionsIncludedInRole').data("kendoListView");
+
+        var notInculdedArr = [];
+
+        for (var i = 0; i < includedInRoleList.select().length; i++) {
+            var uid = includedInRoleList.select()[i].getAttribute("data-uid");
+            var objectFound = includedInRoleList.dataSource.getByUid(uid);
+
+            notInculdedArr.push(objectFound);
+        }       
+
+        for (var a = 0; a < notInculdedArr.length; a++) {
+            includedInRoleList.dataSource.remove(notInculdedArr[a]);
+            notIncludedInRoleList.dataSource.add(notInculdedArr[a]);
+        }
+
+    }
+
+    // IE'nin HTML 5 desteklemeyen versiyonlarinda jquery'nin data fonksiyonu calismayabilir.
+    // test etmemiz lazim
+    function SavePermissionClickHandler() {
+        var roleId = $("#cmbRoles").val();
+        if (roleId == "") // If no role is selected just return.
+            return;
+
+        var selectedPermissionIds = $('#lstPermissionsIncludedInRole').data("kendoListView").dataSource.data().map(function (x) { return x.PermissionId;});
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("Save", "RolePermission")",
+            data: { RoleId: roleId, PermissionIdList: selectedPermissionIds, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else
+                    SetSuccessMessage(result.Message);
+            },
+            dataType: "json"
+        });
+    }
+
+</script>

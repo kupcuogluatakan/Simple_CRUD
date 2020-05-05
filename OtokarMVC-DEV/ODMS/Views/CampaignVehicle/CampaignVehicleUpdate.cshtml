@@ -1,0 +1,32 @@
+﻿@model ODMSModel.CampaignVehicle.CampaignVehicleViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CampaignVehicle_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("CampaignVehicleUpdate", "CampaignVehicle", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.VinNo) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="labelDiv">@Html.LabelFor(c => c.IsUtilizedName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsUtilized)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.CampaignVehicle.CampaignVehicleUpdate, "CampaignVehicleUpdate")
+    @Html.HiddenFor(v => v.VehicleId)
+    @Html.HiddenFor(v => v.CampaignCode)
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

@@ -1,0 +1,49 @@
+﻿@model ODMSModel.SparePartBarcode.SparePartBarcodeIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("SparePartBarcode_PageTitle_Index");
+    HtmlHelper.ClientValidationEnabled = false;
+}
+
+<script src="~/Scripts/custom.js"></script>
+
+<div class="labelDiv">@Html.LabelFor(v => v.PartId)</div>
+
+<div class="shortTxtDiv">
+    @{ Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "", ExtraParameter = ODMSCommon.Security.UserManager.UserInfo.GetUserDealerId() }); }
+    @Html.ValidationMessageFor(v => v.PartId)
+</div>
+
+
+<div class="clearDiv">&nbsp;</div>
+
+@ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("SparePartBarcode_Display_Create"), CommonValues.PermissionCodes.SparePartBarcode.SparePartBarcodeIndex, "SparePartBarcodeCreate")
+
+<div id="PrintBarcodeWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+<script>
+
+    $(document).ready(function () {
+        $("#Create").click(function () {
+            if ($("#PartId").val()) {
+                OpenPrintBarcodeWindow($("#PartId").val());
+            } else {
+                OpenPrintBarcodeWindow(0);
+            }            
+        });
+    });
+
+    function OpenPrintBarcodeWindow(partId) {       
+        $('#PrintBarcodeWindow').kwnd('@Url.Action("PrintSpareBarcode", "SparePartBarcode")' + '/?partId=' + partId, "@Html.Raw(CommonUtility.GetResourceValue("WorkOrderCard_Display_PartRemovalTitle"))",
+                    {
+                        iframe: true,
+                        width: 800,
+                        height: 400,
+                        onClose: function () {
+                            $("#PrintBarcodeWindow").html('');
+                        }
+                    });
+        $('#PrintBarcodeWindow').removeClass("hide");
+        OpenWindow($('#PrintBarcodeWindow'));
+    }
+
+</script>

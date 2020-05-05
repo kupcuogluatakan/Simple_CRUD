@@ -1,0 +1,125 @@
+﻿@{
+    ViewBag.Title = MessageResource.AppointmentDetails_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@model ODMSModel.WorkOrderInvoice.WorkOrderInvoicesViewModel
+
+@if ((ViewBag.HideElements == true && Model.ErrorNo == 0))
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            SetErrorMessage("@MessageResource.Error_DB_NoRecordFound");
+        });
+    </script>
+}
+@if (ViewBag.HideElements == false)
+{
+
+    using (Html.BeginForm("WorkOrderInvoiceCreate", "WorkOrderInvoice", FormMethod.Post, new { id = "frmInvoices" }))
+    {
+    @Html.Hidden("WorkOrderIds", "")
+    @Html.HiddenFor(c => c.CustomerId)
+        Html.RenderPartial("_WorkOrderInvoiceEdit", Model);
+    <input type="hidden" name="WorkOrderId" id="WorkOrderId" value="@Model.WorkOrderId"/>
+    <input type="hidden" name="WorkOrderInvoiceId" id="WorkOrderInvoiceId" value="@Model.WorkOrderInvoiceId"/>
+        if (Model.WorkOrderIds == null || Model.WorkOrderIds == "")
+        {
+    <div id="indicators"></div>
+        }
+    }
+    if (string.IsNullOrEmpty(Model.WorkOrderIds))
+    {
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.WorkorderInvoice.WorkOrderInvoiceCreate, "WorkOrderInvoiceCreate", onClick: "submitfrmIncoices();")
+    }
+    
+    <div id="invoices" style="margin-top: 10px;"></div>
+ 
+    using (Html.BeginForm("PrintInvoice", "WorkOrderInvoice", FormMethod.Post, new { id = "frmPrintInvoice" }))
+    {
+    @Html.Hidden("workOrderId", Model.WorkOrderId)
+    @Html.Hidden("invoiceId", Model.WorkOrderInvoiceId)
+    @Html.Hidden("invoiceType", "")
+    @Html.Hidden("workOrderDetailIds", Model.WorkOrderIds)
+    }
+    <style>
+        #locked {
+            margin: 0 auto;
+            z-index: 100011; /*because you could set some z-indexes in your code before, so lets make sure that this will be over every elements in html*/
+            height: 100%;
+            top: 50%;
+            position: absolute;
+            left: 45%;
+        }
+
+        .lockedwrapper {
+            background-color: black;
+            opacity: 0.5;
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100012;
+        }
+    </style>
+    <div class="lockedwrapper">
+        <div class="locked">
+            <div class="conteneur_78390">
+                <div class="decalage_pers_78390">
+                    <div class="cercle_rouge_78390"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.lockedwrapper').css('display', 'block');
+            LoadIndicators(null);
+        });
+        function submitfrmIncoices() {
+            if (customerId != GetCustomerId().CustomerId) {
+                CustomConfirm(function () { $('#frmInvoices').submit(); }, "@MessageResource.Global_Display_Warning", "@MessageResource.WorkOrderCard_Message_InvoiceCustomerChanged ", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+            } else {
+                $('#frmInvoices').submit();
+            }
+        }
+
+        function LoadInvoices(obj) {
+            var url = '@Url.Action("ListWorkOrderInvoices", new { id = Model.WorkOrderId, workOrderDetailIds = Model.WorkOrderIds })';
+           $("#invoices").html('');
+
+           $.ajax({
+               complete: function () {
+                   $('.lockedwrapper').css('display', 'none');
+               },
+                url: url,
+                type: "GET",
+                dataType: "html",
+                success: function (html) {
+                        $("#invoices").html(html);
+                }
+            });
+        }
+        function LoadIndicators(obj) {
+            var url = '@Url.Action("ListWorkOrderIndicators", new { id = Model.WorkOrderId, workOrderDetailIds = Model.WorkOrderIds })';
+            $("#indicators").html('');
+          
+            $.ajax({
+                complete: function () {
+                    LoadInvoices(obj);
+                },
+                url: url,
+                type: "GET",
+                dataType: "html",
+                success: function (html) {
+                        $("#indicators").html(html);
+                        SetSelectedItems();
+                }
+            });
+        }
+    </script>
+ 
+}

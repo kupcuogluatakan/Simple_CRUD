@@ -1,0 +1,71 @@
+﻿@model ODMSModel.MaintenancePart.MaintenancePartViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("MaintenancePart_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+ 
+
+@using (Html.BeginForm("MaintenancePartUpdate", "MaintenancePart", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.MaintName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.MaintName)</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>    
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartName)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsAlternateAllow)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsAlternateAllow)</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsDifBrandAllow)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsDifBrandAllow)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsMust)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsMust)</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.Quantity).Spinners(false).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", data_val_max = "1000", style = "width:200px" })
+        @Html.ValidationMessageFor(v => v.Quantity)
+    </div>
+          
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(d => d.MaintId)
+    @Html.HiddenFor(d => d.PartId)
+    @Html.HiddenFor(d => d.PartName)
+    @Html.HiddenFor(d => d.MaintName)
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.MaintenancePart.MaintenancePartsUpdate, "MaintenancePartUpdate")
+    
+}
+<script>
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 355);
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContentWrapper").css("min-height", 350);
+    }
+
+</script>

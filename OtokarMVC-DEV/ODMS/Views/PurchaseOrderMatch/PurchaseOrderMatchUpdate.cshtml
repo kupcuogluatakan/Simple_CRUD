@@ -1,0 +1,59 @@
+﻿@model ODMSModel.PurchaseOrderMatch.PurchaseOrderMatchViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("PurchaseOrderMatch_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using (Html.BeginForm("PurchaseOrderMatchUpdate", "PurchaseOrderMatch", FormMethod.Post))
+    {
+
+
+    <div class="labelDiv">@Html.LabelFor(v => v.PurhcaseOrderGroupId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.PurhcaseOrderGroupId).BindTo(ViewBag.PurchaseOrderGroupList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).HtmlAttributes(new { @readonly= "true"} )</div>
+
+     <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.PurhcaseOrderTypeId)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.PurhcaseOrderTypeId).BindTo(ViewBag.PurchaseOrderTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).HtmlAttributes(new { @readonly= "true"} )  </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.SalesOrganization)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(c=>c.SalesOrganization) @Html.ValidationMessageFor(v => v.SalesOrganization)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.DistrChan)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(c=>c.DistrChan)@Html.ValidationMessageFor(v => v.DistrChan) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Division)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(c=>c.Division)@Html.ValidationMessageFor(v => v.Division) </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(c=>c.IsActive)</div>
+
+
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="shortTxtDiv">
+        @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.PurchaseOrderMatch.PurchaseOrderMatchUpdate, "PurchaseOrderMatchUpdate")
+    </div>
+}
+
+<script>
+
+    $(function () {
+        adjustPage();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 450);
+        $("#popupContentWrapper").css("height", 300);
+        $("#popupContentWrapper").css("width", 460);
+    }
+</script>

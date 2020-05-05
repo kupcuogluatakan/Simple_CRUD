@@ -1,0 +1,451 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.LabourTechnician
+@using ODMSCommon.Security;
+
+
+@model LabourTechnicianViewModel
+@{
+    ViewBag.Title = @MessageResource.LabourTechnician_PageTitle_Index;
+}
+
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@if (Model.WorkOrderDetailId != 0)
+{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    using (Html.BeginForm("LabourTechnicianIndex", "LabourTechnician", FormMethod.Post))
+    {
+        <div class="labelDiv">@Html.LabelFor(b => b.WorkOrderId)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.WorkOrderId) &nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.Plate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.Plate) &nbsp;</div>
+
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.LabourCode)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourCode) &nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.LabourName)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourName) &nbsp;</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(d => d.WorkTimeEstimate)</div>
+        <div class="shortTxtDiv">
+            @Html.TextBoxFor(v => v.WorkTimeEstimate, new { onkeydown = "return ValidateNumber(event);", maxlength = "5" })
+            @Html.ValidationMessageFor(v => v.WorkTimeEstimate)
+        </div>
+        <div class="labelDiv">@Html.LabelFor(b => b.CreateDate)&nbsp;</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.CreateDate)&nbsp;</div>
+
+        if (Model.WorkshopPlanTypeId == 0)//Basic
+        {
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(b => b.LabourTimeEstimate)&nbsp;</div>
+            <div class="shortTxtDiv">@Html.DisplayFor(v => v.TotalLabourTimeEstimate)&nbsp;</div>
+        }
+
+        <div class="clearDiv">&nbsp;</div>
+        @Html.HiddenFor(v => v.LabourTechnicianId)
+        @Html.HiddenFor(v => v.WorkOrderId)
+        @Html.HiddenFor(v => v.Plate)
+        @Html.HiddenFor(v => v.LabourCode)
+        @Html.HiddenFor(v => v.LabourName)
+        @Html.HiddenFor(v => v.WorkOrderDetailId)
+        @Html.HiddenFor(v => v.LabourId)
+        @Html.HiddenFor(v => v.WorkshopPlanTypeId)
+        @Html.HiddenFor(v => v.IsDealerDuration)
+        @Html.HiddenFor(v => v.StatusId)
+
+        if (ViewBag.ValidationError != null)
+        {
+            <span style="color:red;">@ViewBag.ValidationError</span>
+        }
+        @(Html.Kendo().Grid(Model.TecnicianUsers)
+        .Name("TecnicianUsers")
+        .Columns(columns =>
+        {
+            if (Model.WorkshopPlanTypeId == 0)//Basic
+            {
+                columns.Bound(p => p.TechnicianUserId).Width(180).EditorTemplateName("TechnicianDropDownList").ClientTemplate("#:TechnicianUserName #"
+                    + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserId' value='#= TechnicianUserId #' />"
+                    + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserName' value='#= TechnicianUserName #' />");
+                columns.Bound(p => p.WorkTime).Width(130).ClientTemplate("#= WorkTime #" + "<input type='hidden' name='TecnicianUsers[#= index(data)#].WorkTime' value='#= WorkTime #' />");
+                if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+                Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+                    columns.Command(command => command.Custom("deleteRow").Text("Sil").Click("deleteItem")).Width(150);
+            }
+            else
+            {
+                columns.Bound(p => p.TechnicianUserId).Width(180).EditorTemplateName("TechnicianDropDownList").ClientTemplate("#:TechnicianUserName #"
+                    + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserId' value='#= TechnicianUserId #' />"
+                    + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserName' value='#= TechnicianUserName #' />");
+                //columns.Bound(p => p.WorkTime).Width(130).ClientTemplate("#= WorkTime #" + "<input type='hidden' name='TecnicianUsers[#= index(data)#].WorkTime' value='#= WorkTime #' />");
+                if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+                Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+                    columns.Command(command => command.Custom("deleteRow").Text("Sil").Click("deleteItem")).Width(150);
+            }
+
+        })
+        .ToolBar(toolBar =>
+        {
+            if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+             Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+                toolBar.Create().Text("Personel Ekle");
+        })
+        .Editable(editable => editable.Mode(GridEditMode.InCell))
+        .Pageable()
+        .Sortable()
+        .Scrollable()
+        .DataSource(dataSource => dataSource
+            .Ajax()
+            .Batch(true)
+            .Events(events => events.Error("error_handler"))
+            .Model(model =>
+            {
+                model.Id(p => p.TechnicianUserId);
+                if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+            Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+                {
+                    model.Field(p => p.TechnicianUserId).Editable(true);
+                    model.Field(p => p.TechnicianUserName).Editable(true);
+                    model.Field(p => p.WorkTime).Editable(true);
+                }
+                else
+                {
+                    model.Field(p => p.TechnicianUserId).Editable(false);
+                    model.Field(p => p.TechnicianUserName).Editable(false);
+                    model.Field(p => p.WorkTime).Editable(false);
+                }
+
+            })
+            .ServerOperation(false)
+        )
+        )
+
+
+        if (Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Completed &&
+            Model.StatusId != (int)CommonValues.LabourTechnicianStatus.Cancelled)
+        {
+            @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.LabourTechnician.LabourTechnicianUpdate, "LabourTechnicianUpdate")
+        }
+    }
+}
+else
+{
+    <div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+    <div id="searchDiv">
+        <div id="searchFields">
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(b => b.WorkOrderId)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.WorkOrderId)</div>
+            <div class="labelDiv">@Html.LabelFor(b => b.UserNameSurname)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().ComboBoxFor(c => c.UserID).BindTo(ViewBag.TechnicianList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+
+            <div class="labelDiv">@Html.LabelFor(v => v.LabourName)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.LabourName)</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.LabourCode)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.LabourCode)</div>
+
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(d => d.WorkTimeEstimate)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.WorkTimeEstimate)</div>
+            <div class="labelDiv">@Html.LabelFor(d => d.WorkTimeReal)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.WorkTimeReal)</div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.CreateDate)</div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CreateDate).Name("CreateDate").Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" }) </div>
+            <div class="labelDiv">@Html.LabelFor(b => b.StatusName)</div>
+            <div class="shortTxtDiv">
+                @Html.Kendo().ComboBoxFor(c => c.StatusId).BindTo(ViewBag.StatusList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Value("0")
+            </div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.StartDate)</div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.EndDate)</div>
+            <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+            <div class="clearDiv">&nbsp;</div>
+            <div class="labelDiv">@Html.LabelFor(v => v.Plate)</div>
+            <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Plate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" })</div>
+            <div class="clearDiv">&nbsp;</div>
+        </div>
+    </div>
+
+    @ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.LabourTechnician.LabourTechnicianIndex)
+
+    <br />
+    <a class="k-button btnExcelExport">
+        <img src="@Url.Content("~/Images/excel.gif")" class="excel-exp" style="height: 14px; vertical-align: text-top;">
+        @CommonUtility.GetResourceValue("Excel_Export_LabourTechnician")
+    </a>
+
+    <div class="kendoGridDiv" id="grd">
+        @(Html.Kendo().Grid<LabourTechnicianListModel>()
+              .Name("grid")
+              .Columns(columns =>
+              {
+                  columns.Bound(b => b.LabourTechnicianId).ClientTemplate("<center><a class='details modalClick' id='#=LabourTechnicianId#' frameTitle='" + MessageResource.LabourTechnician_PageTitle_Details + "' href='/LabourTechnician/LabourTechnicianDetails/#=LabourTechnicianId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourTechnician.LabourTechnicianDetails));
+                  columns.Bound(b => b.LabourTechnicianId).ClientTemplate("#if(StatusId!=-1 && StatusId!=2 && StatusId!=4 && StatusId != 3){#<center><a class='edit modalClick' id='#=LabourTechnicianId#' frameTitle='" + MessageResource.LabourTechnician_PageTitle_Update + "' href='/LabourTechnician/LabourTechnicianUpdate/#=LabourTechnicianId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>#}#").Title(MessageResource.Global_Display_Update).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourTechnician.LabourTechnicianUpdate));
+                  columns.Bound(p => p.WorkOrderId).ClientTemplate("<center><a class='' id='#=WorkOrderId#' href='" + Url.Action("WorkOrderCardIndex", "WorkOrderCard") + "/#=WorkOrderId#'>#=WorkOrderId#</a></center>").Title(CommonUtility.GetResourceValue("WorkOrder_Display_WorkOrder")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkOrder.WorkOrderIndex));
+                  columns.Bound(b => b.UserNameSurname).Sortable(true);
+                  columns.Bound(b => b.StatusName).Sortable(true);
+                  columns.Bound(b => b.CustomerName).Sortable(true);
+                  columns.Bound(b => b.VinNo).Sortable(true);
+                  columns.Bound(b => b.Plate).Sortable(true);
+                  columns.Bound(b => b.LabourCode).Sortable(true);
+                  columns.Bound(b => b.LabourName).Sortable(true);
+                  columns.Bound(b => b.WorkTimeEstimate).Sortable(true);
+                  columns.Bound(b => b.WorkTimeReal).Sortable(true);
+                  columns.Bound(p => p.CreateDate).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true);
+                  columns.Bound(p => p.StartDate).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true);
+                  columns.Bound(p => p.EndDate).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true);
+
+              })
+              .Pageable()
+              .Sortable()
+              .Scrollable()
+              .DataSource(dataSource => dataSource
+                                            .Ajax()
+                                            .PageSize(10)
+                                            .ServerOperation(true)
+                                            .Read(read => read.Action("ListLabourTechnicians", "LabourTechnician", Model).Data("Search"))
+                                            .Model(model => model.Field(b => b.LabourTechnicianId).DefaultValue(-1)))
+        )
+
+    </div>
+
+                <br />
+                <div id="modelWindowDiv">
+                    @(Html.Kendo().Window()
+              .Name("modelWindow")
+              .Title("LabourTechnician")
+              .Draggable()
+              .Resizable()
+              .Width(1000)
+              .Height(600)
+              .Scrollable(false)
+              .Visible(false)
+              .Modal(true)
+              .Iframe(true)
+              .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+                    )
+                </div>
+
+
+}
+<script type="text/javascript">
+    function Search() {
+        return {
+            //LabourId: $("#LabourId").val(),
+            StatusId: $("#StatusId").val(),
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            UserID: $('#UserID').val(),
+            CreateDate: $('#CreateDate').val(),
+            WorkTimeEstimate: $('#WorkTimeEstimate').val(),
+            WorkTimeReal: $('#WorkTimeReal').val(),
+            WorkOrderId: $('#WorkOrderId').val(),
+            Plate: $('#Plate').val(),
+            LabourName: $('#LabourName').val(),
+            LabourCode: $('#LabourCode').val()
+        };
+    }
+    function onChange(e) {
+        var grid = $('#TecnicianUsers').data("kendoGrid");
+
+        var selectedItemUId = this.element.parent().closest('tr').attr('data-uid');
+        var item = grid.dataSource.getByUid(selectedItemUId);
+
+        var newValue = $("#TechnicianUserId").data("kendoDropDownList").text();
+        this.value(newValue);
+        item.set("TechnicianUserName", newValue);
+    }
+    function index(dataItem) {
+        var data = $("#TecnicianUsers").data("kendoGrid").dataSource.data();
+
+        return data.indexOf(dataItem);
+    }
+    function deleteItem(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (confirm("@MessageResource.LabourTechnician_Delete_Details")) {
+            var grid = $("#TecnicianUsers").data("kendoGrid");
+            grid.dataSource.remove(dataItem);
+            grid.dataSource.sync();
+            grid.refresh();
+        }
+    }
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+    function OpenStartDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+    $(function () {
+        RegisterEventHandlers();
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function ValidateNumber(e) {
+        var evt = (e) ? e : window.event;
+        var charCode = (evt.keyCode) ? evt.keyCode : evt.which;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    };
+    function RegisterEventHandlers() {
+        if ('@Model.WorkOrderDetailId' != '0') {
+            $("#WorkTimeEstimate").prop("readonly", true);
+        }
+
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            } else {
+                $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        $("body").delegate("#btnSearch", "click", function () {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("LabourTechnicianDetails", "LabourTechnician", new { labourTechnicianId = -1 })";
+                link = link.replace("-1", clickedId);
+            } else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("LabourTechnicianUpdate", "LabourTechnician", new { labourTechnicianId = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    }
+
+    $(document).ready(function () {
+        var requestId = 0;
+        function GetExcelExportStatus() {
+            if (requestId == 0)
+                return;
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("GetExcelStatus", "Reports")",
+                data: "requestId=" + requestId,
+                dataType: "json",
+                global: false,
+                success: function (result) {
+                    if (result.Complete) {
+                        $(".btnExcelExport").html("<img src='@Url.Content("~/Images/excel.gif")' class='excel-exp' style='height:14px; vertical-align:text-top;'> @CommonUtility.GetResourceValue("Excel_Export_Labour")");
+                        $(".btnExcelExport").removeAttr("disabled");
+                        requestId = 0;
+
+                        if (!result.Success)
+                            SetErrorMessage(result.Message);
+                        else {
+                            document.location = "@Url.Content("~")content/excel/" + result.File;
+                        }
+                    }
+                }
+            });
+        }
+
+        $(".btnExcelExport").click(function (evt) {
+            if ($(this).is('[disabled=disabled]'))
+                return;
+
+            $(this).attr("disabled", "disabled");
+            $(this).html("<div style='float:left;'>@MessageResource.Excel_Export_Please_Wait</div> <div style='float:left; margin-left:5px;' class='loader'></div>");
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AddExcelRequest", "Reports")",
+                data: GetParameters(),
+                dataType: "json",
+                success: function (result) {
+                    requestId = result.RequestId;
+                    setInterval(GetExcelExportStatus, 10000);
+                },
+                global: false,
+            });
+
+            return false;
+        });
+
+        function GetParameters() {
+            return {
+                LabourName: $("#LabourName").val(),
+                LabourCode: $("#LabourCode").val(),
+                StatusId: $("#StatusId").val(),
+                StartDate: $('#StartDate').val(),
+                EndDate: $('#EndDate').val(),
+                UserID: $('#UserID').val(),
+                CreateDate: $('#CreateDate').val(),
+                WorkTimeEstimate: $('#WorkTimeEstimate').val(),
+                WorkTimeReal: $('#WorkTimeReal').val(),
+                WorkOrderId: $('#WorkOrderId').val(),
+                Plate: $('#Plate').val(),
+                DealerId: @UserManager.UserInfo.GetUserDealerId(),
+                ReportType: 54,
+                Columns: "WorkOrderId,StatusName,CustomerName,UserNameSurname,VinNo,Plate,LabourCode,LabourName,WorkTimeEstimate,WorkTimeReal,CreateDate,StartDate,EndDate,Plate"
+            };
+        }
+    });
+</script>

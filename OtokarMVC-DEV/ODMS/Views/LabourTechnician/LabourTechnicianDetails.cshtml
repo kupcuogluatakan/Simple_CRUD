@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = MessageResource.LabourTechnician_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using ODMSCommon.Resources
+@model ODMSModel.LabourTechnician.LabourTechnicianViewModel
+
+<div class="labelDiv">@Html.LabelFor(b => b.WorkOrderId)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.WorkOrderId)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.Plate)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.Plate)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.LabourCode)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourCode)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.LabourName)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourName)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.WorkTimeEstimate)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.WorkTimeEstimateDisplay)&nbsp;</div>
+
+@*<div class="labelDiv">@Html.LabelFor(b => b.UserNameSurname)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.UserNameSurname)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.WorkTimeReal)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.WorkTimeReal)&nbsp;</div>*@
+
+<div class="labelDiv">@Html.LabelFor(b => b.StartDate)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.StartDate)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.StatusName)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.StatusName)&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.EndDate)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.EndDate)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(b => b.LabourTimeEstimate)&nbsp;</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.TotalLabourTimeEstimate)&nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<br />
+
+@(Html.Kendo().Grid(Model.TecnicianUsers)
+    .Name("TecnicianUsers")
+    .Columns(columns =>
+    {
+        columns.Bound(p => p.TechnicianUserId).Width(180).EditorTemplateName("TechnicianDropDownList").ClientTemplate("#:TechnicianUserName #"
+                            + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserId' value='#= TechnicianUserId #' />"
+                            + "<input type='hidden' name='TecnicianUsers[#= index(data)#].TechnicianUserName' value='#= TechnicianUserName #' />");
+        columns.Bound(p => p.WorkTime).Width(130).ClientTemplate("#= WorkTime #" + "<input type='hidden' name='TecnicianUsers[#= index(data)#].WorkTime' value='#= WorkTime #' />");
+        if (Model.StatusId != -1 && Model.StatusId != 2 && Model.StatusId != 4 && Model.StatusId != 3)
+            columns.Command(command => command.Custom("deleteRow").Text("Sil").Click("deleteItem")).Width(150);
+    })
+    .ToolBar(toolBar =>
+    {
+        if (Model.StatusId != -1 && Model.StatusId != 2 && Model.StatusId != 4 && Model.StatusId != 3)
+        {
+            //toolBar.Create().Text("Personel Ekle");
+        }
+    })
+    .Editable(editable => editable.Mode(GridEditMode.InCell))
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Batch(true)
+        .Events(events => events.Error("error_handler"))
+        .Model(model =>
+        {
+            model.Id(p => p.TechnicianUserId);
+            if (Model.StatusId != -1 && Model.StatusId != 2 && Model.StatusId != 4 && Model.StatusId != 3)
+            {
+                model.Field(p => p.TechnicianUserId).Editable(false);
+                model.Field(p => p.TechnicianUserName).Editable(false);
+                model.Field(p => p.WorkTime).Editable(false);
+            }
+            else
+            {
+                model.Field(p => p.TechnicianUserId).Editable(false);
+                model.Field(p => p.TechnicianUserName).Editable(false);
+                model.Field(p => p.WorkTime).Editable(false);
+            }
+
+        })
+        .ServerOperation(false)
+    )
+)
+<script>
+    function index(dataItem) {
+        var data = $("#TecnicianUsers").data("kendoGrid").dataSource.data();
+
+        return data.indexOf(dataItem);
+    }
+    function deleteItem(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (confirm(dataItem.TechnicianUserId +' '+ "@MessageResource.LabourTechnician_Delete_Details")) {
+            var grid = $("#TecnicianUsers").data("kendoGrid");
+            grid.dataSource.remove(dataItem);
+            grid.dataSource.sync();
+            grid.refresh();
+        }
+    }
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+</script>

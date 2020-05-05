@@ -1,0 +1,163 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model CycleCountResultReportFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.CycleCountResultReport_PageTitle_Index;
+}
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new {style = "width:200px;"}).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.CountStatusList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CountStatusList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CycleCountStatusList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.CountBeginDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CountBeginDate).Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.CountEndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CountEndDate).Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CountApproveStartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CountApproveStartDate).Events(e => e.Open("OpenCAStartDate").Change("OpenCAEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CountApproveEndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.CountApproveEndDate).Events(e => e.Open("OpenCAEndDate").Change("OpenCAStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.CycleCountDiffIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.CycleCountDiffIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CountStockDiffList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IsOriginal)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.IsOriginal).DataValueField("Value").DataTextField("Text").AutoBind(true).BindTo(ViewBag.YesNoList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+        <div class="clearDiv">&nbsp;</div>
+
+
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.CycleCountResultReportIndex)
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.CycleCountResultExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<CycleCountResultReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DealerName).Sortable(true).Width(300);
+              columns.Bound(p => p.WareHouseName).Sortable(true).Width(150);
+              columns.Bound(p => p.RackName).Sortable(true).Width(150);
+              columns.Bound(p => p.CycleName).Sortable(true).Width(150);
+              columns.Bound(p => p.StartDate).Format("{0:dd/MM/yyyy}").Sortable(true).Width(150);
+              columns.Bound(p => p.PartCode).Sortable(true).Width(150);
+              columns.Bound(p => p.PartName).Sortable(true).Width(200);
+              columns.Bound(p => p.Unit).Sortable(true).Width(100);
+              columns.Bound(p => p.BeforeCountQuantity).Sortable(true).Width(150);
+              columns.Bound(p => p.AfterCountQuantity).Sortable(true).Width(150);
+              columns.Bound(p => p.ApprovedCountQuantity).Sortable(true).Width(170);
+              columns.Bound(p => p.StockDifference).Sortable(true).Width(100);
+              columns.Bound(p => p.Cost).Sortable(true).Width(100).HtmlAttributes(new { style = "text-align:right" });
+              columns.Bound(p => p.UnitCost).Sortable(true).Width(100).HtmlAttributes(new { style = "text-align:right" });
+
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onDataBinding"))
+                                        .Read(read => read.Action("ListCycleCountResultReport", "Reports", Model).Data("GetParameters"))
+                                       ))
+
+
+</div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+<script type="text/javascript">
+
+    function onDataBinding(e) {
+        if ($("#DealerIdList").val() == null) {
+            SetErrorMessage('@MessageResource.CycleCountResult_Validation_Required');
+            e.preventDefault();
+        } else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+
+    function OpenStartDate() {
+        var dateStart = $("#CountBeginDate").data("kendoDatePicker");
+        var dateEnd = $("#CountEndDate").data("kendoDatePicker");
+        if ($("#CountEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {
+        var dateStart = $("#CountBeginDate").data("kendoDatePicker");
+        var dateEnd = $("#CountEndDate").data("kendoDatePicker");
+        if ($("#CountBeginDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    function OpenCAStartDate() {
+        var dateStart = $("#CountApproveStartDate").data("kendoDatePicker");
+        var dateEnd = $("#CountApproveEndDate").data("kendoDatePicker");
+        if ($("#CountApproveEndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenCAEndDate() {
+        var dateStart = $("#CountApproveStartDate").data("kendoDatePicker");
+        var dateEnd = $("#CountApproveEndDate").data("kendoDatePicker");
+        if ($("#CountApproveStartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    $(document).ready(init);
+    function GetParameters() {
+        return {
+            CountBeginDate: $('#CountBeginDate').val(),
+            CountEndDate: $('#CountEndDate').val(),
+            CountApproveStartDate: $('#CountApproveStartDate').val(),
+            CountApproveEndDate: $('#CountApproveEndDate').val(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            CountStatusList: $("#CountStatusList").data('kendoMultiSelect').value().toString(),
+            CycleCountDiffIdList: $("#CycleCountDiffIdList").val(),
+            IsOriginal: $("#IsOriginal").val(),
+            ReportType: 30,
+            Columns: "WareHouseName,RackName,PartCode,PartName,Unit,BeforeCountQuantity,AfterCountQuantity,ApprovedCountQuantity,StockDifference,Cost,UnitCost,DealerName"
+        };
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            //$("#DealerIdList").data('kendoMultiSelect').value('');
+            $("#CountStatusList").data('kendoMultiSelect').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+    }
+
+
+</script>

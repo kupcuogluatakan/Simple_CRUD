@@ -1,0 +1,66 @@
+﻿@model BireyselCalisma2.Models.DB.Makale
+
+@{
+    ViewBag.Title = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Silmek istediğinizden emin misiniz?</h3>
+<div>
+    <h2>Delete</h2>
+    <hr />
+
+    <dt>
+        <h2>Başlık</h2>
+    </dt>
+
+
+    <dt>
+
+        <h2>Makale Detayı</h2>
+    </dt>
+
+
+    @using (Html.BeginForm())
+    {
+
+
+        @Html.HiddenFor(model => model.MakaleId) @*makalenin id sini gizli bir şekilde basıyoruz yoksa edit sayfasında id 0 döner*@
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-danger" /> |
+            @Html.ActionLink("Listeye Geri Dön", "Listele")
+        </div>
+    }
+</div>
+
+<script type="text/javascript" src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".delete-row").click(function () {
+            var id = $(this).attr("data-id");
+            var closestTR = $(this).closest("tr");
+            var confirmDelete = confirm('ID\'si' + id + ' olan kayıdı silmek istediğinizden emin misiniz?');
+            if (confirmDelete) {
+                $.ajax({
+                    url: '/Article/Delete/' + id,
+                    type: 'POST',
+                    success: function (result) {
+                        if (result == true) {
+                            closestTR.fadeOut(1000, function () {
+                                closestTR.remove();
+                            });
+                        }
+                        else alert("Silme işlemi sırasında hata oluştu...");
+                    }
+                });
+            }
+
+        });
+
+    });
+</script>
+

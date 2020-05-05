@@ -1,0 +1,32 @@
+﻿@model ODMSModel.DealerRegion.DealerRegionIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("DealerRegion_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+    #popupContentWrapper {
+        min-height: 180px !important;
+    }
+    #popupContent {
+        width: 580px !important;
+    }
+</style>
+ 
+@using (Html.BeginForm("DealerRegionCreate", "DealerRegion", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.DealerRegionName)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.DealerRegionName) @Html.ValidationMessageFor(v => v.DealerRegionName) </div>
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.DealerRegion.DealerRegionCreate,"DealerRegionCreate")        
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

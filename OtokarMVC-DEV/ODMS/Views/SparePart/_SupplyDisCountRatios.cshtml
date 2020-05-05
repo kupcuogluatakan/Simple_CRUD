@@ -1,0 +1,31 @@
+﻿@using ODMSModel.SparePart
+@{
+    Layout = null;
+    var PartId = (int) ViewBag.PartId;
+}
+ 
+@*grid start*@
+<div class="kendoGridDiv" id="grd2" style="padding-top:20px;">
+    @(Html.Kendo().Grid<SparePartSupplyDiscountRatioListModel>()
+          .Name("grid2")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.ChannelName).Width(150).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+                  columns.Bound(p => p.DiscountRatio).Width(150).Sortable(true).HtmlAttributes(new{style="text-align:center;"});
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListSupplyDisCountRatios", "SparePart", new{partId=PartId})))
+                                       
+
+          )
+</div>
+@*grid end*@

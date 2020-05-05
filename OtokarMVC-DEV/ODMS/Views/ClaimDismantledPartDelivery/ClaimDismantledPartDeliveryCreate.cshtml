@@ -1,0 +1,43 @@
+﻿@model ODMSModel.ClaimDismantledPartDelivery.ClaimDismantledPartDeliveryViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("ClaimDismantledPartDelivery_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@using (Html.BeginForm("ClaimDismantledPartDeliveryCreate", "ClaimDismantledPartDelivery", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.ClaimWayBillNo)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ClaimWayBillNo)@Html.ValidationMessageFor(v => v.ClaimWayBillNo)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.ClaimWayBillSerialNo)</div>
+    <div class="shortTxtDiv"> @Html.TextBoxFor(v => v.ClaimWayBillSerialNo)@Html.ValidationMessageFor(v => v.ClaimWayBillSerialNo)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.ClaimWayBillDate)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().DatePickerFor(v => v.ClaimWayBillDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).Min(DateTime.Now).HtmlAttributes(new { type = "text" }) 
+        @Html.ValidationMessageFor(v => v.ClaimWayBillDate)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="shortTxtDiv">
+        @ODMSHelpers.Button("Save", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.ClaimDismantledPartDelivery.ClaimDismantledPartDeliveryCreate, "ClaimDismantledPartDeliveryCreate")
+    </div>
+}
+
+<script>
+
+    $(function () {
+        adjustPage();       
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 450);        
+        $("#popupContentWrapper").css("min-height", 300);
+        $("#popupContentWrapper").css("width", 460);
+    }
+</script>

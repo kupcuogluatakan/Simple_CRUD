@@ -1,0 +1,128 @@
+﻿@using ODMSCommon.Resources
+<script>
+    function SetErrorMessage(errorMessage) {
+        var successVisible = $("#ajaxSuccess").css("display");
+        var errorVisible = $("#ajaxError").css("display");
+        var warningVisible = $("#ajaxSuccess").css("display");
+
+        if (successVisible == "block" || errorVisible == "block" || warningVisible == "block" || '@(TempData["MessageToShow"])' != '') {
+
+            $(".alert").hide("slow", function () {
+                $("#ajaxError").fadeIn("fast");
+                $("#ajaxFailSpan").html(errorMessage);
+            });
+        }
+        else {
+            $("#ajaxError").fadeIn("slow");
+            $("#ajaxFailSpan").html(errorMessage);
+        }
+    }
+    function SetErrorMessageWithFile(errorMessage, fileName) {
+        var url = "@Url.Action("DownloadFileActionResult", "DownloadFileActionResult")";
+        var msg= errorMessage+"<br/><a id='errLink2' style='color:black; font-weight:bold;' href='" + url + "/" + fileName + "'>@MessageResource.Global_Display_ErrorMessage</a>";
+        $("#ajaxError").fadeIn("slow");
+        $("#ajaxFailSpan").html(msg);
+        $("#errLink2").click(function () {
+            $("#ajaxError").hide("slow");
+        });
+    }
+
+    function SetSuccessMessage(successMessage) {
+        var successVisible = $("#ajaxSuccess").css("display");
+        var errorVisible = $("#ajaxError").css("display");
+        var warningVisible = $("#ajaxSuccess").css("display");
+        if (successVisible == "block" || errorVisible == "block" || warningVisible == "block" || '@(TempData["MessageToShow"])' != '') {
+            $(".alert").hide("slow", function () {
+
+                $("#ajaxSuccess").fadeIn("fast");
+                $("#ajaxSuccessSpan").html(successMessage);
+            });
+        }
+        else {
+            $("#ajaxSuccess").fadeIn("slow");
+            $("#ajaxSuccessSpan").html(successMessage);
+        }
+    }
+    function SetWarningMessage(warningMessage) {
+        var successVisible = $("#ajaxSuccess").css("display");
+        var warningVisible = $("#ajaxSuccess").css("display");
+        var errorVisible = $("#ajaxError").css("display");
+        if (successVisible == "block" || errorVisible == "block" || warningVisible == "block" || '@(TempData["MessageToShow"])' != '') {
+            $(".alert").hide("slow", function () {
+                $("#ajaxWarning").fadeIn("fast");
+                $("#ajaxWarningSpan").html(warningMessage);
+            });
+        }
+        else {
+            $("#ajaxWarning").fadeIn("slow");
+            $("#ajaxWarningSpan").html(warningMessage);
+        }
+    }
+    $(".close").on("click", function () {
+        ClearMessages();
+    });
+    function ClearMessages() {
+        $("#ajaxSuccess").hide("slow");
+        $("#ajaxError").hide("slow");
+        $("#ajaxWarning").hide("slow");
+    }
+</script>
+
+<div id="ajaxMessageHolder">
+    <div id="ajaxSuccess" style="display: none" class="alert alert-success messageDiv">
+        <span id="ajaxSuccessSpan"></span>
+        <button type="button" class="close">&times;</button>
+    </div>
+    <div id="ajaxError" style="display: none" class="alert alert-danger messageDiv">
+        <span id="ajaxFailSpan"></span>
+        <button type="button" class="close">&times;</button>
+    </div>
+    <div id="ajaxWarning" style="display: none" class="alert alert-info messageDiv">
+        <span id="ajaxWarningSpan"></span>
+        <button type="button" class="close">&times;</button>
+    </div>
+</div>
+@if (TempData["MessageToShow"] == null && TempData["IsError"] == null)
+{
+
+}
+else
+{
+    if (!Convert.ToBoolean(TempData["IsError"]) && TempData["MessageToShow"] != null && !string.IsNullOrEmpty(TempData["MessageToShow"].ToString()))
+    {
+        <div id="successDiv" class="alert alert-success messageDiv">
+            @(TempData["MessageToShow"])
+
+            @if (TempData["Message"] != null)
+            {
+                <a id="errLink" class="alert alert-success messageDiv" href="@Url.Action("CycleCountListIndex", "CycleCountList")">
+                    @(TempData["Message"])
+                </a>
+            }
+            <button type="button" class="close">&times;</button>
+        </div>
+    }
+
+    if (Convert.ToBoolean(TempData["IsError"]))
+    {
+        <div id="errorDiv" class="alert alert-danger messageDiv">
+            @(TempData["MessageToShow"])
+            @if (TempData["Message"] != null)
+            {
+                <a id="errLink2" style="color:black; font-weight:bold;" href="@Url.Action("DownloadFileActionResult", "DownloadFileActionResult", new { id = TempData[CommonValues.DownloadFileIdCookieKey] })">
+                    @(TempData["Message"])
+                </a>
+            }
+            <button type="button" class="close">&times;</button>
+        </div>
+    }
+}
+
+<script>
+    $("#errLink").on("click", function () {
+        $(".messageDiv").fadeOut("slow");
+    });
+    $("#errLink2").on("click", function () {
+        $(".messageDiv").fadeOut("slow");
+    });
+</script>

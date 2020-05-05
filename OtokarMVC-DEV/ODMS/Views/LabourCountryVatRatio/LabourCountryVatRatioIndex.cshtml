@@ -1,0 +1,171 @@
+﻿@model ODMSModel.LabourCountryVatRatio.LabourCountryVatRatioListModel
+@using ODMSBusiness
+@using ODMSCommon.Resources
+@using ODMSModel.LabourCountryVatRatio
+
+
+@{
+    ViewBag.Title = MessageResource.LabourCountryVatRatio_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+@*search start*@
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.LabourId)</div>
+        <div class="shortTxtDiv">@{Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "LabourName", ControlId = "LabourId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });}</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.CountryId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.CountryId).BindTo(ViewBag.CountryList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.VatRatio).BindTo(ViewBag.VatRatioList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(c => c.SearchIsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SearchIsActive).BindTo(CommonBL.ListStatus().Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All)  </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+@*serach end*@
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.LabourCountryVatRatio.LabourCountryVatRatioIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("LabourCountryVatRatio_PageTitle_Create"), CommonValues.PermissionCodes.LabourCountryVatRatio.LabourCountryVatRatioCreate)
+
+@*grid start*@
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<LabourCountryVatRatioListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.LabourId).ClientTemplate("<center><a class='details modalClick' frameTitle='" + CommonUtility.GetResourceValue("LabourCountryVatRatio_PageTitle_Details") + "' href='" + Url.Action("LabourCountryVatRatioDetails", "LabourCountryVatRatio") + "?CountryId=#=CountryId#&LabourId=#=LabourId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourCountryVatRatio.LabourCountryVatRatioDetails));
+                  columns.Bound(p => p.LabourId).ClientTemplate("<center><a class='edit modalClick' id='#=LabourId#' frameTitle='" + CommonUtility.GetResourceValue("LabourCountryVatRatio_PageTitle_Update") + "' href='" + Url.Action("LabourCountryVatRatioUpdate", "LabourCountryVatRatio") + "?CountryId=#=CountryId#&LabourId=#=LabourId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourCountryVatRatio.LabourCountryVatRatioUpdate));
+                  columns.Bound(o => o.LabourId).ClientTemplate("<center><a href='javascript:void(0);' id='#=LabourId#' frameTitle='" + CommonUtility.GetResourceValue("LabourCountryVatRatio_PageTitle_Delete") + "' onclick='DeleteLabourCountryVatRatio(#=CountryId#,#=LabourId#)' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourCountryVatRatio.LabourCountryVatRatioDelete));
+                  columns.Bound(p => p.LabourName).Width(150).Sortable(true);
+                  columns.Bound(p => p.CountryName).Width(150).Sortable(true);
+                  columns.Bound(p => p.VatRatio).Width(100).Format("{0:N}").Sortable(true);
+                  columns.Bound(p => p.IsActiveString).Width(100).Format("{0:N}").Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListLabourCountryVatRatios", "LabourCountryVatRatio", Model).Data("LabourCountryVatRatioSearch"))
+                                        .Model(model => model.Field(o => o.LabourId).DefaultValue(-1)))
+
+          )
+</div>
+@*grid end*@
+
+@*modelWindow start*@
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(500)
+    .Height(380)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+@*modelWindow end*@
+
+
+@*scripts start*@
+@section Scripts{
+    <script type="text/javascript">
+        function LabourCountryVatRatioSearch() {
+            return {
+                VatRatio: $('#VatRatio').val(),
+                LabourId: $('#LabourId').val(),
+                CountryId: $('#CountryId').val(),
+                SearchIsActive: $('#SearchIsActive').val()
+            };
+        }
+
+        $(document).ready(init);
+
+        function init() {
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("details") == true) {
+                    link = $(this).attr("href");
+                } else if ($(this).hasClass("edit")) {
+                    link = $(this).attr("href");
+                    //link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("LabourCountryVatRatioCreate", "LabourCountryVatRatio")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+
+}
+
+function DeleteLabourCountryVatRatio(countryId, labourId) {
+    var token = $('input[name="__RequestVerificationToken"]').val();
+
+    DeleteConfirm(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("LabourCountryVatRatioDelete", "LabourCountryVatRatio")",
+            data: { labourId: labourId, countryId: countryId, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    var grid = $('#grid').data('kendoGrid');
+                    grid.dataSource.read();
+                    SetSuccessMessage(result.Message);
+                }
+            },
+            dataType: "json"
+        });
+    });
+}
+    </script>
+}
+@*scripts end*@

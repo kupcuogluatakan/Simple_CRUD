@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = MessageResource.Supplier_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.Supplier
+@model SupplierViewModel
+@using (Html.BeginForm("SupplierCreate", "Supplier", FormMethod.Post))
+{
+     Html.RenderPartial("_SupplierEdit", Model);
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Supplier.SupplierCreate,"SupplierCreate","return control();")        
+}
+
+

@@ -1,0 +1,75 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.LabourType.LabourTypeDetailModel
+@{
+    ViewBag.Title = MessageResource.LabourType_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("LabourTypeCreate", "LabourType", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(d => d.Name)</div>
+    <div class="shortTxtDiv">
+        @{
+            Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model == null ? string.Empty : Model.MultiLanguageContentAsText, IsEnabled = true });
+            @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+        }
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    @*<div class="labelDiv">@Html.LabelFor(d => d.VatRatio)</div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBox()
+              .Name("VatRatio")
+              .Placeholder(MessageResource.LabourType_Display_VatRatio)
+              .BindTo(ViewBag.VatRatioList)
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .HtmlAttributes(new { @class = "ComboBox", @style = "width: 200px;" })
+              )
+        @Html.ValidationMessageFor(v => v.VatRatio)
+    </div>
+    <div class="clearfix"></div>*@
+    <div class="labelDiv">@Html.LabelFor(d => d.Description)</div>
+    <div class="shortTxtDiv">
+        @Html.TextBoxFor(d => d.Description) 
+        @Html.ValidationMessageFor(v => v.Description)
+    </div>
+    <div class="clearfix"></div>
+    <div class="labelDiv">@Html.LabelFor(w => w.IsActiveString)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(w => w.IsActive)</div>
+   <div class="clearfix"></div>
+    @ODMSHelpers.Button("Create", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.LabourType.LabourTypeCreate, "LabourTypeCreate")        
+}
+
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    $(function () {
+        adjustPage();
+        //adjustControlPositions();
+    });
+    
+    function adjustPage() {
+        $("#popupContent").css("width", 580);
+        //$("#popupContentWrapper").css("min-height", 100);
+        //$("#popupContentWrapper").css("height", 400);
+        $("#popupContentWrapper").css("width", 600);
+    }
+
+    function adjustControlPositions() {
+        $("#Create").css("position", "absolute");
+        $("#Create").css("margin-top", "180px");
+        $("#Create").css("margin-left", "-100px");
+        $("#Create").css("width", "75px");
+        
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("margin-left", "-77px");
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("margin-top", "80px");
+    }
+</script>

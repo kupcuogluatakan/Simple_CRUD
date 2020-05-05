@@ -1,0 +1,164 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.User.UserIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("DealerUser_PageTitle_Index");
+}
+ 
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.UserCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserCode) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.UserFirstName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserFirstName) </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.UserLastName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.UserLastName) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IdentityNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.IdentityNo) </div>
+        <div class="labelDiv"><label>@MessageResource.User_Display_IsActive</label></div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SearchIsActive).BindTo(ViewBag.ActivePassiveList as List<SelectListItem>).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All)  </div>        
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.User.DealerUserDetails)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("DealerUser_PageTitle_Create"), CommonValues.PermissionCodes.User.DealerUserCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(700)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+<script>
+    function Search() {
+        return {
+            UserCode: $('#UserCode').val(),
+            UserFirstName: $("#UserFirstName").val(),
+            UserLastName: $("#UserLastName").val(),
+            IdentityNo: $('#IdentityNo').val(),
+            SearchIsActive: $('#SearchIsActive').val(),
+            DealerName: $('#DealerName').val()
+        };
+    }
+    $(document).ready(function () {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("DealerUserDetails", "User", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("DealerUserUpdate", "User", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("DealerUserCreate", "User")";
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+
+    });
+    function DeleteUser(uId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteDealerUser","User")",
+                data: { userId: uId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.ListModel.UserListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+    {
+        columns.Bound(p => p.UserId).ClientTemplate("<center><a class='details modalClick' id='#=UserId#' frameTitle='" + @CommonUtility.GetResourceValue("DealerUser_PageTitle_Details") + "' href='/User/UserDetails/#=UserId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.User.DealerUserDetails));
+        columns.Bound(p => p.UserId).ClientTemplate("<center><a class='edit modalClick' id='#=UserId#' frameTitle='" + @CommonUtility.GetResourceValue("DealerUser_PageTitle_Update") + "' href='/User/UserUpdate/#=UserId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.User.DealerUserUpdate));
+        columns.Bound(o => o.UserId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("DealerUser_PageTitle_Delete") + "' onclick='DeleteUser(#=UserId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(100).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.User.DealerUserDelete));
+        columns.Bound(p => p.DealerName).Width(100).Sortable(false).Visible(UserManager.UserInfo.GetUserDealerId() == 0);
+        columns.Bound(p => p.RoleTypeName).Width(100).Sortable(true);
+        columns.Bound(p => p.UserCode).Width(100).Sortable(true);
+        columns.Bound(p => p.UserFirstName).Width(140).Sortable(true);
+        columns.Bound(p => p.UserLastName).Sortable(true);
+        columns.Bound(p => p.IdentityNo).Sortable(true);
+        columns.Bound(p => p.EMail).Sortable(true);
+        columns.Bound(p => p.IsActiveName).Sortable(true);
+
+    })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerUser", "User", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.UserId).DefaultValue(-1)))
+
+    )
+</div>

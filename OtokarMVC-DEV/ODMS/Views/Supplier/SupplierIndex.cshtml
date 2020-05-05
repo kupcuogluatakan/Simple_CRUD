@@ -1,0 +1,214 @@
+﻿@model SupplierViewModel
+@using ODMSBusiness
+@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.Supplier
+
+
+@{
+    ViewBag.Title = MessageResource.Supplier_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+@*search start*@
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerId)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(c => c.DealerId).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(UserManager.UserInfo.GetUserDealerId() == 0)
+        </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.SupplierName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.SupplierName)</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.SearchIsActive).BindTo(CommonBL.ListStatus().Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All) </div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.MobilePhone)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.MobilePhone,new { maxlength ="20" }) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.Phone)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Phone, new { maxlength = "20" }) </div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.TaxOffice)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.TaxOffice) </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.ContactPerson)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.ContactPerson) </div>
+
+
+        <div class="clearDiv">&nbsp;</div>
+
+    </div>
+</div>
+@*serach end*@
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Supplier.SupplierIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("Supplier_PageTitle_Create"), CommonValues.PermissionCodes.Supplier.SupplierCreate)
+
+@*grid start*@
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<SupplierListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.SupplierId).ClientTemplate("<center><a class='details modalClick' id='#=SupplierId#' frameTitle='" + CommonUtility.GetResourceValue("Supplier_PageTitle_Details") + "' href='/Supplier/SupplierDetails/#=SupplierId#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(90).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Supplier.SupplierDetails));
+              columns.Bound(p => p.SupplierId).ClientTemplate("<center><a class='edit modalClick' id='#=SupplierId#' frameTitle='" + CommonUtility.GetResourceValue("Supplier_PageTitle_Update") + "' href='/Supplier/SupplierUpdate/#=SupplierId#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(90).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Supplier.SupplierUpdate));
+              columns.Bound(o => o.SupplierId).ClientTemplate("<center><a href='javascript:void(0);' id='#=SupplierId#' frameTitle='" + CommonUtility.GetResourceValue("Supplier_PageTitle_Delete") + "' onclick='DeleteSupplier(#=SupplierId#)' ><img class=iconLink src='" + @Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(90).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Supplier.SupplierDelete));
+              columns.Bound(p => p.SupplierName).Width(300).Sortable(true);
+              columns.Bound(p => p.ContactPerson).Width(250).Sortable(true);
+              columns.Bound(p => p.Email).Width(250).Sortable(true);
+              columns.Bound(p => p.Phone).Width(150).Sortable(true);
+              columns.Bound(p => p.Fax).Width(150).Sortable(true);
+              columns.Bound(p => p.MobilePhone).Width(150).Sortable(true);
+              columns.Bound(p => p.ChamberOfCommerce).Width(250).Sortable(true);
+              columns.Bound(p => p.CountryName).Width(250).Sortable(true);
+              columns.Bound(p => p.IsActiveString).Width(150).Sortable(true);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListSuppliers", "Supplier", Model).Data("SupplierSearch"))
+                                        .Model(model => model.Field(o => o.SupplierId).DefaultValue(-1)))
+
+    )
+</div>
+@*grid end*@
+
+@*modelWindow start*@
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(500)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+@*modelWindow end*@
+
+<script type="text/javascript" src="@Url.Content("~/Scripts/jquery.maskedinput.js")"></script>
+
+@*scripts start*@
+@section Scripts{
+
+
+    <script type="text/javascript">
+
+
+        $(document).ready(function() {
+            if (@(Model.DealerPoGroup == 13 ? "0":"1") == "1")
+                $("#Phone,#MobilePhone").mask("(999) 999 99 99", { placeholder: " " });
+        });
+
+
+        function SupplierSearch() {
+            return {
+                DealerId: $('#DealerId').val(),
+                SupplierName: $('#SupplierName').val(),
+                SearchIsActive: $('#SearchIsActive').val(),
+                IsActiveString: $("#SearchIsActive").val(),
+                MobilePhone: $("#MobilePhone").val(),
+                Phone: $("#Phone").val(),
+                TaxOffice: $("#TaxOffice").val(),
+                ContactPerson: $("#ContactPerson").val()
+            };
+        }
+
+        $(document).ready(init);
+
+
+        function init() {
+
+
+            $("body").delegate("#btnSearch", "click", function(e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+            $("body").delegate("#showSearch", "click", function(e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function(e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("SupplierDetails", "Supplier", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("SupplierUpdate", "Supplier", new {id = -1})";
+                    link = link.replace("-1", clickedId);
+                } else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("SupplierCreate", "Supplier")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+        }
+
+        function DeleteSupplier(id) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            DeleteConfirm(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("SupplierDelete", "Supplier")",
+                    data: { id: id, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+
+    </script>
+}
+@*scripts end*@

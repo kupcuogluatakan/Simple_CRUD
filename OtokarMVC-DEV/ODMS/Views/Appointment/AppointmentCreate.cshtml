@@ -1,0 +1,54 @@
+﻿@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style>
+#popupContent {
+width: 1400px;
+padding-top: 10px;
+padding-left: 10px;
+margin: 0;
+background-color: #EDF1F4 !important;
+}
+ </style>
+
+@model ODMSModel.Appointment.AppointmentViewModel
+
+    @using (Html.BeginForm("AppointmentCreate", "Appointment", FormMethod.Post))
+    {
+        @ODMSHelpers.Button("ScheduleRedirect", CommonUtility.GetResourceValue("Appointment_Display_Browse_Schedule"), CommonValues.PermissionCodes.Appointment.AppointmentIndex, "ScheduleIndex","",false)
+        <div class="clearDiv">&nbsp;</div>
+        <div class="clearDiv">&nbsp;</div>
+        Html.RenderPartial("_AppointmentEdit", Model);
+        Html.HiddenFor(v => v.AppointmentId);
+        @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.Appointment.AppointmentCreate, "AppointmentCreate")        
+
+    } 
+<script>
+    $("#ScheduleRedirect").click(function () {
+        window.open(
+          '@Url.Action("ScheduleIndex","Scheduler")',
+          '_blank' // <- This is what makes it open in a new window.
+        );
+    });
+
+</script>
+
+<script id="warning-modal" type="text/x-kendo-template">
+    <div class="alert alert-warning">
+    <div style="width:500px">
+        <span class="glyphicon glyphicon-warning-sign"></span><p class="warning-message" style="font-weight:bold"></p>
+        <p style="text-align:right">
+        <button class="warning-ok btn btn-warning">@ODMSCommon.Resources.MessageResource.Global_Display_Ok</button></p>
+    </div>
+    </div>
+</script>
+<style>
+    body
+    {
+        background-color:#EDF1F4 !important;
+        height:2000px;
+        overflow:hidden;
+    }
+
+</style>

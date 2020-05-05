@@ -1,0 +1,180 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.PurchaseOrderGroupRelation
+
+@model PurchaseOrderGroupRelationListModel
+
+@{
+    ViewBag.Title = MessageResource.PurchaseOrderGroupRelation_PageTitle_Index;
+}
+
+<link href="~/Style/Content.css" rel="stylesheet" />
+
+<script>
+    $(function () {
+        RegisterEventHandlers();
+    });
+
+    function RegisterEventHandlers() {
+
+        $("body").delegate("#btnAdd", "click", AddGroupDealersClickHandler);
+        $("body").delegate("#btnRemove", "click", RemoveGroupDealersClickHandler);
+        $("#btnSave").unbind("click", SaveGroupDealersClickHandler);
+        $("#btnSave").bind("click", SaveGroupDealersClickHandler);
+        $("body").delegate("#btnAddAll", "click", AddAllGroupDealersClickHandler);
+        $("body").delegate("#btnRemoveAll", "click", RemoveAllGroupDealersClickHandler);
+    }
+
+    var unSelectedDealerIds = [];
+
+    $(document).ready(function () {
+        $("#PurchaseOrderGroupId").change(function () {
+            SelectedRoleChanged();
+        });
+    });
+
+
+
+    function GetSelectedGroup() {
+        return {
+            PurchaseOrderGroupId: $("#PurchaseOrderGroupId").val()
+        };
+    }
+
+    function SelectedRoleChanged() {
+        var includedDealerlist = $("#PurchaseOrderGroupDealersIncluded").data("kendoListView");
+        var notIncludedDealerlist = $("#PurchaseOrderGroupDealersNotIncluded").data("kendoListView");
+
+        includedDealerlist.dataSource.read();
+        notIncludedDealerlist.dataSource.read();
+    }
+
+    function AddGroupDealersClickHandler() {
+        $(".k-state-selected", "#PurchaseOrderGroupDealersNotIncluded").each(function (i, e) {
+            $("#PurchaseOrderGroupDealersIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function AddAllGroupDealersClickHandler() {
+        $(".ListItem", "#PurchaseOrderGroupDealersNotIncluded").each(function (i, e) {
+            $("#PurchaseOrderGroupDealersIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function RemoveGroupDealersClickHandler() {
+        $(".k-state-selected", "#PurchaseOrderGroupDealersIncluded").each(function (i, e) {
+            $("#PurchaseOrderGroupDealersNotIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function RemoveAllGroupDealersClickHandler() {
+        $(".ListItem", "#PurchaseOrderGroupDealersIncluded").each(function (i, e) {
+            $("#PurchaseOrderGroupDealersNotIncluded").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function SaveGroupDealersClickHandler() {
+        var purchaseGroupId = $("#PurchaseOrderGroupId").val();
+        if (purchaseGroupId == "") return;
+
+        var selectedDealerIds = [];
+        $("#PurchaseOrderGroupDealersIncluded").children().each(function (i, e) {
+            var selectedId = $("span", e).data("iddealer");
+            selectedDealerIds[i] = selectedId;
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SaveGroupDealers", "PurchaseOrderGroupRelation")",
+            data: { PurchaseOrderGroupId: purchaseGroupId, DealerIdListOfIncluded: selectedDealerIds },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 1) {
+                    SetSuccessMessage(result.Message);
+                    SelectedRoleChanged();
+                }
+                else
+                    SetErrorMessage(result.Message);
+            }, error: function (e) {
+
+            },
+            dataType: "json"
+        });
+    }
+
+</script>
+
+<script type="text/x-kendo-tmpl" id="GroupRelationNameItemTemplate">
+    <div class="ListItem">
+        <table>
+            <tr>
+                <td style="width:400px"><span data-iddealer=#:DealerId#>#:DealerName# - #:GroupName#</span></td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<div>
+
+
+    <table>
+        <tr>
+            <td>
+                <div class="labelDiv" style="width: 247px">@Html.LabelFor(v => v.PurchaseOrderGroupId)</div>
+            </td>
+            <td>
+                <div class="shortTxtDiv" style="width: 247px !important;">@Html.Kendo().ComboBoxFor(c => c.PurchaseOrderGroupId).BindTo(ViewBag.PurchaseOrderGroupList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span style="font-size:25px;">@MessageResource.PurchaseOrderGroupRelation_Display_Not_Included_Delaer</span>
+            </td>
+            <td></td>
+            <td>
+                <span style="font-size:25px;">@MessageResource.PurchaseOrderGroupRelation_Diplay_Included_Delaer  </span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+<div>
+    @(Html.Kendo().ListView<PurchaseOrderGroupRelationListModel>()
+                .Name("PurchaseOrderGroupDealersNotIncluded")
+                .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+                .ClientTemplateId("GroupRelationNameItemTemplate")
+                .TagName("div")
+                .DataSource(ds => ds.Read(read => read.Action("ListGroupNotIncluededDealer", "PurchaseOrderGroupRelation").Data("GetSelectedGroup")))
+                        .HtmlAttributes(new { @style = "position: absolute; float: left; width: 386px; height: 359px; margin-top: 20px; margin-left: 0px; overflow:auto;" })
+        )
+</div>
+
+
+@ODMSHelpers.LinkButton("btnAdd", "&rsaquo;", "", "arrow-btn", "", "", "position: absolute; margin-left: 400px; margin-top: 60px; width: 40px; height: 25px; ")
+@ODMSHelpers.LinkButton("btnRemove", "&lsaquo;", "", "arrow-btn", "", "", "position: absolute; margin-left: 400px; margin-top: 90px; width: 40px; height: 25px;")
+
+@ODMSHelpers.LinkButton("btnAddAll", "&raquo;", "", "arrow-btn", "", "", "position: absolute; margin-left: 400px; margin-top: 120px; width: 40px; height: 25px;")
+@ODMSHelpers.LinkButton("btnRemoveAll", "&laquo;", "", "arrow-btn", "", "", "position: absolute; margin-left: 400px; margin-top: 150px; width: 40px; height: 25px;")
+
+
+
+<div>
+    @(Html.Kendo().ListView<PurchaseOrderGroupRelationListModel>()
+              .Name("PurchaseOrderGroupDealersIncluded")
+              .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+              .ClientTemplateId("GroupRelationNameItemTemplate")
+              .TagName("div")
+              .DataSource(ds => ds.Read(read => read.Action("ListGroupIncluededDealer", "PurchaseOrderGroupRelation").Data("GetSelectedGroup")))
+              .HtmlAttributes(new { @style = "width: 386px; height: 359px;  margin-top: 20px; margin-left: 458px;overflow:auto;" })
+        )
+</div>
+<div style="position: absolute; height: 35px; width: 850px">
+    @ODMSHelpers.LinkButton("btnSave", @MessageResource.Global_Display_Save, "", "Button", "", "", "float: left; margin-top: 5px;  height: 25px;")
+</div>
+
+<br />
+

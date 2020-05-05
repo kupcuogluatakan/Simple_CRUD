@@ -1,0 +1,30 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.FleetRequestVehicle.FleetRequestVehicleViewModel
+ 
+<style type="text/css">
+    #popupContentWrapper{ min-height: 250px !important;}
+
+    .k-link:link, .k-link:visited, .k-nav-current.k-state-hover .k-link {
+    color: #428BCA;
+}
+</style>
+@{
+    ViewBag.Title = MessageResource.FleetRequestVehicle_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+<div class="shortTxtDiv">@Model.CustomerName &nbsp; </div>
+<div class="labelDiv">@Html.LabelFor(v => v.VehicleId)</div>
+<div class="shortTxtDiv">@Model.VehicleName &nbsp;
+</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.DocumentName)</div>
+<div class="shortTxtDiv">
+    <a class="k-link" href="@Url.Action("DownloadVehicleDocument",new{id=Model.DocumentId})">
+         @Model.DocumentName &nbsp;
+    </a>
+   
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+

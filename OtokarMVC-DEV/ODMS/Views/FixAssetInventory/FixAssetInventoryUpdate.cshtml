@@ -1,0 +1,60 @@
+﻿@model ODMSModel.FixAssetInventory.FixAssetInventoryViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("FixAssetInventory_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("FixAssetInventoryUpdate", "FixAssetInventory", FormMethod.Post))
+{
+    if (!string.IsNullOrEmpty(Model.PartName))
+    {
+        <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartName) &nbsp;</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.StockTypeName)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.StockTypeName) &nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.RackName)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.RackName) &nbsp;</div>
+        <div class="clearDiv">&nbsp;</div>
+    }
+
+    <div class="labelDiv">@Html.LabelFor(v => v.Code)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Code) @Html.ValidationMessageFor(c => c.Code)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Name)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Name) @Html.ValidationMessageFor(c => c.Name)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Unit)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Unit) @Html.ValidationMessageFor(c => c.Unit)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SerialNo)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SerialNo) @Html.ValidationMessageFor(c => c.SerialNo)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Description)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Description) @Html.ValidationMessageFor(c => c.Description)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleGroupName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.VehicleGroupId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleGroupList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.EquipmentTypeName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.EquipmentTypeId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.EquipmentTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.StatusName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.StatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).Enable(false)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.FixAssetInventory.FixAssetInventoryUpdate, "FixAssetInventoryUpdate")
+    @Html.HiddenFor(v => v.FixAssetInventoryId)
+    @Html.HiddenFor(v => v.PartName)
+    @Html.HiddenFor(v => v.StockTypeName)
+    @Html.HiddenFor(v => v.RackName)
+    @Html.HiddenFor(v => v.StatusId)
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

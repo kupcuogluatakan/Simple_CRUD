@@ -1,0 +1,155 @@
+﻿@model ODMSModel.CountryVatRatio.CountryVatRatioViewModel
+@using ODMSCommon.Resources
+@using ODMSModel.CountryVatRatio
+
+
+@{
+    ViewBag.Title = MessageResource.CountryVatRatio_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.CountryId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.CountryId).BindTo(ViewBag.CountryList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))  </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.LabourVatRatio)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.LabourVatRatio).BindTo(ViewBag.VatRatioList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+
+
+        <div class="labelDiv">@Html.LabelFor(v => v.PartVatRatio)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.PartVatRatio).BindTo(ViewBag.VatRatioList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>
+        <div class="clearDiv">&nbsp;</div>
+
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.CountryVatRatio.CountryVatRatioIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("CountryVatRatio_PageTitle_Create"), CommonValues.PermissionCodes.CountryVatRatio.CountryVatRatioCreate)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<CountryVatRatioListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  //columns.Bound(p => p.CountryId).ClientTemplate("<center><a class='details modalClick' frameTitle='" + CommonUtility.GetResourceValue("CountryVatRatio_PageTitle_Details") + "' href='" + Url.Action("CountryVatRatioDetails", "CountryVatRatio") + "?&CountryId=#=CountryId#&PartVatRatio=#=PartVatRatio#&LabourVatRatio=#=LabourVatRatio#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CountryVatRatio.CountryVatRatioDetails));
+                  columns.Bound(p => p.CountryId).ClientTemplate("<center><a class='edit modalClick' id='#=CountryId#' frameTitle='" + CommonUtility.GetResourceValue("CountryVatRatio_PageTitle_Update") + "' href='" + Url.Action("CountryVatRatioUpdate", "CountryVatRatio") + "?&countryId=#=CountryId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CountryVatRatio.CountryVatRatioUpdate));
+                  columns.Bound(o => o.CountryId).ClientTemplate("<center><a href='javascript:void(0);' id='#=CountryId#' frameTitle='" + CommonUtility.GetResourceValue("CountryVatRatio_PageTitle_Delete") + "' onclick='DeleteCountryVatRatio(#=CountryId#,#=PartVatRatio#,#=LabourVatRatio#)' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.CountryVatRatio.CountryVatRatioDelete));
+                  columns.Bound(p => p.CountryName).Width(150).Sortable(true);
+                  columns.Bound(p => p.LabourVatRatio).Width(100).Format("{0:N}").Sortable(true);
+                  columns.Bound(p => p.PartVatRatio).Width(100).Format("{0:N}").Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Read(read => read.Action("ListCountryVatRatios", "CountryVatRatio", Model).Data("CountryVatRatioSearch"))
+                                        .Model(model => model.Field(o => o.CountryId).DefaultValue(-1)))
+
+          )
+</div>
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(500)
+    .Height(380)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+<script type="text/javascript">
+    function CountryVatRatioSearch() {
+        return {
+            PartVatRatio: $('#PartVatRatio').val(),
+            LabourVatRatio: $('#LabourVatRatio').val(),
+            CountryId: $('#CountryId').val()
+        };
+    }
+
+    $(document).ready(init);
+
+    function init() {       
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("CountryVatRatioUpdate", "CountryVatRatio", new { countryId = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("CountryVatRatioCreate", "CountryVatRatio")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+
+            });
+        }
+
+        function DeleteCountryVatRatio(countryId, partVatRatio, labourVatRatio) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("CountryVatRatioDelete", "CountryVatRatio")",
+                    data: { CountryId: countryId, PartVatRatio: partVatRatio, LabourVatRatio: labourVatRatio, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+</script>
+

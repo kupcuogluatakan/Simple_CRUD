@@ -1,0 +1,239 @@
+﻿@{
+    ViewBag.Title = "PurchaseOrderSuggestionDetailIndex";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.PurchaseOrderSuggestionDetail
+@model POSuggestionDetailViewModel
+<br />
+<div class="labelDiv">@Html.LabelFor(v => v.SuggestionPrice)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(p => p.SuggestionPrice)</div>
+<div class="labelDiv">@Html.LabelFor(v => v.OrderPrice)
+    <input type="image" id="btnSave" name="btnSave" src="@Url.Content("~/Images/refresh.png")" alt="Submit" width="12" height="12">
+</div>
+<div class="shortTxtDiv">@Html.TextBoxFor(p => p.OrderPriceS, new { @readonly = "readonly", @width = "60px" })</div>
+@if (!String.IsNullOrEmpty(Model.CreditLimit))
+{
+    <div style="float: right">
+        <div class="labelDiv" style="width: 100px">@Html.LabelFor(v => v.CreditLimit)</div>
+        <div class="shortTxtDiv" style="width: 100px">@Html.DisplayFor(v => v.CreditLimit) </div>
+    </div>
+}
+<br />
+<br />
+<style>
+    .bgColor
+    {
+        background-color: #CCFFCC;
+        color: black;
+    }
+</style>
+<script>
+    function onEdit(e) {
+        var data = e.model;
+        if (data.IsChecked == false) {
+            this.closeCell();
+        }
+        e.preventDefault();
+    }
+    function searchPOSuggest() {
+        return {
+            MrpId: @Model.MrpId
+        };
+    }
+
+    function onDataBound(e) {
+        var grid = this;
+        grid.tbody.find('tr').each(function() {
+            var dataItem = grid.dataItem(this);
+            dataItem.fields["OrderQuantity"].editable = dataItem.IsChecked && (parseInt(@Model.PoNumber) == 0);
+        });
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].IsDivided == 1) {
+                $('tr[data-uid="' + list[i].uid + '"] ').css("background-color", "LightYellow");
+            }
+            if (list[i].IsChanged == 1) {
+                $('tr[data-uid="' + list[i].uid + '"] ').css("background-color", "LightPink");
+            }
+        }
+    }
+
+    function onChange(e) {
+        var grid = $('#POSuggestionDetailGrid').data("kendoGrid");
+
+        var selectedItemUId =  this.element.parent().closest('tr').attr('data-uid');
+        var item = grid.dataSource.getByUid(selectedItemUId);
+        
+        var newValue =(Math.ceil(this.value()/parseFloat(item.PackageQuantity.replace(',', '.')).toFixed(2)))*parseFloat(item.PackageQuantity.replace(',', '.')).toFixed(2);
+        this.value(newValue);
+        item.set("OrderQuantity",newValue);
+    }
+</script>
+@if (Model.PoNumber == 0)
+{
+    <div>@Html.CheckBox("SelectAll", new { onClick = "SelectAll();" }) @MessageResource.Global_Display_SelectAll</div>
+}
+<br />
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<POSuggestionDetailListModel>()
+          .Name("POSuggestionDetailGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.MrpId).Visible(false);
+              columns.Bound(p => p.PartId).Visible(false);
+              columns.Bound(p => p.IsChecked).Width(20).Title("").ClientTemplate("#if(parseInt(PropPoQuantity) != 0){#<input name='IsChecked' class='cbClass' type='checkbox' data-bind='checked: IsChecked' #= IsChecked ? checked='checked' : '' #/>#}#").Visible(Model.PoNumber == 0);
+              columns.Bound(p => p.Part).Width(100).Sortable(true);
+              columns.Bound(p => p.PropPoQuantity).Width(60).Sortable(true);
+              columns.Bound(p => p.OrderQuantity).Width(50).EditorTemplateName("NewDecimalRoundedNumericTextboxEditor").Width(50).Sortable(false).HtmlAttributes(new { @class = "bgColor" });
+              columns.Bound(p => p.Unit).Sortable(true).Width(30);
+              columns.Bound(p => p.PurchasePrice).Width(40).Sortable(true);
+              columns.Bound(p => p.LeadTime).Width(50).Sortable(true);
+              columns.Bound(p => p.MinStockQuantity).Width(70).Sortable(true);
+              columns.Bound(p => p.OpenPoQuantity).Width(60).Sortable(true);
+              columns.Bound(p => p.OpenSoQuantity).Width(60).Sortable(true);
+              columns.Bound(p => p.PackageQuantity).Width(50).Sortable(true);
+              columns.Bound(p => p.ChangeDivideName).Width(50).Sortable(true).ClientTemplate("#if(ChangeDivideName != null){#<a class='part-tooltip' title='#=FromParts#'>#=ChangeDivideName#</a>#}#");
+          })
+          .Sortable()
+          .Scrollable()
+          .Events(e => e.DataBound("onDataBound"))
+          .Events(e => e.Edit("onEdit"))
+          .Editable(editable => editable.Mode(GridEditMode.InCell))
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .ServerOperation(true)
+              .Read(read => read.Action("ListPOSuggestionDetail", "PurchaseOrderSuggestionDetail", Model).Data("searchPOSuggest"))
+              .Model(model =>
+              {
+                  model.Id(p => p.MrpId);
+                  model.Field(p => p.IsChecked).Editable(true);
+                  model.Field(p => p.Part).Editable(false);
+                  model.Field(p => p.PropPoQuantity).Editable(false);
+                  model.Field(p => p.OrderQuantity).Editable(true);
+                  model.Field(p => p.Unit).Editable(false);
+                  model.Field(p => p.PurchasePrice).Editable(false);
+                  model.Field(p => p.LeadTime).Editable(false);
+                  model.Field(p => p.MinStockQuantity).Editable(false);
+                  model.Field(p => p.OpenPoQuantity).Editable(false);
+                  model.Field(p => p.PackageQuantity).Editable(false);
+                  model.Field(p => p.ReserveQuantity).Editable(false);
+                  model.Field(p => p.ChangeDivideName).Editable(false);
+              }))
+
+          )
+</div>
+<style>
+    .clssComplete
+    {
+        color: green;
+    }
+</style>
+<br />
+@if (@Model.PoNumber == 0)
+{
+    @ODMSHelpers.LinkButton("btnComplete", CommonUtility.GetResourceValue("Global_Display_Order"), "Create", "clssComplete", null, null)
+}
+<script>
+    function SelectAll() {
+        var checked = $('#SelectAll').prop('checked');
+        var list = grid.dataSource.data();
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].IsDivided != 1) {
+                list[i].set("IsChecked", checked);
+            }
+        }
+    }
+
+    var grid = $('#POSuggestionDetailGrid').data("kendoGrid");
+    grid.tbody.on("change", ".cbClass", function(e) {
+        var row = $(e.target).closest("tr");
+        var item = grid.dataItem(row);
+        //if (!$(e.target).is(":checked")) {
+        //    item.set("OrderQuantity", parseFloat(0.00).toFixed(2));
+        //}
+        item.set("IsChecked", $(e.target).is(":checked") ? 1 : 0);
+        //item.fields["OrderQuantity"].editable = $(e.target).is(":checked");
+            
+        //var list = grid.dataSource.data();
+        //for (var i = 0; i < list.length; i++) {
+        //    list[i].fields["OrderQuantity"].editable = list[i].IsChecked;
+        //    alert( list[i].fields["OrderQuantity"].editable);
+        //}
+    });
+
+
+
+    //Save all result row to db
+    $("#btnSave").click(function() {
+        var parentGrid = $("#POSuggestionDetailGrid").data("kendoGrid");
+        var data = parentGrid.dataSource.data();
+        var result = 0;
+        $.each(data, function(i, row) {
+            var rowCalc=(parseFloat(row.OrderQuantity).toFixed(2)*parseFloat(row.PurchasePrice.replace(',', '.'))).toFixed(2);
+            if (row.IsChecked) {
+                result = (parseFloat(result)+parseFloat(rowCalc)).toFixed(2);
+            }
+        });
+        $("#OrderPriceS").val(result);
+    });
+    
+    function Complete() {
+        var pushedData = [];
+        var parentGrid = $("#POSuggestionDetailGrid").data("kendoGrid");
+        var data = parentGrid.dataSource.data();
+        var result = 0;
+        var isValid = true;
+        $.each(data, function(i, row) {
+            //Push data to json array
+            if (row.IsChecked) {
+                if (row.OrderQuantity == 0) {
+                    isValid = false;
+                } else {
+                    pushedData.push({
+                        MrpId: row.MrpId,
+                        PartId: row.PartId,
+                        PropPoQuantity: row.PropPoQuantity,
+                        OrderQuantity: row.OrderQuantity,
+                        ResultQuantity: row.ResultQuantity
+                    });
+                }
+                result = result + 1;
+            }
+        });
+        if (result == 0) {
+            SetErrorMessage('@MessageResource.PurchaseOrderSuggestionDetail_Warning_NoRowSelected');
+        } else {
+            if (isValid) {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("CompletePurchaseOrderSuggestionDetail", "PurchaseOrderSuggestionDetail")",
+                    data: JSON.stringify(pushedData),
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            //Refresh main grid if success
+                            var grid = $('#POSuggestionDetailGrid').data('kendoGrid');
+                            grid.dataSource.read();
+                            
+                            var grid = $('#PurchaseOrderSuggestionGrid').data('kendoGrid');
+                            grid.dataSource.page(1);
+
+                            parent.loadTabs(@Model.MrpId);
+
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            } else {
+                SetErrorMessage('@MessageResource.PurchaseOrderSuggestionDetail_Warning_Row0QuantitySelected');
+            }
+        }
+    }
+
+    $("#btnComplete").click(function() {
+        Complete();
+    });
+</script>

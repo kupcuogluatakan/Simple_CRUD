@@ -1,0 +1,225 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.ListModel
+@using ODMSCommon.Security
+
+@model VehicleHistoryListModel
+@{
+    ViewBag.Title = MessageResource.VehicleHistoryScreen_PageTitle_Index;
+}
+
+
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(b => b.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(b => b.VinNo, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" })</div>
+
+
+        <div class="labelDiv">@Html.LabelFor(b => b.Plate)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(b => b.Plate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" })</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(b => b.CustomerIds)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CustomerIds).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CustomerIdList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerName).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearfix"></div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ProcessType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ProcessType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ProcessTypeCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.IndicatorType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.IndicatorType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.IndicatorTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="clearfix"></div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.VehicleHistory.VehicleHistoryIndex)
+
+@Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+
+@{   
+    var detayExcelModel = new ODMS.Model.ExportModel();
+    detayExcelModel.ButtonText = MessageResource.Display_VehicleHistoryDetail_Excel_Detail_Title;
+}
+@Html.Partial("_ExcelExport2", detayExcelModel)
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<VehicleHistoryListModel>().Name("VehicleHistoryScreenGrid")
+                    .Columns(columns =>
+                    {
+            // columns.Bound
+            columns.Bound(p => p.VehicleId).Visible(false);
+                        columns.Bound(b => b.VehicleHistoryId).Visible(false);
+                        columns.Bound(b => b.Plate).Width(180).ClientTemplate("<center><a class='loadTab' " +
+                                                                         "onclick='OpenVehiclePriceHistory(#=VehicleId#);' id='#=VehicleId#'>" +
+                                                                         "<img class=iconLink src='" +
+                                                                         Url.Content("~/Images/invoice.jpg") + "'></a></center>")
+                                                                         .Title(CommonUtility.GetResourceValue("VehicleHistory_Display_IndicatorPriceList")).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleHistory.VehicleHistoryIndex));
+
+
+                        columns.Bound(b => b.Plate).Width(70).ClientTemplate("<center><a class='loadTab' " +
+                                                                         "onclick='OpenVehicleHistory(#=VehicleHistoryId#);' id='#=VehicleHistoryId#'>" +
+                                                                         "<img class=iconLink src='" +
+                                                                         Url.Content("~/Images/tabs.png") + "'></a></center>")
+                                                                         .Title(CommonUtility.GetResourceValue("Global_Display_Details")).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.VehicleHistory.VehicleHistoryIndex));
+                        columns.Bound(b => b.DealerName).Width(200).Sortable(true);
+                        columns.Bound(b => b.VinNo).Width(150).Sortable(true).HtmlAttributes(new { style = "text-align:center;" });
+                        columns.Bound(b => b.Plate).Width(70).Sortable(true);
+                        columns.Bound(b => b.IndicatorType).Width(150).Sortable(true);
+                        columns.Bound(b => b.AppIndicCode).ClientTemplate("<span title='#=AppIndicName#'>#=AppIndicCode#</span>").Width(150).Sortable(true);
+                        columns.Bound(b => b.IndicatorDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+                        columns.Bound(b => b.ProcessType).Width(100).Sortable(true);
+                        columns.Bound(p => p.WorkOrderId).Width(100).Sortable(true).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}/#=WorkOrderId#'>#=WorkOrderId#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard"))).HtmlAttributes(new { style = "text-align:center;" }); ;
+
+                        columns.Bound(b => b.CampaignNameCode).Width(200).Sortable(true);
+
+
+                        columns.Bound(b => b.VehicleKM).Width(70).Sortable(true);
+                        columns.Bound(b => b.WorkOrderDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+                    })
+                    .Sortable()
+                    .Scrollable()
+                    .Pageable()
+                    .DataSource(dataSource => dataSource
+                    .Ajax()
+                     .Events(c => c.RequestStart("CheckFilters"))
+                    .PageSize(10)
+                    .ServerOperation(true)
+                    .Read(read => read.Action("ListVehicleHistoryIndex", "VehicleHistory", Model)
+                    .Data("GetParameters"))))
+
+</div>
+<div id="divDetails" style="display: none; margin-top: 20px;">
+    @(Html.Kendo().TabStrip()
+                      .Name("Tabs")
+                      .Items(tabstrip => tabstrip.Add().Text(MessageResource.Display_VehicleHistoryDetail_Title)))
+    <div id="TabContent" style="padding-left: 20px; display: none" class="k-content" role="tabpanel"></div>
+</div>
+<div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<div id="VehicleHistoryPriceWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+                    .Name("modelWindow")
+                .Title("Customer")
+                 .Draggable()
+                .Resizable()
+                .Width(1300)
+                .Height(850)
+                .Visible(false)
+                .Modal(true)
+                .Iframe(true)
+                .Events(ev => ev.Close(@"function(e){
+     refreshGridAndselectRow(false);
+}"))
+    )
+</div>
+
+<script type="text/javascript">
+    function OpenVehiclePriceHistory(obj) {
+        $('#VehicleHistoryPriceWindow').kwnd('@Url.Action("VehicleHistoryTotalPriceIndex", "Vehicle")' + '?id=' + obj, '@Html.Raw(MessageResource.VehicleHistory_Display_IndicatorPriceList)',
+       {
+           iframe: true,
+           width: 920,
+           height: 450,
+           onClose: function () {
+               $("#VehicleHistoryPriceWindow").html('');
+           }
+       });
+        $('#VehicleHistoryPriceWindow').removeClass("hide");
+        OpenWindow($('#VehicleHistoryPriceWindow'));
+    }
+
+
+    function OpenVehicleHistory(obj) {
+        $('#VehicleHistoryWindow').kwnd('@Url.Action("VehicleHistoryDetailIndex", "VehicleHistory")' + '?id=' + obj, '@Html.Raw(MessageResource.Display_VehicleHistoryDetail_Title)',
+        {
+            iframe: true,
+            width: 920,
+            height: 450,
+            onClose: function () {
+                $("#VehicleHistoryWindow").html('');
+            }
+        });
+        $('#VehicleHistoryWindow').removeClass("hide");
+        OpenWindow($('#VehicleHistoryWindow'));
+    }
+
+    function CheckFilters(e) {
+        var plate = $("#Plate").val();
+        var vinNo = $("#VinNo").val();
+        if ((plate == null || plate == "") && (vinNo == null || vinNo == "")) {
+            SetErrorMessage('@MessageResource.Required_Plate_Or_VinNo');
+            e.preventDefault();
+            return;
+        }
+
+        SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+    }
+
+
+
+    $(document).ready(init);
+
+    function init() {
+        $("#searchDiv").show("slow");
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#VehicleHistoryScreenGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+            e.preventDefault();
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("VehicleHistoryDetailIndex", "VehicleHistory", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+                width = 500;
+                height = 420;
+            }
+
+
+
+
+
+
+        });
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#CustomerIds").data('kendoMultiSelect').value('');
+            $("#DealerName").data('kendoMultiSelect').value('');
+            $("#ProcessType").data('kendoMultiSelect').value('');
+            $("#IndicatorType").data('kendoMultiSelect').value('');
+        });
+
+
+
+    }
+
+    function GetParameters() {
+        return {
+            VinNo: $("#VinNo").val(),
+            Plate: $("#Plate").val(),
+            CustomerIds: $("#CustomerIds").data('kendoMultiSelect').value().toString(),
+            DealerName: $("#DealerName").data('kendoMultiSelect').value().toString(),
+            ProcessType: $("#ProcessType").data('kendoMultiSelect').value().toString(),
+            IndicatorType: $("#IndicatorType").data('kendoMultiSelect').value().toString(),
+            ReportType: 51,
+            Columns: "DealerName,VinNo,Plate,IndicatorType,AppIndicCode,IndicatorDate,ProcessType,WorkOrderId,CampaignNameCode,VehicleKM,WorkOrderDate"
+        };
+    }
+
+    function GetParameters2() {
+        return {
+            VinNo: $("#VinNo").val(),
+            Plate: $("#Plate").val(),
+            CustomerIds: $("#CustomerIds").data('kendoMultiSelect').value().toString(),
+            DealerName: $("#DealerName").data('kendoMultiSelect').value().toString(),
+            ProcessType: $("#ProcessType").data('kendoMultiSelect').value().toString(),
+            IndicatorType: $("#IndicatorType").data('kendoMultiSelect').value().toString(),
+            ReportType: 58,
+            Columns: "WorkOrderId,DealerName,DetailCode,DetailDescription,ListPrice,WarratyRatio,WarrantyPrice,Quantity"
+        };
+    }
+
+    
+</script>

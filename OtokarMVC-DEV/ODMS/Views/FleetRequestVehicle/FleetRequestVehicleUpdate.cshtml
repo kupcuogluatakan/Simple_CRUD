@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = MessageResource.FleetRequestVehicle_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.FleetRequestVehicle
+@model FleetRequestVehicleViewModel
+@using (Html.BeginForm("FleetRequestVehicleUpdate", "FleetRequestVehicle", FormMethod.Post))
+{
+    Html.RenderPartial("_FleetRequestVehicleEdit", Model);
+
+    @Html.HiddenFor(c => c.FleetRequestId)
+    <input type="hidden" name="FleetRequestVehicleId" id="FleetRequestVehicleId" value="@Model.FleetRequestVehicleId"/>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.FleetRequestVehicle.FleetRequestVehicleUpdate, "FleetRequestVehicleUpdate")
+}

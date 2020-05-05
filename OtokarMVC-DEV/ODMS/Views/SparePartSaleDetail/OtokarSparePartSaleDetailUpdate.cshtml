@@ -1,0 +1,64 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.SparePartSaleDetail.OSparePartSaleDetailViewModel
+@{
+    ViewBag.Title = MessageResource.OtokarPartSaleDetail_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@Html.AntiForgeryToken()
+@using (Html.BeginForm("OtokarSparePartSaleDetailUpdate", "SparePartSaleDetail", FormMethod.Post))
+{
+    @Html.HiddenFor(p => p.StockTypeId)
+    @Html.HiddenFor(p => p.PartId)
+    @Html.HiddenFor(p => p.DiscountPrice)
+    @Html.HiddenFor(p => p.Quantity)
+    @Html.HiddenFor(p => p.VatRatio)
+    @Html.HiddenFor(p => p.PartNameCode)
+    @Html.HiddenFor(p => p.SparePartSaleId)
+    @Html.HiddenFor(p => p.SparePartSaleDetailId)
+
+    <div class="labelDiv">@Html.LabelFor(p => p.PartNameCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(p => p.PartNameCode)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(p => p.Quantity)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(p => p.Quantity)</div>
+    <div class="labelDiv">@Html.LabelFor(p => p.PlanQuantity)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.PlanQuantity).Decimals(0).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })
+        @Html.ValidationMessageFor(d => d.PlanQuantity)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(p => p.DiscountPrice)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(p => p.DiscountPrice)</div>
+    <div class="labelDiv">@Html.LabelFor(p => p.Price)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(p => p.Price).Decimals(2).Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })
+        @Html.ValidationMessageFor(d => d.Price)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(p => p.VatRatio)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(p => p.VatRatio)</div>
+    <div class="labelDiv">@Html.LabelFor(p => p.ReturnReasonText)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(p => p.ReturnReasonText)
+        @Html.ValidationMessageFor(d => d.ReturnReasonText)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+       
+    
+    @ODMSHelpers.Button("btnUpdate", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.SparePartSaleDetail.SparePartSaleDetailUpdate, "OtokarSparePartSaleDetailUpdate")
+
+}
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+        
+        // BEDELSİZ VE KAMPANYA
+        if (parseInt(@Model.StockTypeId) != 1) {
+            $("#Price").prop('readonly', true);
+        }
+    });
+</script>

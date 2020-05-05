@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = MessageResource.DealerVehicleGroups_Page_Title;
+}
+<div style="margin-top: 20px;">
+</div>
+@Html.AntiForgeryToken()
+
+<script src="~/Scripts/custom.js"></script>
+<script type="text/javascript">
+     function GetDealerId() {
+
+        return {
+            dealerId: @Model.DealerId
+            };
+    }
+    function SaveRelation() {
+        mvc.build('@Url.Action("DealerVehicleGroups")', "", "", $('form').eq(0).serialize(), false, "json");
+        mvc.post(null, function (json) {
+            var grid = $('#grid2').data('kendoGrid');
+            grid.dataSource.read();
+        }, null);
+    }
+
+
+    function GetVehicleGroupId() {
+        return {
+            vehicleGroupId: $('#VehicleGroupId').val()
+        };
+    }
+
+
+    function DeleteDealerVehicleGroups(dId, vehicleModelKod) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteDealerVehicleGroups", "Dealer")",
+                data: { DealerId: dId, VehicleModelCode: vehicleModelKod,"__RequestVerificationToken": token  },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#grid2').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+    function SelectDealerGroupRelation(dealerid, vehiclegroupid,vehicleModelCode, isActive) {
+
+        $("#DealerId").data("kendoComboBox").value(dealerid);
+        var dealerCombo = $("#DealerId").data("kendoComboBox");
+        dealerCombo.select(function (dataItem) {
+            return dataItem.Value == dealerid;
+        });
+
+        $("#VehicleGroupId").data("kendoComboBox").value(vehiclegroupid);
+        var vehiclegroupCombo = $("#VehicleGroupId").data("kendoComboBox");
+        vehiclegroupCombo.select(function (dataItem) {
+            return dataItem.Value == vehiclegroupid;
+        });
+
+        $("#VehicleModelCode").data("kendoComboBox").value(vehicleModelCode);
+        var vehiclemodelCombo = $("#VehicleModelCode").data("kendoComboBox");
+        vehiclemodelCombo.select(function (dataItem) {
+            return dataItem.Value == vehicleModelCode;
+        });
+
+        $('#IsActive').prop('checked', isActive);
+    }
+
+</script>
+
+@using ODMSCommon.Resources
+@using ODMSModel.DealerVehicleGroup
+@model DealerVehicleGroupViewModel
+@if (ViewBag.HideElements != null && ViewBag.HideElements == false)
+{
+    using (Html.BeginForm("DealerVehicleGroups", "Dealer", FormMethod.Post))
+    {
+    <input type="hidden" name="DealerId" value="@ViewBag.DealerId" />
+    <div>
+        <div class="labelDiv">@Html.LabelFor(c => c.DealerId, MessageResource.Dealer_Display_Name)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.DealerId).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).SelectedIndex((ViewBag.DealerList as List<SelectListItem>).FindIndex(c => c.Selected)).Enable(false) @Html.ValidationMessageFor(v => v.DealerId) </div>
+
+        <div class="labelDiv">@Html.LabelFor(c => c.VehicleGroupId, MessageResource.VehicleGroup_Display_Name)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.VehicleGroupId).BindTo(ViewBag.VehicleGroupsList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.VehicleGroupId)</div>
+
+
+        <div class="clearDiv"></div>
+        <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelName)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.VehicleModelCode).DataValueField("Value").DataTextField("Text").Placeholder(MessageResource.Global_Display_Choose).DataSource(source => source.Read(read => read.Action("ListVehicleModel", "Dealer")
+                    .Data("GetVehicleGroupId"))
+                    .ServerFiltering(true)).Enable(false).AutoBind(true).CascadeFrom("VehicleGroupId")
+            @Html.ValidationMessageFor(v => v.VehicleModelCode)
+        </div>
+
+
+
+        <div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)</div>
+
+        <div class="clearDiv"></div>
+        @ODMSHelpers.Button("btnSave", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.DealerVehicleGroups.DealerVehicleGroupSave, "DealerVehicleGroups", "SaveRelation();", false)
+    </div>
+    }
+}
+
+
+<div class="kendoGridDiv" id="grd2">
+    @(Html.Kendo().Grid<DealerVehicleGroupsListModel>()
+              .Name("grid2")
+
+              .Columns(columns =>
+    {
+
+        columns.Bound(p => p.DealerId).ClientTemplate("<center><a  href='javascript:void(0);' onclick='SelectDealerGroupRelation(#=DealerId#,#=VehicleGroupId#,\"#=VehicleModelCode#\",#=IsActive#)'> <img class='iconLink' src='" + Url.Content("~/Images/select.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Select")).Width(60).Sortable(false);
+        columns.Bound(o => o.DealerId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("DealerVehicleGroups_PageTitle_Delete") + "' onclick='DeleteDealerVehicleGroups(#=DealerId#,\"#=VehicleModelCode#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false);
+        columns.Bound(p => p.DealerName).Width(200).Sortable(true);
+        columns.Bound(p => p.VehicleModelName).Width(200).Sortable(true);
+        columns.Bound(p => p.IsActiveString).Width(100).Sortable(true);
+
+    })
+              .Pageable()
+              .Sortable()
+              .Scrollable()
+
+
+              .DataSource(dataSource => dataSource
+                  .Ajax()
+                  .PageSize(10)
+                  .ServerOperation(true)
+                  .Read(read => read.Action("ListDealerVehicleGroups", "Dealer").Data("GetDealerId")))
+
+
+    )
+</div>

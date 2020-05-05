@@ -1,0 +1,87 @@
+﻿@model ODMSModel.DealerSaleSparepart.DealerSaleSparepartIndexViewModel
+@{
+    ViewBag.Title = ViewBag.Title = ODMSCommon.Resources.MessageResource.DealerSaleSparepart_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("DealerSaleSparepartUpdate", "DealerSaleSparepart", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartName)</div>
+    
+    <br />
+    <br />
+    <div class="labelDiv">@Html.LabelFor(v => v.ListPrice)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(v => v.ListPrice).Spinners(false).HtmlAttributes(new { type = "text" })</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SalePrice)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.SalePrice).Events(e => e.Change("ChangeSalePrice")).Decimals(2).Format("{0:N}").Spinners(false).HtmlAttributes(new { type = "text", style = "width:204px" })</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.DiscountRatio)</div>
+    <div style="width: 300px; float: left">@Html.Kendo().NumericTextBoxFor(v => v.DiscountRatio).Events(e => e.Change("ChangeDiscountRatio")).Decimals(2).Format("{0:N}").Spinners(false).HtmlAttributes(new { type = "text", maxlength = "5", data_val_min = "0", data_val_max = "100", style = "width:200px" })
+        @Html.ValidationMessageFor(v => v.DiscountRatio)
+    </div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipQty)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ShipQty)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Unit)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.Unit)</div>
+    
+    <br />
+    <br />
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.DealerSaleSparepart.DealerSaleSparepartUpdate, "DealerSaleSparepartUpdate")
+
+    @Html.HiddenFor(v => v.IdDealer)    
+    @Html.HiddenFor(v => v.IdPart)
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+
+        $("#popupContentWrapper").css("min-height", 350);
+        $("#popupContent").css("max-width", 650);
+    });
+
+
+    $('#ListPrice').prop('readonly', true);
+
+    function ChangeSalePrice() {
+        var ratio = 0;
+        var listPrice = $('#ListPrice').data('kendoNumericTextBox').value();
+        var salePrice = $('#SalePrice').data('kendoNumericTextBox').value();
+
+        ratio = 100 - (100 * salePrice / listPrice);
+        $('#DiscountRatio').data('kendoNumericTextBox').value(ratio);
+    }
+
+    function ChangeDiscountRatio() {
+        var salePrice = 0;
+        var ratio = $('#DiscountRatio').data('kendoNumericTextBox').value();
+        var listPrice = $('#ListPrice').data('kendoNumericTextBox').value();
+
+        salePrice = listPrice - (ratio * listPrice / 100);
+        $('#SalePrice').data('kendoNumericTextBox').value(salePrice);
+    }
+
+</script>

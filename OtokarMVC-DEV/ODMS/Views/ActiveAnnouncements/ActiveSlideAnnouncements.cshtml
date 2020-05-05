@@ -1,0 +1,41 @@
+﻿@model  List<ODMSModel.Announcement.AnnouncementListModel>
+
+
+    @if (Model.Count>0)
+    {
+        <style>
+
+            #slideAnnouncements {
+                width: 100%;
+                font-size: 26px;
+                color: white;
+            }
+
+                #slideAnnouncements ul {
+                    width: 100%;
+                    display: inline !important;
+                }
+
+                    #slideAnnouncements ul li {
+                        margin-right: 25px;
+                        display: inline !important;
+                        list-style-type: circle !important;
+                    }
+        </style>
+
+
+        <div id="slideAnnouncements">
+            <marquee scrollamount="10">
+                <ul>
+                    @foreach (var item in Model)
+                    {
+                        <li>
+                            @item.Body
+                        </li>
+                    }
+                </ul>
+            </marquee>
+        </div>
+
+    }
+

@@ -1,0 +1,39 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.EducationContributers.EducationContributersViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("EducationContributors_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+<div id="successDiv" class="alert alert-warning messageDiv" style="">
+    @CommonUtility.GetResourceValue("EducationCont_Display_Warning")
+
+    <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
+
+ 
+@using (Html.BeginForm("EducationContributersCreate", "EducationContributers", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{   @Html.AntiForgeryToken()
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br />
+    </div>
+
+    @Html.Kendo().Upload().Events(e => e.Select("OnSelect")).Name("file").Multiple(false)
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.EducationCode)
+    @Html.HiddenFor(v => v.RowNumber)
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), ODMSCommon.CommonValues.PermissionCodes.EducationContributers.EducationContributersCreate, "EducationContributersCreate")           
+    
+}
+
+<script>
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 350);
+    });
+</script>

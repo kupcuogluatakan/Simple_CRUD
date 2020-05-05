@@ -1,0 +1,214 @@
+﻿@using ODMSCommon.Resources
+@model List<ODMSModel.WorkOrderCard.PdiResultItem>
+@{
+    int i = -1;
+    var status = Model.Any(c => !String.IsNullOrEmpty(c.Statu)) ? Model.First(c => !String.IsNullOrEmpty(c.Statu)).Statu :
+        "0";
+    var classname = string.Empty;
+    switch (status)
+    {
+
+        case "0":
+            classname = ""; break;
+        case "1": classname = "warning"; break;
+        case "2": classname = "success"; break;
+        case "3": classname = "danger"; break;
+        default: classname = ""; break;
+    }
+
+    bool isControlled = (bool)ViewBag.IsControlled;
+
+}
+
+<div id="warning-wrap655" class="alert" style="display:none">
+    <a class="close" onclick="$('.alert').fadeOut();">&times;</a>
+    <strong></strong>
+</div>
+@if (int.Parse(status).In(0, 3))
+{
+    <div>
+        @Html.Action("UpdatePdiPackage", new { id = ViewBag.Id })
+    </div>
+    if (!isControlled)
+    {
+        <button class="btn btn-danger" style="margin-bottom: 10px" onclick=" CompletePdiVehicleResult(); ">
+            <i class="fa fa-check"></i>
+            @MessageResource.Global_Display_Complete
+        </button>
+    }
+}
+
+<button class="btn btn-warning" style="margin-bottom: 10px;" onclick="PrintDet()">
+    <i class="fa fa-print"></i>&nbsp;
+    @MessageResource.Global_Display_Print
+</button>
+<div id="listPdiResultItem" style="max-height: 350px;">
+    <table class="table table-bordered table-striped">
+
+        @foreach (var item in Model)
+        {
+            i++;
+            if (item.IsGroupCode)
+            {
+                <thead>
+                    <tr class="@classname">
+                        <th colspan="6" style="text-align: left;padding-left:60px;">
+                            @item.ControlName
+                        </th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr class="@classname">
+                        <th colspan="2">
+                            @MessageResource.WorkOrderCard_Pdi_Control
+                        </th>
+                        <th>
+                            @MessageResource.WorkOrderCard_Display_Suitable
+                        </th>
+                        <th>
+                            @MessageResource.WorkOrderCard_Pdi_BreakDown
+                        </th>
+                        <th>
+                            @MessageResource.WorkOrderCard_Pdi_BreakDownPart
+                        </th>
+                        <th>
+                            @MessageResource.WorkOrderCard_Pdi_Result
+                        </th>
+                    </tr>
+                </thead>
+
+            }
+            else
+            {
+                <tr class="@classname">
+                    <td>
+                        @item.ControlCode
+                    </td>
+                    <td>
+                        @item.ControlName
+                    </td>
+                    @if (item.IsGroupCode)
+                    {
+                        <td class="text-center">
+                            @Html.DisplayFor(c => c[i].IsAppropriate)
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="text-center">
+                            @if (!isControlled)
+                            {
+
+                                @Html.CheckBoxFor(c => c[i].IsAppropriate, new { onchange = "OpenPdiPackageResult(this,'" + Model[i].ControlCode + "');" })
+
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(c => c[i].IsAppropriate)
+                            }
+
+                        </td>
+                    }
+
+                    <td>
+                        @Html.DisplayFor(c => c[i].BreakDownName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(c => c[i].PartCode) - @Html.DisplayFor(c => c[i].PartName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(c => c[i].ResultName)
+                    </td>
+
+                </tr>
+            }
+        }
+    </table>
+    <div>
+
+
+    </div>
+</div>
+<div id="OpenPdiPackageResultEditWindowWrap"></div>
+
+<script>
+    function PrintDet() {
+        $("#OpenPdiPackageResultEditWindowWrap").html('<div id="PrintPdiPackageResultWindow" class="hide"></div>');
+        $('#PrintPdiPackageResultWindow').kwnd('@Url.Action("PrintPdiPackageDetails", "WorkOrderCard", new { id = ViewBag.Id })', '@Html.Raw(MessageResource.WorkOrderCard_Pdi_BreakDown_Details)',
+        {
+            iframe: true,
+            width: 1000,
+            height: 400,
+            onClose: function() {
+                $('#PrintPdiPackageResultWindow').data("kendoWindow").destroy();
+            }
+        });
+        $('#PrintPdiPackageResultWindow').removeClass("hide");
+        OpenWindow($('#PrintPdiPackageResultWindow'));
+    }
+
+    function OpenPdiPackageResult(obj, controlCode) {
+        if ($(obj).prop("checked") == true) {
+            $("#OpenPdiPackageResultEditWindowWrap").html('<div id="OpenPdiPackageResultEditWindow" class="hide"></div>');
+            $('#OpenPdiPackageResultEditWindow').kwnd('@Url.Action("OpenPdiPackageResult", "WorkOrderCard", new { id = ViewBag.Id })' + '?controlCode=' + controlCode, '@Html.Raw(MessageResource.WorkOrderCard_Display_PdiResultList)',
+            {
+                iframe: false,
+                width: 600,
+                height: 350,
+                onClose: function() {
+                    $('#OpenPdiPackageResultEditWindow').data("kendoWindow").destroy();
+
+                    $("#PartCode-list").remove();
+                    $("#BreakDownCode-list").remove();
+                    $("#ResultCode-list").remove();
+                    getPdiResults();
+                }
+            });
+            $('#OpenPdiPackageResultEditWindow').removeClass("hide");
+            OpenWindow($('#OpenPdiPackageResultEditWindow'));
+        } else {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ClearPdiResult")',
+                data: {WorkOrderId:@ViewBag.Id, ControlCode: controlCode},
+                success: function(json) {
+                    SetAjaxMessage655(json)
+                    getPdiResults();
+                },
+                dataType: "JSON"
+            });
+        }
+    }
+
+
+
+    function CompletePdiVehicleResult() {
+        CustomConfirm(function() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("CompletePdiVehicleResult")',
+                data: {id:@ViewBag.Id},
+                success: function(json) {
+                    SetAjaxMessage655(json)
+                    getPdiResults();
+                },
+                dataType: "JSON"
+            });
+        },"@Html.Raw(MessageResource.Global_Display_Warning)","@MessageResource.WrokOrderCard_Display_PdiCompleteWarning","@MessageResource.Global_Display_Yes","@MessageResource.Global_Display_No")
+
+
+    }
+
+    function SetAjaxMessage655(json) {
+        if (json.Result == false) {
+            $("#warning-wrap655").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger");
+            $("#warning-wrap655  strong").html(json.Message);
+        } else {
+            $("#warning-wrap655").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success");
+            $("#warning-wrap655  strong").html(json.Message);
+        }
+        $('#warning-wrap655').slideDown();
+    }
+
+</script>
+

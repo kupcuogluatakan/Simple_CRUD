@@ -1,0 +1,82 @@
+﻿@using ODMSBusiness.Terminal.ClaimWaybill.Dtos
+@using ODMSBusiness.Terminal.Common
+@using ODMSTerminal.Infrastructure.Utility
+@model ActiveClaimPeriodInfo
+@{
+    ViewBag.Title = MessageResource.Terminal_ClaimWaybill_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+}
+@section header{
+    @Html.Partial("_subheader")
+}
+<div class="margin-3 pageContent">
+    @Html.HiddenFor(c => c.ClaimRecallPeriodId)
+    <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+        <tbody>
+        <tr>
+            <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_PeriodNo</td>
+            <td class="bold">:</td>
+            <td width="60%">
+                @Model.ClaimRecallPeriodId
+            </td>
+            <td class="last-child">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_ValidLastDay</td>
+            <td class="bold">:</td>
+            <td width="60%">
+                @Model.ValidLastDay.FormatForView()
+            </td>
+            <td class="last-child">&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_ShipFirstDay</td>
+            <td class="bold">:</td>
+            <td width="60%">
+                @Model.ShipFirstDay.FormatForView()
+            </td>
+            <td class="last-child">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_ShipLastDay</td>
+            <td class="bold">:</td>
+            <td width="60%">
+                @Model.ShipLastDay.FormatForView()
+            </td>
+            <td class="last-child">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="bold stay-line">@MessageResource.Terminal_Claimwaybill_WaybillNo</td>
+            <td class="bold">:</td>
+            <td width="60%">
+                @Html.DropDownListFor(c => c.ClaimWaybillId, new SelectList(ViewBag.ClaimWaybillList as EnumerableResponse<ClaimWaybillListItem>, "ClaimWaybillId", "WaybillNo"))
+            </td>
+            <td class="last-child">&nbsp;</td>
+        </tr>
+
+
+        </tbody>
+    </table>
+
+    <table border="0" cellspacing="1" width="100%" class="readonly">
+        <tr>
+            <td width="50%"><input id="btnNew" type="submit" class="btn btn-xs primary margin-top-3" value="@MessageResource.Global_Display_New"></td>
+            <td width="50%" class="last-child"><input id="btnGo" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Go"></td>
+
+        </tr>
+    </table>
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/views/claimwaybill/index.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            ClaimWaybill.PageInit(@Model.ClaimRecallPeriodId);
+        });
+
+    </script>
+
+}

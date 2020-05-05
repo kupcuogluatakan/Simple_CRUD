@@ -1,0 +1,96 @@
+﻿@model ODMSModel.PDIPartDefinition.PDIPartDefinitionViewModel
+@using ODMSCommon.Resources;
+
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.PDIPartDefinition_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("PDIPartDefinitionUpdate", "PDIPartDefinition", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.PdiPartCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PdiPartCode)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc)</div>
+    @Html.ValidationMessageFor(v => v.AdminDesc)
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv" style="margin-top: 5px">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv" style="margin-top: 5px">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new {DefaultText = Model.MultiLanguageContentAsText, IsEnabled = true}); }
+        @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+    </div>
+
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.PdiPartCode)
+    @Html.HiddenFor(v => v.HasActiveControlPartMatch)
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.PDIPartDefinition.PDIPartDefinitionUpdate, "PDIPartDefinitionUpdate", "PDIPartDefinitionUpdate();", false)
+}
+<script src="~/Scripts/custom.js"></script>
+<script id="update-confirmation" type="text/x-kendo-template">
+        <p class="update-message">@MessageResource.PDIPartDefinition_Warning_ControlMatchExist</p>
+        <p style="text-align:right">
+        <button class="update-confirm k-button">@MessageResource.Global_Display_Yes</button>
+        <button class="update-cancel k-button">@MessageResource.Global_Display_No</button></p>
+    </script>
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function UpdateConfirm(updateFunction) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_Warning",
+            resizable: false,
+            modal: true
+        });
+
+        kendoWindow.data("kendoWindow")
+            .content($("#update-confirmation").html())
+            .center().open();
+
+        kendoWindow
+            .find(".update-confirm,.update-cancel")
+            .click(function () {
+                if ($(this).hasClass("update-confirm")) {
+                    confirm = true;
+                    if (updateFunction)
+                        updateFunction();
+                }
+                kendoWindow.data("kendoWindow").close();
+            })
+            .end();
+        return confirm;
+    }
+    function Update() {
+        if (!$('form').valid()) {
+            return false;
+        }
+        
+        mvc.build('@Url.Action("PDIPartDefinitionUpdate")', "", "", $('form').eq(0).serialize(), false, "json");
+        mvc.post(null, function (result) {
+            if (result.Status == 0)
+                SetErrorMessage(result.Message);
+            else {
+                SetSuccessMessage(result.Message);
+            }
+        }, null);
+    }
+    function PDIPartDefinitionUpdate() {
+        if ($('#HasActiveControlPartMatch').val() == "True" && !$('#IsActive').prop('checked')) {
+            UpdateConfirm(function () {
+                Update();
+            });
+        } else {
+            Update();
+        }
+    }
+</script>

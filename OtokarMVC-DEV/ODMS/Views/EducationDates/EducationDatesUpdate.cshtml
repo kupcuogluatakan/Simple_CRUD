@@ -1,0 +1,62 @@
+﻿@model ODMSModel.EducationDates.EducationDatesViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("EducationDates_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("EducationDatesUpdate", "EducationDates", FormMethod.Post, new { id = "frmEducDate" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationCode)</div> 
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationTimeDT)</div>
+    <div class="shortTxtDiv">@Html.Kendo().DateTimePickerFor(v => v.EducationTimeDT).TimeFormat("HH:mm").Format("dd/MM/yyyy HH:mm").ParseFormats(new[] { "dd.MM.yyyy HH:mm" }).Min(CommonUtility.GetSeedDateForPublish()).HtmlAttributes(new {style = "width:204px", type="text" })
+          @Html.ValidationMessageFor(v => v.EducationTimeDT)</div>    
+    
+    <div class="clearDiv">&nbsp;</div>
+   
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationPlace)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.EducationPlace)@Html.ValidationMessageFor(v => v.EducationPlace)</div>     
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Instructor)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.Instructor)@Html.ValidationMessageFor(v => v.Instructor)</div>  
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.MaximumAtt)</div>
+    <div style="width: 300px; float: left;">@Html.Kendo().NumericTextBoxFor(v => v.MaximumAtt).Max(9999).Min(0).Format("#").Decimals(0).HtmlAttributes(new { type = "text", maxlength = "4", style = "width:204px" })  
+        @Html.ValidationMessageFor(v => v.MaximumAtt)</div>
+
+    
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.MinimumAtt)</div>
+    <div style="width: 300px; float: left;">@Html.Kendo().NumericTextBoxFor(v => v.MinimumAtt).Max(9999).Min(0).Format("#").Decimals(0).HtmlAttributes(new { type = "text", maxlength = "4", style = "width:204px" })   
+        @Html.ValidationMessageFor(v => v.MinimumAtt)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.Notes)</div>
+    <div class="shortTxtDiv">@Html.TextAreaFor(v => v.Notes) @Html.ValidationMessageFor(v => v.Notes)</div> 
+      
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.EducationCode)
+    @Html.HiddenFor(v => v.RowNumber)
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.EducationDates.EducationDatesUpdate, "EducationDatesUpdate")        
+}
+
+<script>
+    $("#frmEducDate").on('submit', function () {
+        if (!$("#MaximumAtt").val())
+            $("#MaximumAtt").val(0);
+        if (!$("#MinimumAtt").val())
+            $("#MinimumAtt").val(0);
+    });
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 355);
+    });
+</script>

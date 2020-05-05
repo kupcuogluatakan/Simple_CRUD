@@ -1,0 +1,308 @@
+﻿
+@using ODMSCommon.Resources
+
+@model ODMSModel.StockBlockDetail.StockBlockDetailListModel
+
+@{
+    ViewBag.Title = MessageResource.StockBlockDetail_PageTitle_Index;
+}
+
+<br />
+
+@Html.AntiForgeryToken()
+
+<div id="StockBlockDetailModelWindowDiv">
+       
+    
+    @{
+        if (Model.StockBlockStatusId == CommonValues.StockBlockStatus.PreparedToBlock)
+        {
+            @ODMSHelpers.LinkButton("btnCreate2", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick2 createNew2", MessageResource.StockBlockDetail_Display_Create, CommonValues.PermissionCodes.StockBlock.StockBlockCreate)
+            @ODMSHelpers.LinkButton("stockBlock", CommonUtility.GetResourceValue("StockBlock_Display_Blocked"), "", "", MessageResource.StockBlockDetail_Display_Create, CommonValues.PermissionCodes.StockBlock.StockBlockCreate)
+        }
+        else
+        {
+            if (Model.StockBlockStatusId != CommonValues.StockBlockStatus.BlockRemoved)
+            {
+                @ODMSHelpers.Button("btnSave", CommonUtility.GetResourceValue("StockBlock_Display_RemoveBlock"), CommonValues.PermissionCodes.StockBlock.StockBlockIndex, "StockBlockDetailIndex", "SaveChanges();")
+            }
+        }
+    }
+    
+    @{
+        if (Model.BlockReasonDesc != "")
+        {           
+            <h5>@MessageResource.Global_Display_Description: @Model.BlockReasonDesc</h5>   
+        }
+    }
+
+    @(Html.Kendo().Window()
+        .Name("StockBlockDetailModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#StockBlockDetailGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+
+    <script type="text/javascript">
+
+        function onRequestEnd(e) {
+                if (e.type == "create" || e.type == "update") {
+                    var grid = $("#StockBlockDetailGrid").data("kendoGrid");
+                    if (e.response == "") {
+                        SetSuccessMessage('@MessageResource.Global_Display_Success');
+                        if (grid != null) {
+                            grid.dataSource.read();
+                            
+                            var gridMaster = $("#StockBlockGrid").data("kendoGrid");
+                            gridMaster.dataSource.read();
+                            ShowTabs('@Model.IdStockBlock'); //isBlocked = 1 successed     
+                        }
+                    } else {
+                    SetErrorMessage(e.response);
+                    grid.cancelChanges();
+                }
+            }
+            if (e.type == "read") {
+                if (e.response.ErrorMessage != null) {
+                    SetErrorMessage(e.response.ErrorMessage);
+                }
+            }
+        }
+
+        function SaveChanges() {
+            CustomConfirm(function() {
+                var isValid = false;
+                var grid = $("#StockBlockDetailGrid").data("kendoGrid");
+                if (grid.dataSource.hasChanges()) {
+                    var list = grid.dataSource.data();
+
+                    for (var i = 0; i < list.length; i++) {
+
+                        list[i].RemovedQty = !!list[i].RemovedQty ? list[i].RemovedQty.toString().replace(".", ",") : null;
+                        list[i].BlockQty = !!list[i].BlockQty ? list[i].BlockQty.toString().replace(".", ",") : null;
+                        list[i].UnBlockQty = !!list[i].UnBlockQty ? list[i].UnBlockQty.toString().replace(".", ",") : null; //Hidden var. Kullanılmıyor
+                        
+                        if (list[i].RemovedQty != null || list[i].RemovedQty > 0)
+                            isValid = true;
+                        if (list[i].RemovedQty != null && parseFloat(list[i].RemovedQty.toString()) > parseFloat(list[i].BlockQty.toString())) {
+                            SetErrorMessage('@MessageResource.StockBlock_Error_RemoveBlock');
+                            return false;
+                        }
+                        if (list[i].RemovedQty == 0 && list[i].BlockQty != null) {
+                            SetErrorMessage('@MessageResource.StockBlock_Error_RemoveBlockGreaterThanZero');
+                            return false;
+                        }
+                    }
+                    if (isValid) {
+                        grid.saveChanges();
+
+                        var grid = $("#StockBlockDetailGrid").data("kendoGrid");
+                        grid.dataSource.read();
+
+                    } else {
+                        SetErrorMessage('@MessageResource.CycleCountResult_Warning_EmptyAfterCountQuantity');
+                    }
+                } else {
+                    SetErrorMessage('@MessageResource.CycleCountResult_Warning_NoChange');
+                }
+            }, "@MessageResource.StockBlock_Display_Remove", "@MessageResource.StockBlock_Display_RemoveConfirm", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+        }
+
+
+        function OnDatabound(RemovedQty) {
+            if (RemovedQty >= 0 && RemovedQty != null) {
+                var culture = "@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()";
+                if (culture == "tr-TR") RemovedQty = RemovedQty.toString().replace(".", ",");
+                return "<div style='background: lightgray'>" + RemovedQty + " </div>";
+
+            }
+            else if (RemovedQty < 0) {
+                return 0;
+            }
+            else
+            {
+                return "<div style='background: lightgray'>" + '@MessageResource.Global_Display_Enter' + " </div>";
+            }
+        }
+
+        function OnGridBound(e) {
+            var grid = $("#StockBlockDetailGrid").data("kendoGrid");
+            if (grid != null) {
+                var list = grid.dataSource._data;
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].RemovedQty < 0)
+                        list[i].RemovedQty = null;
+                }
+
+                var dataSource = grid.dataSource;
+                var count = dataSource.total();
+                if (count == 0) {
+                    $('#stockBlock').hide();
+                    if ('@Model.StockBlockStatusId' != '0') {
+                        $('#btnSave').hide();
+                    }
+                } else {
+                    $('#stockBlock').show();
+                }
+            }
+        }
+    </script>
+
+    <div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.StockBlockDetail.StockBlockDetailListModel>()
+          .Name("StockBlockDetailGrid")
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.IdStockBlockDet).ClientTemplate("<center><a class='modalClick2 edit2' idStockBlockDet='#=IdStockBlockDet#' frameTitle='" + CommonUtility.GetResourceValue("StockBlockDetail_PageTitle_Update") + "'  href='" + Url.Action("StockBlockDetailUpdate", "StockBlockDetail") + "/?idStockBlockDet=#=IdStockBlockDet#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.StockBlock.StockBlockUpdate) && Model.StockBlockStatusId == CommonValues.StockBlockStatus.PreparedToBlock);
+              columns.Bound(p => p.IdStockBlockDet).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("StockBlockDetail_PageTitle_Delete") + "' onclick='DeleteStockBlockDetail(this,#=IdStockBlockDet#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.StockBlock.StockBlockDelete) && Model.StockBlockStatusId == CommonValues.StockBlockStatus.PreparedToBlock);
+              columns.Bound(p => p.PartName).Sortable(true);
+              columns.Bound(p => p.PartCode).Sortable(true);
+              columns.Bound(p => p.StockTypeName).Sortable(true);
+              columns.Bound(p => p.BlockQty).Format("{0:N}").Sortable(true);
+              if (Model.StockBlockStatusId == CommonValues.StockBlockStatus.Blocked)
+              {
+                  columns.Bound(p => p.RemovedQty).Sortable(false).ClientTemplate("#= OnDatabound(RemovedQty)#").EditorTemplateName("");
+              }
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .Editable(e => e.Mode(GridEditMode.InCell))
+          .Events(e => e.DataBound("OnGridBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Batch(true)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListStockBlockDetail", "StockBlockDetail", Model))
+                                        .Model(model =>
+                                        {
+                                            model.Id(o => o.IdStockBlockDet);
+                                            model.Field(o => o.IdStockBlockDet).Editable(false);
+                                            model.Field(o => o.PartName).Editable(false);
+                                            model.Field(o => o.PartCode).Editable(false);
+                                            model.Field(o => o.StockTypeName).Editable(false);
+                                            model.Field(o => o.BlockQty).Editable(false);
+                                            model.Field(o => o.UnBlockQty).Editable(false);
+                                            model.Field(o => o.RemovableQty).Editable(false);
+                                            model.Field(o => o.RemovedQty).Editable(true);
+                                        })
+
+                                        .Update(update => update.Action("StockBlockDetailSave", "StockBlockDetail").Type(HttpVerbs.Post))
+                                        .Events(e => e.RequestEnd("onRequestEnd"))
+                                        )
+
+          )
+        @Html.HiddenFor(m => m.IdStockBlock)
+        @Html.HiddenFor(m => m.IdStockBlockDet)
+        @Html.HiddenFor(m => m.IdPart)
+        @Html.HiddenFor(m => m.IdStockType)
+        @Html.HiddenFor(m => m.StockBlockStatusId)
+        @Html.HiddenFor(m => m.RemovableQty)
+        @Html.HiddenFor(m => m.BlockQty)
+        @Html.HiddenFor(m => m.UnBlockQty)
+        @Html.HiddenFor(m => m.BlockReasonDesc)
+</div>
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+
+
+
+    function DeleteStockBlockDetail(obj, idStockBlockDet) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteStockBlockDetail", "StockBlockDetail")",
+                data: { IdStockBlockDet: idStockBlockDet, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    var grid = $('#StockBlockDetailGrid').data('kendoGrid');
+                    grid.dataSource.read();
+                    SetSuccessMessage(result.Message);
+                }
+            },
+            dataType: "json"
+        });
+        });
+    }
+
+    $("#stockBlock").bind("click", function () {
+        CustomConfirm(function () {
+            var IdStockBlock = '@Model.IdStockBlock';
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("StockBlockDetailBlocked", "StockBlockDetail")",
+                data: { idStockBlock: IdStockBlock },
+                traditional: true,
+                success: function(result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#StockBlockGrid').data('kendoGrid');
+
+                        grid.dataSource.read();
+
+                        ShowTabs('@Model.IdStockBlock');          
+
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        }, "@MessageResource.Global_Display_Confirm", "@MessageResource.StockBlock_Display_AddBlock", "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+    });
+
+
+</script>
+
+<script type="text/javascript">
+
+        $("#StockBlockDetailModelWindowDiv").delegate(".modalClick2", "click", function (e) {
+            $('#StockBlockDetailModelWindow').html('');
+            e.preventDefault();         
+            
+            var link;
+            var clickedId = $(this).attr("idStockBlockDet");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details2") == true) {
+                link = $(this).attr("href");
+            }
+            else if ($(this).hasClass("edit2")) {              
+                link = $(this).attr("href");
+                
+            }
+            else if ($(this).hasClass("createNew2")) {
+                link = "@Url.Action("StockBlockDetailCreate", "StockBlockDetail")" + "?idStockBlock=@Model.IdStockBlock";
+            }
+            else if ($(this).hasClass("blocked")) {
+                link = "@Url.Action("StockBlockDetailBlocked", "StockBlockDetail")" + "?idStockBlock=@Model.IdStockBlock";
+            }
+            $("#StockBlockDetailModelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#StockBlockDetailModelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        });
+
+</script>

@@ -1,0 +1,208 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.CycleCountResult.CycleCountResultAuditViewModel
+@{
+    ViewBag.Title = MessageResource.CycleCountStockDiff_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    var model1 = @Model.CycleCountAuditList;
+}
+
+<style>
+    #container table tr td {
+        text-align: center;
+    }
+
+    .expectedQty, .currentQty, .diffQty {
+        width: 100px;
+    }
+</style>
+
+<script>
+    $(function () {
+        adjustPage();
+        adjustControlPositions();
+    });
+
+    function adjustPage() {
+        $("#popupContent").css("width", 450);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 400);
+        $("#popupContentWrapper").css("width", 500);
+    }
+
+    function adjustControlPositions() {
+        $("#Create").css("position", "absolute");
+        $("#Create").css("margin-top", "180px");
+        $("#Create").css("margin-left", "-100px");
+        $("#Create").css("width", "75px");
+
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("position", "absolute");
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("margin-left", "-75px");
+        $(".shortTxtDiv span[data-valmsg-for='MultiLanguageContentAsText']").css("margin-top", "80px");
+    }
+</script>
+
+<script>
+    var currentQty = 0.0;
+    var newQtyValues = 0.0;
+    var diffQty = 0.0;
+
+    $(document).ready(function() {
+
+        $('.newValues').keypress(function() {
+
+            if (this.value.match(/\D/) && this.value == '') {
+                //if ("@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()" == "tr-TR")
+                if ("@UserManager.UserInfo.LanguageCode" == "TR")
+                    this.value = this.value.replace(/[^0-9\,]/g, '');
+                else
+                    this.value = this.value.replace(/[^0-9\.]/g, '');
+            }
+        });
+
+        $('.newValues').keyup(function () {
+            //if ("@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()" == "tr-TR")
+            if ("@UserManager.UserInfo.LanguageCode" == "TR")
+                this.value = this.value.replace(/[^0-9\,]/g, '');
+            else
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+        });
+
+
+        CalculateQty();
+        $('.currentQty').text(parseFloat($('.expectedQty').text().replace(',', '.')).toFixed(2) - currentQty);
+
+        //if ("@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()" == "tr-TR")
+        if ("@UserManager.UserInfo.LanguageCode" == "TR")
+            $('.currentQty').text(parseFloat(parseFloat($('.expectedQty').text().replace(',', '.')).toFixed(2) - currentQty).toFixed(2).toString().replace(".", ","));
+
+        $("#CurrentQty").val(currentQty);
+        $("#NewQtyValues").val(newQtyValues);
+
+
+        $('.newValues').change(function () {
+            CalculateQty();
+            $('.currentQty').text(parseFloat($('.expectedQty').text().replace(',', '.')).toFixed(2) - currentQty);
+
+            //if ("@System.Threading.Thread.CurrentThread.CurrentUICulture.ToString()" == "tr-TR")
+                if ("@UserManager.UserInfo.LanguageCode" == "TR")
+                $('.currentQty').text(parseFloat(parseFloat($('.expectedQty').text().replace(',', '.')).toFixed(2) - currentQty).toFixed(2).toString().replace(".", ","));
+
+            $("#CurrentQty").val(currentQty);
+            $("#NewQtyValues").val(newQtyValues);
+        });
+    });
+
+    function CalculateQty() {
+        currentQty = 0.0;
+        diffQty = 0.0;
+        newQtyValues = "";
+        var isValid = true;
+        $('.newValues').each(function (index) {
+
+            var value = $(this).val();
+            if (value == "") {
+                $(this).val(0);
+            }
+
+            var thisValue = $(this).val().replace(",", ".");
+
+            currentQty = currentQty + parseFloat(thisValue);
+            var value = $(this).val().replace(",", ".");
+            newQtyValues += value + ",";
+
+
+            if (Math.floor(parseFloat(thisValue)).toString().length > 4) {
+                isValid = false;
+            }
+        });
+
+        diffQty = parseFloat($('.expectedQty').text().replace(',', '.')).toFixed(2) - parseFloat($('.bfrQty').text().replace(',', '.')).toFixed(2);//Onaylanan - Önceki
+
+
+        $('.diffQty').text(format(parseFloat(diffQty).toFixed(2)));
+
+        if (!isValid) {
+            $("#Update").hide();
+            @{string message = string.Format(MessageResource.Validation_IntegerLength, 4);}
+            SetErrorMessage('@message');
+        } else {
+            $("#Update").show();
+        }
+
+        newQtyValues = newQtyValues.substr(0, newQtyValues.length - 1);
+    }
+
+    function format(n) {
+        return (n > 0 ? '+' : '') + n;
+    }
+
+</script>
+
+@using (Html.BeginForm("CycleCountResultAudit", "CycleCountResult", FormMethod.Post))
+{
+
+
+    @Html.HiddenFor(p => p.WarehouseName)
+    @Html.HiddenFor(p => p.WarehouseId)
+    @Html.HiddenFor(p => p.PartName)
+    @Html.HiddenFor(p => p.ExpectedQty)
+    @Html.HiddenFor(p => p.StockCardId)
+    @Html.HiddenFor(p => p.CycleCountId)
+    @Html.HiddenFor(p => p.CurrentQty)
+    @Html.HiddenFor(p => p.CycleCountAuditList)
+    @Html.HiddenFor(p => p.NewQtyValues)
+    @Html.HiddenFor(p => p.BfrQty)
+
+    <table cellpadding="10" cellspacing="10">
+
+        <tr>
+            <td width="10px"><b>@Html.LabelFor(p => p.WarehouseName)</b></td>
+            <td>@Html.ValueFor(p => p.WarehouseName)</td>
+
+            <td width="10px"><b>@Html.LabelFor(p => p.PartName)</b></td>
+            <td>@Html.ValueFor(p => p.PartName)</td>
+        </tr>
+        <tr>
+
+            <td style="width: 86px;"><b>@Html.LabelFor(p => p.BfrQty) </b></td>
+            <td class="bfrQty">@Html.ValueFor(p => p.BfrQty)</td>
+
+            <td style="width: 86px;"><b>@Html.LabelFor(p => p.ExpectedQty) </b></td>
+            <td class="expectedQty">@Html.ValueFor(p => p.ExpectedQty)</td>
+
+            <td style="width: 98px;"><b>@Html.LabelFor(p => p.DiffQty)</b></td>
+            <td class="diffQty">@Html.ValueFor(p => p.DiffQty)</td>
+
+            <td style="width: 98px;"><b>@Html.LabelFor(p => p.CurrentQty)</b></td>
+            <td class="currentQty">@Html.ValueFor(p => p.CurrentQty)</td>
+        </tr>
+
+    </table>
+
+    <br />
+
+    <div id="container">
+
+        <table cellpadding="10" cellspacing="10">
+
+            <tr>
+                <td><b>@MessageResource.CycleCountResultAudit_Display_StockType</b></td>
+                <td><b>@MessageResource.CycleCountResultAudit_Display_BeforeQty</b></td>
+                <td><b>@MessageResource.CycleCountResultAudit_Display_AfterQty</b></td>
+            </tr>
+
+            @Html.Raw(ViewBag.HtmlOutput)
+
+        </table>
+
+    </div>
+
+    if (Model.Status != (int)ODMSCommon.CommonValues.CycleCountStatus.Approved)
+    {
+        @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), string.Empty, "CycleCountResultAudit")
+    }
+
+}
+
+

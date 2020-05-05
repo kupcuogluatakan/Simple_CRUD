@@ -1,0 +1,32 @@
+﻿@model ODMSModel.AppointmentDetailsMaintenance.ChangePartViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("AppointmentDetailsMaint_PageTitle_ChangePart");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+
+@using (Html.BeginForm("ChangePart", "AppointmentDetailsMaintenance", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="labelDiv">@Html.LabelFor(v => v.PartName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PartName)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.PartId)</div>
+    Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" });
+   <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    //<div class="shortTxtDiv">@Html.TextBoxFor(v => v.Quantity)</div>
+    @Html.Kendo().NumericTextBoxFor(v=>v.Quantity).Min(1).HtmlAttributes(new { type = "text" })
+    @Html.HiddenFor(v => v.AppIndPartId)
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.AppointmentIndicatorMaint.AppointmentIndicatorMaintPartChange, "ChangePart")
+}
+
+<script>
+    $(document).ready(function () {
+        $("#popupContentWrapper").css("min-height", 350);
+    });
+</script>

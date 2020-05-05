@@ -1,0 +1,282 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.StockBlock.StockBlockListModel
+
+@{
+    ViewBag.Title = MessageResource.StockBlock_PageTitle_Index;
+}
+
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.IsBalance)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.IsBalance).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.BalanceList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_All"))
+        </div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.BlockStatusId)</div>
+        <div class="shortTxtDiv">
+            @Html.Kendo().ComboBoxFor(v => v.BlockStatusId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StockBlockStatus as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.BlockDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.BlockDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes( new { type = "text"})</div>
+
+        @Html.HiddenFor(v=>v.EndDate)
+        @Html.HiddenFor(v=>v.StartDate)
+        <br />
+        <br />
+    </div>
+    <br />
+</div>
+
+@{
+    if (ODMSCommon.Security.UserManager.UserInfo.GetUserDealerId() != 0)
+    {
+        @ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.StockBlock.StockBlockIndex)
+        @ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.StockBlock_Display_CreateTab, CommonValues.PermissionCodes.StockBlock.StockBlockCreate)
+    }     
+}
+
+<br />
+<div id="StockBlockModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("StockBlockModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)//.Width(950)
+    .Height(350)//.Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#StockBlockGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+        $('#divDetailsTab').hide();
+        $('#TabContent').hide();
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+
+<script type="text/javascript">
+   
+    function OpenStartDate() { 
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#EndDate").val()) {
+            dateStart.max(dateEnd.value());
+        } else {
+            dateStart.max(new Date(3000, 0, 1));
+        }
+    }
+
+    function OpenEndDate() {    
+        var dateStart = $("#StartDate").data("kendoDatePicker");
+        var dateEnd = $("#EndDate").data("kendoDatePicker");
+        if ($("#StartDate").val()) {
+            dateEnd.min(dateStart.value());
+        } else {
+            dateEnd.min(new Date(1900, 0, 1));
+        }
+    }
+
+    function DeleteStockBlock(obj, stockBlockId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteStockBlock","StockBlock")",
+                data: { idStockBlock: stockBlockId, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0) {
+                    SetErrorMessage(result.Message);
+                }
+                else {
+                    $('#divDetailsTab').hide();
+                    $('#TabContent').hide();
+                    var grid = $('#StockBlockGrid').data('kendoGrid');
+                    grid.dataSource.read();
+                    SetSuccessMessage(result.Message);
+                }
+            },
+            dataType: "json"
+        });
+        });
+}
+
+function ShowPopup(frameTitle, link) {
+    $("#StockBlockModelWindow_wnd_title").html(frameTitle);
+
+    var windowWidget = $("#StockBlockModelWindow").data("kendoWindow");
+    var closeOrigin = windowWidget.close;
+
+    windowWidget.refresh({
+        url: link
+    }).center();
+    windowWidget.center();
+    windowWidget.open();
+   
+}
+
+$(document).ready(init);
+
+function StockBlockSearch()
+{
+    return {
+        BlockDate: $('#BlockDate').val(),
+        IdPart: $('#IdPartFilter').val(),
+        IdStockType: $('#IdStockTypeFilter').val(),
+        IsBalance: $('#IsBalance').val(),
+        BlockStatusId: $('#BlockStatusId').val()
+    };
+}
+function init() {
+    $('input[data-role=datepicker]').attr("readonly", "readonly");
+    $('#divDetailsTab').hide();
+    ShowTabs('@Model.IdStockBlock');
+     $('#IdStockBlock').val('');
+
+     $('form').each(function () {
+         var validator = $(this).data('validator');
+         if (validator && validator.settings) {
+             validator.settings.ignore = "";
+         }
+     });
+
+    $("body").delegate("#btnSearch", "click", function (e) {
+        var grid = $('#StockBlockGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+        
+        $('#divDetailsTab').hide();
+        $('#TabContent').hide();
+    });
+    $("body").delegate("#showSearch", "click", function (e) {
+        var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+        if (!IsVisible) {
+            $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#StockBlockModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("idStockBlock");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("edit") == true) {
+                link = "@Url.Action("StockBlockUpdate", "StockBlock", new { idStockBlock = -1})";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("StockBlockCreate", "StockBlock")";
+                }
+                $("#StockBlockModelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#StockBlockModelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+               
+            });
+
+    }
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.StockBlock.StockBlockListModel>()
+          .Name("StockBlockGrid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.IdStockBlock).ClientTemplate("<center><a class='loadTab' onclick='ShowTabs(#=IdStockBlock#)' idStockBlock='#=IdStockBlock#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.StockBlock.StockBlockIndex));
+                  columns.Bound(p => p.IdStockBlock).ClientTemplate("#if(BlockStatusId==0){#<center><a class='edit modalClick' idStockBlock='#=IdStockBlock#' frameTitle='" + CommonUtility.GetResourceValue("StockBlock_PageTitle_Update") + "' href='/StockBlock/StockBlockUpdate/#=IdStockBlock#'><img class=iconLink src='" + @Url.Content("~/Images/edit.png") + "'></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(70).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.StockBlock.StockBlockUpdate));
+                  columns.Bound(p => p.IdStockBlock).ClientTemplate("#if(BlockStatusId==0){#<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("StockBlock_PageTitle_Delete") + "' onclick='DeleteStockBlock(this,#=IdStockBlock#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>#}#").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.StockBlock.StockBlockDelete));
+                  columns.Bound(p => p.BlockDate).Sortable(true).Format("{0:dd/MM/yyyy}");
+                  columns.Bound(p => p.BlockReasonDesc).Sortable(true);
+                  columns.Bound(p => p.BlockStatusName).Sortable(true);
+
+              })
+                  .Pageable()
+                  .Sortable()
+                  .Scrollable()
+                   
+                  .DataSource(dataSource => dataSource
+                                                .Ajax()
+                                                .PageSize(10)
+                                                .ServerOperation(true)
+                                                .Read(read => read.Action("ListStockBlock", "StockBlock", Model).Data("StockBlockSearch"))
+                                                .Model(model => model.Field(o => o.IdStockBlock).DefaultValue(-1)))
+
+                  )
+ @Html.HiddenFor(m => m.BlockStatusId)
+ @Html.HiddenFor(m => m.IdStockBlock)
+</div>
+
+<div id="divDetailsTab" style="display: none;">
+    @(Html.Kendo().TabStrip()
+          .Name("Tabs")//divDetails
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.StockBlock_Display_Detail).Selected(true).HtmlAttributes(new { onclick = "LoadTabContent('" + Url.Action("StockBlockDetailIndex", "StockBlockDetail") + "');" }))
+    )              
+
+</div>
+<div id="TabContent" style="padding:0 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+
+
+<script type="text/javascript">
+    var IdStockBlock = 0;
+    function ShowTabs(id) {
+        if (id != '' && id != null) { 
+            IdStockBlock = id;
+            $('#TabContent').html('');
+            $("#Tabs").data("kendoTabStrip").select(0);
+            $('#divDetailsTab').show();
+            $('#TabContent').show();
+
+            LoadTabContent('@Url.Action("StockBlockDetailIndex", "StockBlockDetail")');
+        }
+    }
+
+    function LoadTabContent(url) {
+            $('#TabContent').html('');
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: { idStockBlock: IdStockBlock },
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $('#TabContent').html(result);
+
+                },
+                error: function (request, status, err) {
+                    //console.log(arguments);
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+        }
+
+
+    function StopStockBlockUpdate(e) {
+        e.preventDefault();
+    }
+
+</script>

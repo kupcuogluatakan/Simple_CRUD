@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.Title = MessageResource.LabourCountryVatRatio_PageTitle_Details;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style type="text/css">
+    #popupContentWrapper{ min-height: 360px !important;}
+    #popupContent{ width: 480px !important;}
+</style>
+@using ODMSCommon.Resources
+@model ODMSModel.LabourCountryVatRatio.LabourCountryVatRatioViewModel
+<div class="labelDiv"><label>@MessageResource.LabourDuration_Display_Labour</label></div>
+    <div class="shortTxtDiv">
+    @Model.LabourName
+              
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.CountryId)</div>
+<div class="shortTxtDiv">@Model.CountryName </div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.VatRatio)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(c=>c.VatRatio)
+</div>
+    <div class="clearDiv">&nbsp;</div>
+<div class="labelDiv"><label>@MessageResource.User_Display_IsActive</label></div>
+<div class="shortTxtDiv">@Html.DisplayFor(c=>c.IsActiveString)
+</div>
+<div class="clearDiv">&nbsp;</div>
+
+   

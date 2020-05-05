@@ -1,0 +1,237 @@
+﻿@using ODMSCommon.Resources
+
+@model ODMSModel.WorkshopWorker.WorkshopWorkerIndexModel
+@{
+    ViewBag.Title = @MessageResource.WorkshopWorker_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div id="tagWorkshopListDiv" class="labelDiv">@Html.Label(@MessageResource.WorkshopWorker_Display_WorkshopList)</div>
+        <div id="cmbWorkshopListDiv" class="shortTxtDiv">
+            @(Html.Kendo().ComboBox()
+                  .Name("cmbWorkshops")
+                  .Placeholder(@MessageResource.WorkshopWorker_Display_SelectWorkshop)
+                  .BindTo(Model.WorkshopList)
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+            )
+        </div>
+
+        <div id="tagWorkerListDiv" class="labelDiv">@Html.Label(@MessageResource.WorkshopWorker_Display_WorkerList)</div>
+
+        <div id="cmbWorkerListDiv" class="shortTxtDiv">
+            @(Html.Kendo().ComboBox()
+                  .Name("cmbWorkers")
+                  .Placeholder(@MessageResource.WorkshopWorker_Display_SelectWorker)
+                  .BindTo(Model.WorkerList)
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+            )
+        </div>
+        <div class="clearfix"></div>
+        @*<div id="tagValidityIntervalDiv" class="labelDiv">@Html.Label(@MessageResource.WorkshopWorker_Display_ValidityInterval)</div>*@
+        @*<div id="dtStartDateDiv" class="shortTxtDiv" style="">@Html.Kendo().DatePickerFor(d => d.StartDate).Name("dtStartDate").Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new {type = "text",  @style = " margin-top: 0px" })</div>
+        <div id="dtEndDateDiv" class="shortTxtDiv" style="">@Html.Kendo().DatePickerFor(d => d.EndDate).Name("dtEndDate").Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", @style = " margin-top: 0px" })</div>*@
+        
+        <div id="tagValidityIntervalDiv" class="labelDiv">@Html.Label(@MessageResource.WorkshopWorker_Display_StartDate)</div>
+        <div id="dtStartDateDiv" class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Name("dtStartDate").Events(e => e.Open("OpenStartDate").Change("OpenEndDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+       
+        <div id="tagValidityIntervalDiv" class="labelDiv">@Html.Label(@MessageResource.WorkshopWorker_Display_EndDate)</div>
+        <div id="dtEndDateDiv" class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Name("dtEndDate").Events(e => e.Open("OpenEndDate").Change("OpenStartDate")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+
+        <div class="clearfix"></div>
+        <div id="tagIsActiveDiv" class="labelDiv" style="">@Html.LabelFor(d => d.IsActive)</div>
+        <div id="cmbIsActiveDiv" class="shortTxtDiv" style="">
+            @(Html.Kendo().ComboBoxFor(v => v.IsActive)
+                  .Name("cmbIsActive")
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .BindTo(Model.IsActiveOptions)
+                  .Placeholder(MessageResource.Global_Display_Choose))
+        </div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.WorkshopWorker.WorkshopWorkerIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.WorkshopWorker_PageTitle_Create, CommonValues.PermissionCodes.WorkshopWorker.WorkshopWorkerCreate)
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.WorkshopWorker.WorkshopWorkerListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(d => d.WorkerId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.WorkshopWorker_PageTitle_Details + "' onclick='WorkshopWorkerDetails(this,#=WorkshopId#, #=WorkerId#);'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(MessageResource.Global_Display_View).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkshopWorker.WorkshopWorkerDetails));
+                  columns.Bound(d => d.WorkerId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.WorkshopWorker_PageTitle_Update + "' onclick='UpdateWorkshopWorker(this,#=WorkshopId#, #=WorkerId#);'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(MessageResource.Global_Display_Update).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkshopWorker.WorkshopWorkerUpdate));
+                  columns.Bound(b => b.WorkerId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + @MessageResource.WorkshopWorker_PageTitle_Delete + "' onclick='DeleteWorkshopWorker(this,#=WorkshopId#, #=WorkerId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.WorkshopWorker.WorkshopWorkerDelete));
+                  columns.Bound(d => d.WorkshopName).Width(200).Sortable(true);
+                  columns.Bound(d => d.WorkerName).Width(200).Sortable(true);
+                  columns.Bound(d => d.StartDate).Width(200).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(d => d.EndDate).Width(200).Format("{0:dd/MM/yyyy}").Sortable(true);
+                  columns.Bound(d => d.IsActiveString).Width(200).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListWorkshopWorkers", "WorkshopWorker").Data("Search")))
+    )
+
+</div>
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("WorkshopWorker")
+          .Draggable()
+          .Resizable()
+          .Width(550)
+          .Height(390)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>
+
+
+@section Scripts
+{
+    <script>
+        
+        function OpenStartDate() {
+            var dateStart = $("#dtStartDate").data("kendoDatePicker");
+            var dateEnd = $("#dtEndDate").data("kendoDatePicker");
+            if ($("#dtEndDate").val()) {
+                dateStart.max(dateEnd.value());
+            } else {
+                dateStart.max(new Date(3000, 0, 1));
+            }
+        }
+
+        function OpenEndDate() {
+            var dateStart = $("#dtStartDate").data("kendoDatePicker");
+            var dateEnd = $("#dtEndDate").data("kendoDatePicker");
+            if ($("#dtStartDate").val()) {
+                dateEnd.min(dateStart.value());
+            } else {
+                dateEnd.min(new Date(1900, 0, 1));
+            }
+        }
+
+        $(function () {
+            RegisterEventHandlers();
+        });
+
+        function RegisterEventHandlers() {
+            $("body").delegate("#showSearch", "click", function () {
+                var isVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!isVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+        }
+
+        $("body").delegate("#btnSearch", "click", function () {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("body").delegate("#btnCreate", "click", function () {
+            $('#modelWindow').html('');
+
+            var frameTitle = $(this).attr("frameTitle");
+            var link = "@Url.Action("WorkshopWorkerCreate", "WorkshopWorker")";
+
+            ShowPopup(frameTitle, link);
+        });
+
+        function Search() {
+            return {
+                WorkshopId: $("#cmbWorkshops").val(),
+                WorkerId: $("#cmbWorkers").val(),
+                StartDate: $("#dtStartDate").val(),
+                EndDate: $("#dtEndDate").val(),
+                SearchIsActive: $("#cmbIsActive").val()
+            };
+        }
+
+        function ShowPopup(frameTitle, link) {
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+           
+        }
+
+        function WorkshopWorkerDetails(obj, workshopId, workerId) {
+            $('#modelWindow').html('');
+
+            var frameTitle = $(obj).attr("frameTitle");
+
+            var link = "@Url.Action("WorkshopWorkerDetails", "WorkshopWorker", new { WorkshopId = "workshopId", WorkerId = "workerId" })";
+            link = link.replace("workshopId", workshopId);
+            link = link.replace("workerId", workerId);
+
+            ShowPopup(frameTitle, link);
+        }
+
+        function UpdateWorkshopWorker(obj, workshopId, workerId) {
+            $('#modelWindow').html('');
+
+            var frameTitle = $(obj).attr("frameTitle");
+            var link = "@Url.Action("WorkshopWorkerUpdate", "WorkshopWorker", new { WorkshopId = "workshopId", WorkerId = "workerId" })";
+            link = link.replace("workshopId", workshopId);
+            link = link.replace("workerId", workerId);
+
+            ShowPopup(frameTitle, link);
+        }
+
+        function DeleteWorkshopWorker(obj, workshopId, workerId) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("WorkshopWorkerDelete")",
+                    data: {
+                        WorkshopId: workshopId, WorkerId: workerId, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+}

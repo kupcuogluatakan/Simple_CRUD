@@ -1,0 +1,202 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.DealerSaleChannelDiscountRatio
+@model ODMSModel.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioViewModel
+@{
+    ViewBag.Title = @ODMSCommon.Resources.MessageResource.DealerSaleChannelDiscountRatios_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@ODMSCommon.Resources.MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.DealerClassName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DealerClassCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerClassList as List<SelectListItem>).Placeholder(ODMSCommon.Resources.MessageResource.Global_Display_Choose)</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.ChannelName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.ChannelCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.ChannelList as List<SelectListItem>).Placeholder(ODMSCommon.Resources.MessageResource.Global_Display_Choose)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(v => v.SparePartClassCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.SparePartClassCode)</div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+
+
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioDetails)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", ODMSCommon.Resources.MessageResource.DealerSaleChannelDiscountRatios_PageTitle_Create, CommonValues.PermissionCodes.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("DealerSaleChannelDiscountRatio")
+          .Draggable()
+          .Width(1350)
+          .Height(300)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+          )
+</div>
+
+<script>
+    function Search() {
+        return {
+            DealerClassCode: $("#DealerClassCode").val(),
+            SparePartClassCode: $("#SparePartClassCode").val(),
+            ChannelCode: $("#ChannelCode").val()
+        };
+    }
+
+    $(document).ready(function () {
+
+        $("#btnSearch").on("click", function (e) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("body").delegate("#showSearch", "click", function (e) {
+            var isVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!isVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            } else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var idList = clickedId.split('$');
+            var dealerClassCode = idList[0];
+            var channelCode = idList[1];
+            var sparePartClassCode = idList[2];
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("DealerSaleChannelDiscountRatioDetails", "DealerSaleChannelDiscountRatio", new { dealerClassCode = -1, channelCode = -2, sparePartClassCode = -3 })";
+                link = link.replace("-1", dealerClassCode);
+                link = link.replace("-2", channelCode);
+                link = link.replace("-3", sparePartClassCode);
+            } else {
+                if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("DealerSaleChannelDiscountRatioUpdate", "DealerSaleChannelDiscountRatio", new { dealerClassCode = -1, channelCode = -2, sparePartClassCode = -3 })";
+                    link = link.replace("-1", dealerClassCode);
+                    link = link.replace("-2", channelCode);
+                    link = link.replace("-3", sparePartClassCode);
+                } else {                    
+                        if ($(this).hasClass("createNew")) {
+                            link = "@Url.Action("DealerSaleChannelDiscountRatioCreate", "DealerSaleChannelDiscountRatio")";
+                        }
+                }
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+            windowWidget.wrapper.addClass("appointmentWindow");
+
+            windoww = $("#modelWindow").data("kendoWindow");
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+        });
+
+    });
+
+    function DeleteDealerSaleChannelDiscountRatio(dealerClassCode, channelCode, sparePartClassCode) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+    DeleteConfirm(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DeleteDealerSaleChannelDiscountRatio", "DealerSaleChannelDiscountRatio")",
+            data: { dealerClassCode: dealerClassCode, channelCode: channelCode, sparePartClassCode: sparePartClassCode, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else {
+                    var grid = $('#grid').data('kendoGrid');
+                    grid.dataSource.page(1);
+                    SetSuccessMessage(result.Message);
+                }
+            },
+            dataType: "json"
+        });
+    });
+}
+
+function ReturnUpdate(dealerClassCode, channelCode, sparePartClassCode) {
+    return "<center><a class='edit modalClick' id=" + dealerClassCode + "$" + channelCode + "$" + sparePartClassCode +
+        " frameTitle='" +
+        '@MessageResource.DealerSaleChannelDiscountRatios_PageTitle_Update' +
+        "'" +
+        " href='/DealerSaleChannelDiscountRatio/DealerSaleChannelDiscountRatioUpdate/'>"
+    + "<img class='iconLink' src='" + '@Url.Content("~/Images/edit.png")' + "'/>"
+            +"</a></center>";
+}
+
+function ReturnDetails(dealerClassCode, channelCode, sparePartClassCode) {
+    return "<center><a class='details modalClick' id=" + dealerClassCode + "$" + channelCode + "$" + sparePartClassCode +
+        " frameTitle='" + '@MessageResource.DealerSaleChannelDiscountRatios_PageTitle_Details' +
+        "'" +
+        " href='/DealerSaleChannelDiscountRatio/DealerSaleChannelDiscountRatioDetails/'>"
+    + "<img class='iconLink' src='" + '@Url.Content("~/Images/view.png")' + "'/>"
+        +"</a></center>";
+}
+</script>
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<DealerSaleChannelDiscountRatioListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.SparePartClassCode).ClientTemplate("#=ReturnDetails(DealerClassCode, ChannelCode, SparePartClassCode)#").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioDetails));
+                  columns.Bound(p => p.SparePartClassCode).ClientTemplate("#=ReturnUpdate(DealerClassCode, ChannelCode, SparePartClassCode)#").Width(50).Title(CommonUtility.GetResourceValue("Global_Display_Update")).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioUpdate));
+                  columns.Bound(p => p.SparePartClassCode).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + CommonUtility.GetResourceValue("DealerSaleChannelDiscountRatio_PageTitle_Delete") + "' onclick='DeleteDealerSaleChannelDiscountRatio(\"#=DealerClassCode#\",\"#=ChannelCode#\",\"#=SparePartClassCode#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerSaleChannelDiscountRatio.DealerSaleChannelDiscountRatioDelete));
+                  columns.Bound(p => p.DealerClassCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.DealerClassName).Width(100).Sortable(true);
+                  columns.Bound(p => p.ChannelCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.ChannelName).Width(100).Sortable(true);
+                  columns.Bound(p => p.SparePartClassCode).Width(100).Sortable(true);
+                  columns.Bound(p => p.TseValidDiscountRatio).Width(100).Sortable(true);
+                  columns.Bound(p => p.TseInvalidDiscountRatio).Width(100).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerSaleChannelDiscountRatio", "DealerSaleChannelDiscountRatio", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.DealerClassCode).DefaultValue(-1))))
+</div>
+<h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel)</h4>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+<div>
+    <a class="k-link2" href="@Url.Action("ExcelSample")">
+        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+    </a>
+    <br />@using (Html.BeginForm("DealerSaleChannelDiscountRatioIndex", "DealerSaleChannelDiscountRatio"))
+          {
+              @Html.Kendo().Upload().Name("excelFile").TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile))
+              <div id="divExcepUpload">
+                  @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+              </div>
+          }
+</div>
+<br />

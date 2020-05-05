@@ -1,0 +1,11 @@
+﻿@model String
+@using System.Xml.Linq
+@{
+    XDocument doc = XDocument.Parse(Model);
+
+}
+<div>
+<pre>
+@doc.ToString()
+</pre>
+</div>

@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.Title = MessageResource.AppointmentDetails_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@model ODMSModel.AppointmentDetails.AppointmentDetailsViewModel
+@if (ViewBag.HideElements == true)
+{
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SetErrorMessage("@MessageResource.Error_DB_NoRecordFound");
+        });
+    </script>
+}
+else
+{
+    using (Html.BeginForm("AppointmentDetailsUpdate", "AppointmentDetails", FormMethod.Post))
+    {
+        @Html.HiddenFor(c => c.AppointmentIndicatorId)
+        Html.RenderPartial("_AppointmentDetailsEdit", Model);
+        <input type="hidden" name="AppointmentId" id="AppointmentId" value="@Model.AppointmentId"/>
+        @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.AppointmentDetail.AppointmentDetailUpdate, "AppointmentDetailUpdate")
+    }
+}

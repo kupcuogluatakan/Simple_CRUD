@@ -1,0 +1,197 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.DealerStartupInventoryLevel
+
+@model DealerStartupInventoryLevelListModel
+@{
+    ViewBag.Title = @MessageResource.DealerStartupInventoryLevel_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(d => d.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartCode) </div>
+        <div class="labelDiv">@Html.LabelFor(d => d.PartName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(d => d.PartName) </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerClassName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.DealerClassCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerClassList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        </div>
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.DealerStartupInventoryLevel.DealerStartupInventoryLevelIndex)
+@ODMSHelpers.LinkButton("btnCreate", MessageResource.Global_Display_New, "Create", "modalClick createNew", MessageResource.DealerStartupInventoryLevel_PageTitle_Create, CommonValues.PermissionCodes.DealerStartupInventoryLevel.DealerStartupInventoryLevelCreate)
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<DealerStartupInventoryLevelListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(b => b.DealerClassId).ClientTemplate("<center><a class='edit modalClick' id=" + "#=DealerClassCode#" + "$" + "#=PartId#  frameTitle='" + MessageResource.DealerStartupInventoryLevel_PageTitle_Update + "' href='/DealerStartupInventoryLevel/DealerStartupInventoryLevelUpdate/#=DealerClassCode#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(MessageResource.Global_Display_Update).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerStartupInventoryLevel.DealerStartupInventoryLevelUpdate));
+                  columns.Bound(b => b.DealerClassId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.DealerStartupInventoryLevel_PageTitle_Delete +
+                      "' onclick='DeleteDealerStartupInventoryLevel(\"#=DealerClassCode#\", #=PartId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>")
+                      .Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.DealerStartupInventoryLevel.DealerStartupInventoryLevelDelete));
+                  columns.Bound(b => b.DealerClassName).Width(200).Sortable(true);
+                  columns.Bound(b => b.PartCode).Width(200).Sortable(true);
+                  columns.Bound(b => b.PartName).Width(200).Sortable(true);
+                  columns.Bound(b => b.Quantity).Width(200).Sortable(true);
+                  columns.Bound(b => b.PacketQuantity).Width(200).Sortable(true);
+                  columns.Bound(b => b.IsActiveName).Width(200).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListDealerStartupInventoryLevels", "DealerStartupInventoryLevel", Model).Data("GetParameters"))
+                                        .Model(model => model.Field(b => b.DealerClassId).DefaultValue(-1))
+                                        .Model(model => model.Field(b => b.PartId).DefaultValue(-1)))
+          )
+
+</div>
+
+<br />
+
+<h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+<div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+<div>
+    <a class="k-link2" href="@Url.Action("ExcelSample")">
+        <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+    </a>
+    <br />
+    @using (Html.BeginForm("DealerStartupInventoryLevelIndex", "DealerstartupInventoryLevel", FormMethod.Post))
+    {
+        @Html.Kendo().Upload().Name("excelFile").TemplateId("fileTemplate").Multiple(false).Messages(m => m.Select(MessageResource.Global_Display_SelectFile)).Events(e => e.Select("onSelect"))
+        <div id="divExcepUpload">
+            @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+        </div>
+    }
+</div>
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+        .Title("DealerStartupInventoryLevel")
+        .Draggable()
+        .Resizable()
+        .Width(950)
+        .Height(450)
+        .Scrollable(false)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.page(1);
+            }"))
+    )
+</div>
+
+
+   
+     <script>
+             function GetParameters() {
+                 return {
+                     ReportType: 15,
+                     Columns: "DealerClassName,PartCode,PartName,Quantity,PacketQuantity,IsActiveName",
+                     DealerClassCode: $("#DealerClassCode").val(),
+                     PartCode: $("#PartCode").val(),
+                     PartName: $("#PartName").val(),
+                     IsActive: $('#IsActive').val()
+                 };
+             }
+
+
+             $(function () {
+                 RegisterEventHandlers();
+             });
+             function RegisterEventHandlers() {
+                 $("body").delegate("#showSearch", "click", function (e) {
+                     var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                     if (!IsVisible) {
+                         $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                         $(this).addClass("searchVisible");
+                         $("#searchDiv").show("slow");
+                     } else {
+                         $(this).html('@MessageResource.Global_Display_Search_Criteria');
+                         $(this).removeClass("searchVisible");
+                         $("#searchDiv").hide("slow");
+                     }
+                 });
+
+                 $("body").delegate("#btnSearch", "click", function (e) {
+                     var grid = $('#grid').data('kendoGrid');
+                     grid.dataSource.page(1);
+
+                 });
+
+                 $("body").delegate(".modalClick", "click", function (e) {
+                     $('#modelWindow').html('');
+                     e.preventDefault();
+
+                     var link;
+                     var clickedId = $(this).attr("id");
+                     var idList = clickedId.split("$");
+                     var dealerClassId = idList[0];
+                     var partId = idList[1];
+                     var frameTitle = $(this).attr("frameTitle");
+
+                     if ($(this).hasClass("details") == true) {
+                         link = "@Url.Action("DealerStartupInventoryLevelDetails", "DealerStartupInventoryLevel", new { dealerClassCode = -1, partId = -2 })";
+                         link = link.replace("-1", dealerClassId);
+                         link = link.replace("-2", partId);
+                     }
+                     else if ($(this).hasClass("edit")) {
+                         link = "@Url.Action("DealerStartupInventoryLevelUpdate", "DealerStartupInventoryLevel", new { dealerClassCode = -1, partId = -2 })";
+                         link = link.replace("-1", dealerClassId);
+                         link = link.replace("-2", partId);
+                     }
+                     else if ($(this).hasClass("createNew")) {
+                         link = "@Url.Action("DealerStartupInventoryLevelCreate", "DealerStartupInventoryLevel")";
+                     }
+
+                     $("#modelWindow_wnd_title").html(frameTitle);
+
+                     var windowWidget = $("#modelWindow").data("kendoWindow");
+                     var closeOrigin = windowWidget.close;
+
+                     windowWidget.refresh({
+                         url: link
+                     }).center();
+                     windowWidget.center();
+                     windowWidget.open();
+
+                 });
+             }
+
+             function DeleteDealerStartupInventoryLevel(dId, pId) {
+                 var token = $('input[name="__RequestVerificationToken"]').val();
+
+                 DeleteConfirm(function () {
+                     $.ajax({
+                         type: "POST",
+                         url: "@Url.Action("DealerStartupInventoryLevelDelete", "DealerStartupInventoryLevel")",
+                         data: { dealerClassCode: dId, partId: pId, "__RequestVerificationToken": token },
+                         traditional: true,
+                         success: function (result) {
+                             if (result.Status == 0)
+                                 SetErrorMessage(result.Message);
+                             else {
+                                 var grid = $('#grid').data('kendoGrid');
+                                 grid.dataSource.read();
+                                 SetSuccessMessage(result.Message);
+                             }
+                         },
+                         dataType: "json"
+                     });
+                 });
+             }
+
+         </script>

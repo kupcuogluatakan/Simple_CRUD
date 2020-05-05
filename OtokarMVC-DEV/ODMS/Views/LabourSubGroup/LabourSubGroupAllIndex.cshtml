@@ -1,0 +1,182 @@
+﻿@using ODMSModel.LabourSubGroup
+@model LabourSubGroupListModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("LabourSubGroup_PageTitle_Index");
+}
+
+<script>
+    //SearchScript
+    function GetParameters() {
+        return {
+            ReportType: 8,
+            Columns: "MainGroupId,MainGroupName,SubGroupId,LabourSubGroupName,Description,StateName"
+
+        };
+    }
+
+    $(document).ready(function () {
+
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#LabourSubGroupGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+
+        //Popup
+        $("body").delegate(".modalClickSubGroup", "click", function (e) {
+            $('#modelWindowSubGroup').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+
+            var lines = clickedId.split(',');
+
+            var frameTitle = $(this).attr("frameTitle");
+
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("LabourSubGroupDetail", "LabourSubGroup")";
+                link = link + "/?mainId=" + lines[0] + "&subId=" + lines[1];
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("LabourSubGroupUpdate", "LabourSubGroup")";
+                link = link + "/?mainId=" + lines[0] + "&subId=" + lines[1];
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("LabourSubGroupCreate", "LabourSubGroup")";
+                link = link + "/?mainId=" + lines[0];
+
+                //////console.log(link);
+            }
+
+            $("#modelWindowSubGroup_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindowSubGroup").data("kendoWindow");
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+    });
+
+    function Delete(mainId, subId) {
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("LabourSubGroupDelete", "LabourSubGroup")",
+                data: { mainId: mainId, subId: subId },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#LabourSubGroupGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+</script>
+
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.MainGroupId)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.MainGroupId)</div>
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.MainGroupName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.MainGroupName)</div>
+        
+        <div class="clearfix"></div>
+        
+        <div class="labelDiv">@Html.LabelFor(c => c.SubGroupId)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.SubGroupId)</div>
+
+        <div class="labelDiv">@Html.LabelFor(c => c.LabourSubGroupName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.LabourSubGroupName)</div>
+
+        <div class="clearfix"></div>
+
+        <div class="labelDiv">@Html.LabelFor(v => v.Description)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.Description)</div>
+        
+        <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) </div>      
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", ODMSCommon.CommonValues.PermissionCodes.LabourSubGroup.LabourSubGroupIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickSubGroup createNew", CommonUtility.GetResourceValue("LabouSubGroup_PageTitle_Create"), CommonValues.PermissionCodes.LabourSubGroup.LabourSubGroupCreate)
+
+
+@Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<LabourSubGroupListModel>()
+          .Name("LabourSubGroupGrid")
+          .Columns(columns =>
+    {
+        columns.Bound(p => p.SubGroupId).ClientTemplate("<center><a class='details modalClickSubGroup' id='#=MainGroupId#,#=SubGroupId#' frameTitle='" + @CommonUtility.GetResourceValue("LabouSubGroup_PageTitle_Details") + "' href='./LabouSubGroup/?mainId=#=MainGroupId#&subId=#=SubGroupId#'><img class=iconLink src='" + @Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.LabourSubGroup.LabourSubGroupDetail)).Width(10);
+        columns.Bound(p => p.MainGroupId).Width(50).Sortable(true);
+        columns.Bound(p => p.MainGroupName).Width(400).Sortable(true);
+        columns.Bound(p => p.SubGroupId).Width(50).Sortable(true);
+        columns.Bound(p => p.LabourSubGroupName).Width(400).Sortable(true);
+        columns.Bound(p => p.Description).Width(400).Sortable(true);
+        columns.Bound(p => p.StateName).Width(20).Sortable(true);
+    })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10)
+              .ServerOperation(true)
+              .Read(read => read.Action("Read", "LabourSubGroup", Model).Data("GetParameters"))
+              .Model(model => model.Field(o => o.MainGroupId).DefaultValue(-1)))
+
+    )
+</div>
+
+
+
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+          .Name("modelWindowSubGroup")
+          .Title("LabourSubGroup")
+          .Draggable()
+          .Resizable()
+          .Width(550)
+          .Height(400)
+          .Scrollable(false)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){var grid = $('#LabourSubGroupGrid').data('kendoGrid');grid.dataSource.page(1);}"))
+    )
+</div>
+
+
+

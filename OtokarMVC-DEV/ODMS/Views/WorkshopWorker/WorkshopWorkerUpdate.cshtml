@@ -1,0 +1,69 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.WorkshopWorker.WorkshopWorkerDetailModel
+@{
+    ViewBag.Title = MessageResource.WorkshopWorker_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("WorkshopWorkerUpdate", "WorkshopWorker", FormMethod.Post))
+{
+    <div id="tagWorkshopListDiv" class="labelDiv" >@Html.LabelFor(d => d.WorkshopName)&nbsp;</div>
+    <div id="cmbWorkshopListDiv" class="shortTxtDiv" >@Html.TextBoxFor(d => d.WorkshopName,new{@readonly="readonly"})&nbsp;</div>
+    @Html.HiddenFor(d => d.WorkshopId)
+    <div class="clearfix"></div>
+    <div id="tagWorkerListDiv" class="labelDiv" >@Html.LabelFor(d => d.WorkerName)&nbsp;</div>
+    <div id="cmbWorkerListDiv" class="shortTxtDiv" >@Html.TextBoxFor(d => d.WorkerName,new{@readonly="readonly"})&nbsp;</div>
+    @Html.HiddenFor(d => d.WorkerId)
+    <div class="clearfix"></div>
+    <div id="tagStartDateDiv" class="labelDiv" >@Html.Label(@MessageResource.Global_Display_StartDate)</div>
+    <div id="dtStartDateDiv" class="shortTxtDiv" > @Html.Kendo().DatePickerFor(d => d.StartDate).Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", @style = "width: 205px; margin-top: 0px" }) 
+        @Html.ValidationMessageFor(c=>c.StartDate)
+    </div>
+    <div class="clearfix"></div>
+    <div id="tagEndDateDiv" class="labelDiv"  >@Html.Label(@MessageResource.Global_Display_EndDate)</div>
+    <div id="dtEndDateDiv" class="shortTxtDiv" >@Html.Kendo().DatePickerFor(d => d.EndDate).Format("dd/MM/yyyy").ParseFormats(new string[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", @style = "width: 205px; margin-top: 0px" })
+          @Html.ValidationMessageFor(c=>c.EndDate)
+    </div>
+<div class="clearfix"></div>
+    <div class="labelDiv" >@Html.LabelFor(d => d.IsActiveString)</div>
+    <div class="shortTxtDiv" >@Html.CheckBoxFor(d => d.IsActive)</div>
+    <div class="clearfix"></div>
+    @ODMSHelpers.Button("Update", MessageResource.Global_Display_Update, CommonValues.PermissionCodes.WorkshopWorker.WorkshopWorkerUpdate, "WorkshopWorkerUpdate")
+}
+
+<script>
+    $(function () {
+        adjustPage();
+        //adjustControlPositions();
+    });
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    function adjustPage() {
+        $("#popupContent").css("width", 530);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 390);
+        $("#popupContentWrapper").css("width", 550);
+    }
+
+    function adjustControlPositions() {
+        $("#Create").css("position", "absolute");
+        $("#Create").css("margin-top", "140px");
+        $("#Create").css("margin-left", "-370px");
+        $("#Create").css("width", "75px");
+
+        //$(".shortTxtDiv span[data-valmsg-for='StartDate']").css("position", "absolute");
+        //$(".shortTxtDiv span[data-valmsg-for='StartDate']").css("margin-top", "-18px");
+        //$(".shortTxtDiv span[data-valmsg-for='StartDate']").css("margin-left", "210px");
+
+        //$(".shortTxtDiv span[data-valmsg-for='EndDate']").css("position", "absolute");
+        //$(".shortTxtDiv span[data-valmsg-for='EndDate']").css("margin-top", "-18px");
+        //$(".shortTxtDiv span[data-valmsg-for='EndDate']").css("margin-left", "210px");
+    }
+</script>

@@ -1,0 +1,28 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("ClaimRecallPeriod_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.ClaimRecallPeriod.ClaimRecallPeriodViewModel
+ 
+ <div class="labelDiv">@Html.LabelFor(v => v.ClaimRecallPeriodId)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ClaimRecallPeriodId) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ValidLastDay)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ValidLastDay) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipFirstDay)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ShipFirstDay) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipLastDay)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.ShipLastDay) &nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActiveName) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+<br />
+
+
+
+

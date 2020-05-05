@@ -1,0 +1,237 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+
+@model ChargePerCarFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.ChargePerCarReport_PageTitle_Index;
+}
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.RegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.RegionIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ViewBag.DealerRegionId.ToString()).Enable(ViewBag.DealerRegionId == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerRegionList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.CustomerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.CustomerIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CustomerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ProcessTypeIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ProcessTypeIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ProcessTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.VehicleTypeIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleTypeIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.VehicleModelIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.VehicleModelIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.VehicleModelList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.StartDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.StartDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.EndDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.EndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.Currency)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.Currency).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.CurrencyCodeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c => c.VinNo)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.InGuarantee)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.InGuarantee).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GuaranteeParameters as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.GuaranteeCategories)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.GuaranteeCategories).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GuaranteeCategories as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.GuaranteeConfirmDate)</div>
+        <div class="shortTxtDiv">@Html.Kendo().DatePickerFor(v => v.GuaranteeConfirmDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text", onkeypress = "return false;" })</div>
+
+
+
+        <div class="labelDiv">@Html.LabelFor(b => b.MinKM)</div>
+        <div class="shortTxtDiv">
+            @Html.TextBoxFor(i => i.MinKM, new { @type = "number", @class = "k-input" })
+        </div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.MaxKM)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(i => i.MaxKM, new { @type = "number", @class = "k-input" })</div>
+
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.WorkOrderDetailReportIndex)
+@*@Html.ExportExcelButton(new ExcelExportDto("Reports", "ListChargePerCarReportForExcel", "ChargePerCarReport", "sdfsdf", filterId: "searchFields", reportName: MessageResource.PartStockReport_PageTitle_Index).Build<ChargePerCarReport, object>(c => c.DealerName, c => c.DealerRegionName, c => c.NameSurname, c => c.TypeName, c => c.ModelName, c => c.VinNo, c => c.WorkOrderCount, c => c.WorkOrderDetailCount, c => c.CarCount, c => c.ProcessTypes))*@
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.ChargePerCarExcelExport))
+{
+    @Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+}
+<div class="kendoGridDiv" id="grd">
+    @{
+        var processTypeList = (List<SelectListItem>)ViewBag.ProcessTypes;
+    }
+    @(Html.Kendo().Grid<ChargePerCarReport>()
+          .Name("gridReport")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.DealerRegionName).Sortable(true).Width(200);
+              columns.Bound(p => p.DealerName).Sortable(true).Width(200);
+              columns.Bound(p => p.NameSurname).Sortable(true).Width(300);
+              columns.Bound(p => p.TypeName).Sortable(true).Width(150);
+              columns.Bound(p => p.ModelName).Sortable(true).Width(150);
+              //columns.Bound(p => p.VehicleId).Sortable(true).Visible(false).Title("IdVehicle") ;
+              columns.Bound(p => p.VinNo).HtmlAttributes(new { style = "text-align:center" }).ClientTemplate("<a class='k-link' onclick='OpenVehicleHistory(#=IdVehicle#)'>#=VinNo#</a>").Sortable(true).Width(170);
+              columns.Bound(p => p.InGuarantee).Sortable(true).Width(150);
+              columns.Bound(p => p.CategoryLookval).Sortable(true).Width(150);
+              //columns.Bound(p => p.ApproveDate).Format("{0:dd/MM/yyyy HH:mm}").Sortable(true).Width(75);
+              columns.Bound(p => p.TotalAmount).Sortable(true).Width(150).HtmlAttributes(new { style = "text-align:right" });
+              columns.Bound(p => p.WorkOrderCount).HtmlAttributes(new { style = "text-align:right" }).ClientTemplate("<a class='k-link' onclick='OpenWorkOrderDetail(#=DealerId#,#=DealerRegionId#,#=CustomerId#,#=VehicleTypeId#,\"#=VehicleModelCode#\",\"#=VinNo#\",\"#=CategoryLookval#\")'>#=WorkOrderCount#</a>").Sortable(true).Width(150);
+              columns.Bound(p => p.WorkOrderDetailCount).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              //columns.Bound(p => p.CarCount).HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(60);
+
+              for (var i = 0; i < processTypeList.Count; i++)
+              {
+                  columns.Bound(p => p.ProcessTypes[i].LabourPrice).Title(processTypeList[i].Text + " İşçilik").Format("{0:n}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+                  columns.Bound(p => p.ProcessTypes[i].PartPrice).Title(processTypeList[i].Text + " Parça").Format("{0:n}").HtmlAttributes(new { style = "text-align:right" }).Sortable(true).Width(150);
+              }
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+              .Ajax()
+               .Events(e => e.RequestStart("onDataBinding"))
+              .PageSize(10)
+              .ServerOperation(false)
+              .Read(read => read.Action("ListChargePerCarReport", "Reports", Model).Data("GetParameters"))
+          )
+
+    )
+</div>
+<div id="PartInfoWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+<script type="text/javascript">
+    function onDataBinding(e) {
+
+        if ($("#DealerIdList").val() == "" || $("#DealerIdList").val() == null) {
+            SetErrorMessage('@MessageResource.VehicleServiceDurationReport_Message_DealerIsRequired');
+            e.preventDefault();
+            return;
+        }
+
+        if ($("#StartDate").val() == "" || $("#EndDate").val() == "") {
+            SetErrorMessage('@MessageResource.WorkOrderMaint_Validation_Required');
+            e.preventDefault();
+            return;
+        }
+        SetSuccessMessage('Seçim Yapıldı');
+
+    }
+    function OpenWorkOrderDetail(dealerId, dealerRegionId, customerId, vehicleTypeId, modelCode, vinNo, gCat) {
+        debugger;
+
+        startDate = $('#StartDate').val();
+        endDate = $('#EndDate').val();
+        currency = $('#Currency').val();
+        ProcessTypeIdList = $('#ProcessTypeIdList').val();
+        //vinNo = $('#VinNo').val();
+        //   GuaranteeCategories = $("#GuaranteeCategories").data('kendoMultiSelect').value().toString();
+        GuaranteeConfirmDate = $('#GuaranteeConfirmDate').val();
+
+
+        if ($('#InGuarantee').val() === "") {
+            inGuarantee = 0;
+        }
+        else {
+            inGuarantee = $('#InGuarantee').val();
+        }
+
+
+
+        $('#PartInfoWindow').kwnd('@Url.Action("ChargeWorkOrderDetail", "Reports")' + '?dealerId=' + dealerId + '&dealerRegionId=' + dealerRegionId + '&customerId=' + customerId + '&vehicleTypeId=' + vehicleTypeId + '&modelCode=' + modelCode + '&startDate=' + startDate + '&endDate=' + endDate + '&currency=' + currency + '&processTypeIdList=' + ProcessTypeIdList + '&vinNo=' + vinNo + '&inGuarantee=' + inGuarantee + '&GuaranteeConfirmDate=' + GuaranteeConfirmDate + '&GuaranteeCategories=' + gCat, '@Html.Raw(MessageResource.WorkOrderCard_Display_WorkOrderDetails)',
+        {
+            iframe: true,
+            width: 1250,
+            height: 450,
+            onClose: function () {
+                $("#PartInfoWindow").html('');
+            }
+        });
+        $('#PartInfoWindow').removeClass("hide");
+        OpenWindow($('#PartInfoWindow'));
+    }
+    $(document).ready(function () {
+        $('#exportForm').submit(function () { //listen for submit event
+            var json = ChargePerCarReport();
+            for (var i in json) {
+                $('#exportForm').find('input[name="' + i + '"]').remove();
+                $('<input />').attr('type', 'hidden')
+                    .attr('name', i)
+                    .attr('value', json[i])
+                    .appendTo('#exportForm');
+            }
+            return true;
+        });
+    });
+
+    $(document).ready(init);
+    function GetParameters() {
+        return {
+            StartDate: $("#StartDate").val(),
+            EndDate: $("#EndDate").val(),
+            InGuarantee: $("#InGuarantee").val(),
+            GuaranteeCategories: $("#GuaranteeCategories").data('kendoMultiSelect').value().toString(),
+            GuaranteeConfirmDate: $("#GuaranteeConfirmDate").val(),
+            CustomerIdList: $("#CustomerIdList").data('kendoMultiSelect').value().toString(),
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            RegionIdList: $("#RegionIdList").data('kendoMultiSelect').value().toString(),
+            Currency: $("#Currency").data('kendoComboBox').value().toString(),
+            ProcessTypeIdList: $("#ProcessTypeIdList").data('kendoMultiSelect').value().toString(),
+            VehicleTypeIdList: $("#VehicleTypeIdList").data('kendoMultiSelect').value().toString(),
+            VehicleModelIdList: $("#VehicleModelIdList").data('kendoMultiSelect').value().toString(),
+            VinNo: $("#VinNo").val(),
+            MinKM: $("#MinKM").val(),
+            MaxKM: $("#MaxKM").val(),
+            ReportType: 35,
+            Columns: "DealerRegionName,DealerName,NameSurname,TypeName,ModelName,VinNo,InGuarantee,CategoryLookval,GuaranteeConfirmDate,TotalAmount,WorkOrderCount,WorkOrderDetailCount,CarCount,"
+        };
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            //$("#DealerIdList").data('kendoMultiSelect').value('');
+            //$("#DealerRegionIdList").data('kendoMultiSelect').value('');
+            //$("#StockTypeIdList").data('kendoMultiSelect').value('');
+            $("#Currency").data('kendoComboBox').value('');
+            $("#Date").val('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.read();
+            //grid.dataSource.page(1);
+        });
+    }
+
+    function OpenVehicleHistory(obj) {
+        $('#VehicleHistoryWindow').kwnd('@Url.Action("VehicleHistoryIndex", "Vehicle")' + '?vehicleId=' + obj, '@Html.Raw(MessageResource.WorkOrderCard_Display_VehicleHistory)',
+        {
+            iframe: true,
+            width: 1250,
+            height: 650,
+            onClose: function () {
+                $("#VehicleHistoryWindow").html('');
+            }
+        });
+        $('#VehicleHistoryWindow').removeClass("hide");
+        OpenWindow($('#VehicleHistoryWindow'));
+    }
+
+    function run() {
+        $.ajax("@Url.Action("ListChargePerCarReportForExcel","Reports")", { data: JSON.stringify($('#ExcelExport').serialize()), type: "POST", contentType: "application/json; charset=utf-8" });
+    }
+
+</script>

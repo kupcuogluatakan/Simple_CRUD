@@ -1,0 +1,120 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Integration.IntegrationDetailListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Integration_Detail_PageTitle_Index");
+}
+
+@Html.AntiForgeryToken()
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.IntegrationTypeId)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IntegrationTypeId).DataTextField("ServiceDescription").DataValueField("ServiceId").Value(Model.IntegrationTypeId.Value.ToString()).BindTo(ViewBag.IntegrationTypeList as List<ODMSModel.Integration.IntegrationListModel>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+       
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.Campaign.CampaignDetails)
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+    }"))
+    )
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#IntegrationDetailGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("request") == true) {
+                link = "@Url.Action("RequestDetail", "Integration", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("response")) {
+                link = "@Url.Action("ResponseDetail", "Integration", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("error")) {
+                link = "@Url.Action("ErrorDetail", "Integration", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+                alert(link);
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    });
+
+    function Search() {
+        return {
+            IntegrationTypeId: $('#IntegrationTypeId').val()
+        };
+    }
+
+    function onValidate(evt) {
+        var integrationType = $("#IntegrationTypeId").val();
+
+        if (integrationType == "") {
+            SetErrorMessage('@MessageResource.Integration_IntegrationType_IsRequired');
+            evt.preventDefault();
+            return false;
+        }
+
+        ClearMessages();
+        return true;
+    }
+</script>
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.Integration.IntegrationDetailListModel>()
+          .Name("IntegrationDetailGrid")
+
+          .Columns(columns =>
+          {
+              columns.Bound(p => p.LogId).Width(100);
+              columns.Bound(p => p.RequestParams).ClientTemplate("<center><a class='request modalClick' id='#=LogId#' frameTitle='" + @CommonUtility.GetResourceValue("Integration_Request") + "' href='/Integration/RequestDetail/#=LogId#'>#=RequestParams#</a></center>").Width(300).Sortable(false);
+              columns.Bound(p => p.Response).ClientTemplate("<center><a class='response modalClick' id='#=LogId#' frameTitle='" + @CommonUtility.GetResourceValue("Integration_Response") + "' href='/Integration/ResponseDetail/#=LogId#'>#=Response#</a></center>").Width(300).Sortable(false);
+              columns.Bound(p => p.CallStartDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(false);
+              columns.Bound(p => p.CallFinishDate).Format("{0:dd/MM/yyyy}").Width(100).Sortable(false);
+              columns.Bound(p => p.ErrorContent).Width(300).Sortable(false);
+              columns.Bound(p => p.Error).ClientTemplate("<center><a class='error modalClick' id='#=LogId#' frameTitle='" + @CommonUtility.GetResourceValue("Integration_Error") + "' href='/Integration/ErrorDetail/#=LogId#'>#=Error#</a></center>").Width(300).Sortable(false);
+          })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Events(e => e.RequestStart("onValidate"))
+                                        .Read(read => read.Action("DetailList", "Integration", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.LogId).DefaultValue(-1)))
+
+    )
+</div>

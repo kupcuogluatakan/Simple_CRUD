@@ -1,0 +1,293 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.SparePartClassCode
+<style>
+    .listSearch {
+        margin: 4px 1px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        width: 500px;
+    }
+
+        .listSearch input {
+            border: 0 none;
+            width: 480px;
+            padding: 4px 0px;
+        }
+</style>
+<script src="~/Scripts/custom.js"></script>
+@model List<SparePartClassCodeListModel>
+@{
+    ViewBag.Title = @MessageResource.PartWithModelPairing_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+<script type="text/x-kendo-tmpl" id="CodeItemTemplate">
+    <div class="ListItem">
+        <table>
+            <tr>
+                <td style="width:400px"><span data-vehicleSSID=#:VehicleSSID#>#:VehicleModel#</span></td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<div>
+    @Html.Label(@MessageResource.Display_CodeList)
+    @(Html.Kendo().ComboBox()
+          .Name("cmbCodes")
+          .Placeholder(CommonUtility.GetResourceValue("Spare_part_class_Display_SelectCode"))
+          .BindTo(Model)
+          .DataTextField("Desc")
+          .DataValueField("Code")
+          .Events(e => e.Change("SelectedCodeChanged"))
+          .HtmlAttributes(new { @class = "ComboBox", @style = "width: 300px;" })
+    )
+</div>
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PartWithModelPairing.PartWithModelPairingCreate))
+{
+
+    @ODMSHelpers.LinkButton("btnSave", @MessageResource.Global_Display_Save, "", "Button", "", "", "float: left; margin-top: -23px; margin-left: 390px;")
+    <div class="clearfix"></div>
+}
+
+<div id="janpol">
+    <hr />
+
+
+    @Html.Label("Parça Sınıfı İçin Janpol Tanımı :")
+    <select name="IsJanpol" id="IsJanpol" class="form-control" style="width:200px;margin-left:200px;position:absolute;margin-top:-30px;float:left;">
+        <option value="true">Evet</option>
+        <option value="false">Hayır</option>
+    </select>
+
+
+
+    @ODMSHelpers.LinkButton("btnJanpol", @MessageResource.Global_Display_Save, "", "Button", "", "", "float: left; margin-left: 250px;position:absolute;")
+
+    <hr />
+</div>
+
+<div>
+    <div class="listSearch" style="margin-left: 550px;margin-top: 5px;overflow: auto;position: absolute;">
+        <input type="text" id="includedListSearch" />
+        <i class="glyphicon glyphicon-search"></i>
+    </div>
+    @(Html.Kendo().ListView<ODMSModel.Shared.PermissionListModel>()
+          .Name("lstIncludedInCode")
+          .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+          .ClientTemplateId("CodeItemTemplate")
+          .TagName("div")
+          .DataSource(ds => ds.Read(read =>
+              read.Action("ListPartWithModelPairingIncluded", "PartWithModelPairing").Data("GetSelectedCode")))
+          .HtmlAttributes(new { @style = @"  float: left;
+                                            height: 300px;
+                                            margin-left: 550px;
+                                            margin-top: 35px;
+                                            overflow: auto;
+                                            position: absolute;
+                                            width: 500px;" })
+    )
+</div>
+
+<div>
+    <div class="listSearch">
+        <input type="text" id="excludedListSearch" />
+        <i class="glyphicon glyphicon-search"></i>
+    </div>
+    @(Html.Kendo().ListView<ODMSModel.Shared.PermissionListModel>()
+          .Name("lstNotIncludedInCode")
+          .Selectable(v => v.Mode(ListViewSelectionMode.Multiple))
+          .ClientTemplateId("CodeItemTemplate")
+          .TagName("div")
+          .DataSource(ds => ds.Read(read =>
+              read.Action("ListPartWithModelPairingNotIncluded", "PartWithModelPairing").Data("GetSelectedCode")))
+          .HtmlAttributes(new { @style = "width: 500px; height: 300px; margin-top: 0px; margin-left: 0px;overflow:auto;" })
+    )
+</div>
+<div style="position: absolute; height: 35px; width:850px">
+    @ODMSHelpers.LinkButton("btnAdd", @MessageResource.Global_Display_Add, "", "Button", "", "", "position: absolute; margin-top: 5px")
+    @ODMSHelpers.LinkButton("btnRemove", @MessageResource.Global_Display_Remove, "", "Button", "", "", "position: absolute; margin-left: 550px; margin-top: 5px;")
+
+</div>
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Spare Part Class Code")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    )
+</div>
+<script>
+    $(document).ready(function () {
+        $('#janpol').hide();
+    });
+
+
+    function deneme(clickedId) {
+        $('#modelWindow').html('');
+
+        var link = "@Url.Action("PermissionDetails", "Permission", new { id = -1 })";
+        link = link.replace("-1", clickedId);
+
+        $("#modelWindow_wnd_title").html('@MessageResource.Permission_PageTitle_Details');
+
+        var windowWidget = $("#modelWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+
+    $(function () {
+        RegisterEventHandlers();
+        $("#excludedListSearch").listSearch("lstNotIncludedInCode", {
+            textField: "VehicleModel",
+            valueField: "VehicleSSID",
+            cascadeControlId: "cmbCodes"
+        });
+        $("#includedListSearch").listSearch("lstIncludedInCode", {
+            textField: "VehicleModel",
+            valueField: "VehicleSSID",
+            cascadeControlId: "cmbCodes",
+            disableButtons: true
+        });
+    });
+
+    function RegisterEventHandlers() {
+        $("body").delegate("#btnAdd", "click", AddPermissionClickHandler);
+        $("body").delegate("#btnRemove", "click", RemovePermissionClickHandler);
+        $("body").delegate("#btnSave", "click", SavePermissionClickHandler);
+        $("body").delegate("#btnJanpol", "click", JanpolPermissionClickHandler);
+    }
+
+    // Used in kendo listview read action
+    function GetSelectedCode() {
+        return {
+            code: $("#cmbCodes").val()
+        };
+    }
+
+    function GetJanpolVal() {
+        debugger;
+        var code = $("#cmbCodes").val();
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("GetJanpolVal", "PartWithModelPairing")",
+            data: { Code: code, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                debugger;
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else
+                    if (result.Data == true) {
+                        document.getElementById('IsJanpol').getElementsByTagName('option')[0].selected = 'selected'
+                        
+                    }
+                    else {
+                        document.getElementById('IsJanpol').getElementsByTagName('option')[1].selected = 'selected'
+                    }
+            },
+            dataType: "json"
+        });
+    }
+    // Called when kendo combobox changed event is fired
+    function SelectedCodeChanged() {
+
+        var code = $("#cmbCodes").val();
+
+        if (code != null && code != "") {
+            $('#janpol').show();
+            GetJanpolVal();
+        }
+        else {
+            $('#janpol').hide();
+        }
+
+
+
+        //var includedRolelist = $("#lstPermissionsIncludedInRole").data("kendoListView");
+        //var notIncludedRolelist = $("#lstPermissionsNotIncludedInRole").data("kendoListView");
+
+        //includedRolelist.dataSource.read();
+        //notIncludedRolelist.dataSource.read();
+    }
+
+    function AddPermissionClickHandler() {
+        $(".k-state-selected", "#lstNotIncludedInCode").each(function (i, e) {
+            $("#lstIncludedInCode").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    function RemovePermissionClickHandler() {
+        $(".k-state-selected", "#lstIncludedInCode").each(function (i, e) {
+            $("#lstNotIncludedInCode").append($(e).clone()).html();
+            $(e).remove();
+        });
+    }
+
+    // IE'nin HTML 5 desteklemeyen versiyonlarinda jquery'nin data fonksiyonu calismayabilir.
+    // test etmemiz lazim
+    function SavePermissionClickHandler() {
+        var code = $("#cmbCodes").val();
+        if (code == "") // If no role is selected just return.
+            return;
+
+        var selectedPermissionIds = [];
+        $("#lstIncludedInCode").children().each(function (i, e) {
+            var selectedPermissionId = $("span", e).data("vehiclessid");
+            selectedPermissionIds[i] = selectedPermissionId;
+        });
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("Save", "PartWithModelPairing")",
+            data: { Code: code, VehicleIdList: selectedPermissionIds, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else
+                    SetSuccessMessage(result.Message);
+            },
+            dataType: "json"
+        });
+    }
+    function JanpolPermissionClickHandler() {
+        var code = $("#cmbCodes").val();
+        if (code == "")
+            return;
+
+        var isJanpol = $("#IsJanpol").val();
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("JanpolRegister", "PartWithModelPairing")",
+            data: { partClass: code, isJanpol: isJanpol, "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                if (result.Status == 0)
+                    SetErrorMessage(result.Message);
+                else
+                    SetSuccessMessage(result.Message);
+            },
+            dataType: "json"
+        });
+
+
+    }
+
+</script>

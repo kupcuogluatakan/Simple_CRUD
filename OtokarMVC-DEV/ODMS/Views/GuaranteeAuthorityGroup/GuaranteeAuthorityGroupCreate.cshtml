@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = MessageResource.GuaranteeAuthorityGroup_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@using ODMSCommon.Resources
+@using ODMSModel.GuaranteeAuthorityGroup
+@model GuaranteeAuthorityGroupViewModel
+<style>
+    #popupContentWrapper {
+        min-height: 250px !important;
+    }
+</style>
+@using (Html.BeginForm("GuaranteeAuthorityGroupCreate", "GuaranteeAuthorityGroup", FormMethod.Post))
+{
+     Html.RenderPartial("_GuaranteeAuthorityGroup", Model);
+     @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.GuaranteeAuthorityGroup.GuaranteeAuthorityGroupCreate,"GuaranteeAuthorityGroupCreate")        
+}
+
+

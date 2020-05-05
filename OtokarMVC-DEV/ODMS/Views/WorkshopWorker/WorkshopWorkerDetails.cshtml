@@ -1,0 +1,38 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.WorkshopWorker.WorkshopWorkerDetailModel
+@{
+    ViewBag.Title = MessageResource.WorkshopWorker_PageTitle_Update;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("WorkshopWorkerUpdate", "WorkshopWorker", FormMethod.Post))
+{
+    <div id="tagWorkshopListDiv" class="labelDiv" style="width: 120px">@Html.LabelFor(d => d.WorkshopName)&nbsp;</div>
+    <div id="cmbWorkshopListDiv" class="shortTxtDiv" style="width: 250px">@Html.DisplayFor(d => d.WorkshopName)&nbsp;</div>
+    
+    <div id="tagWorkerListDiv" class="labelDiv" style="position: absolute; width: 120px; margin-top: 25px">@Html.LabelFor(d => d.WorkerName)&nbsp;</div>
+    <div id="cmbWorkerListDiv" class="shortTxtDiv" style="position: absolute; width: 250px; margin-top: 25px; margin-left: 120px">@Html.DisplayFor(d => d.WorkerName)&nbsp;</div>
+    
+    <div id="tagStartDateDiv" class="labelDiv" style="position: absolute;width: 120px; margin-top: 52px">@Html.LabelFor(d => d.StartDate)&nbsp;</div>
+    <div id="dtStartDateDiv" class="shortTxtDiv" style="position: absolute;width: 205px; margin-top: 52px; margin-left: 120px">@Html.DisplayFor(d => d.StartDateString)&nbsp;</div>
+    
+    <div id="tagEndDateDiv" class="labelDiv" style="position: absolute; width: 120px; margin-top: 80px">@Html.LabelFor(d => d.EndDate)&nbsp;</div>
+    <div id="dtEndDateDiv" class="shortTxtDiv" style="position: absolute;width: 205px; margin-top: 80px; margin-left: 120px">@Html.DisplayFor(d => d.EndDateString)&nbsp;</div>
+
+    <div class="labelDiv" style="position: absolute; width: 100px; margin-top: 108px;">@Html.LabelFor(d => d.IsActiveString)&nbsp;</div>
+    <div class="shortTxtDiv" style="position: absolute; margin-top: 108px; width: 105px; margin-left: 120px">@Html.DisplayFor(d => d.IsActiveString)&nbsp;</div>
+}
+
+<script>
+    $(function () {
+        adjustPage();
+    });
+    
+    function adjustPage() {
+        $("#popupContent").css("width", 370);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 390);
+        $("#popupContentWrapper").css("width", 380);
+    }
+</script>

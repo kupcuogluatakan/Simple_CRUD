@@ -1,0 +1,173 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.SparePartSaleDetail
+
+@model OSparePartSaleDetailViewModel
+@{
+    ViewBag.Title = @MessageResource.OtokarPartSaleDetail_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+
+@if (ViewBag.PartSaleStatus == ((int)CommonValues.SparePartSaleStatus.NewRecord).ToString())
+{
+    @ODMSHelpers.LinkButton("btnCreateDetail", MessageResource.Global_Display_New, "Create", "modalClickDetail createNew", MessageResource.OtokarPartSaleDetail_PageTitle_Create, null)
+}
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modalClickDetailWindow")
+        .Title("Bank")
+        .Draggable()
+        .Resizable()
+        .Width(600)
+        .Height(600)
+        .Visible(false)
+        .Modal(true)
+        .Iframe(true)
+        .Events(ev => ev.Close(@"function(e){
+             ReloadPage();
+            }"))
+    )
+</div>
+<script>
+    function ReloadPage() {
+        var masterGrid = $('#grid').data('kendoGrid');
+        masterGrid.dataSource.read();
+
+        var grid = $('#gridSparePartSaleDetail').data('kendoGrid');
+        grid.dataSource.page(1);
+
+        parent.ShowTabs('@Model.SparePartSaleId', false);
+    }
+    function SearchSparePartSaleDetail() {
+        return {
+            SparePartSaleId: @Model.SparePartSaleId
+            };
+    }
+    $(function () {
+        if('@ViewBag.OpenCreatePopup' == 'True')
+            OpenCreatePopup();
+
+        RegisterEventHandlers();
+        AddColumnHeaderTooltip();
+    });
+
+    function ShowPopup(frameTitle, link, width, height) {
+        $("#modalClickDetailWindow_wnd_title").html(frameTitle);
+
+        var windowWidget3 = $("#modalClickDetailWindow").data("kendoWindow");
+        var closeOrigin = windowWidget3.close;
+        windowWidget3.refresh({
+            url: link
+        }).center();
+
+        windowWidget3.wrapper.css({
+            width: width,
+            height: height
+        });
+        windowWidget3.center();
+        windowWidget3.open();
+
+    }
+
+    function OpenCreatePopup() {
+        $('#modalClickDetailWindow').html('');
+        var frameTitle = '@MessageResource.SparePartSaleDetail_PageTitle_Create';
+        var link = "@Url.Action("OtokarSparePartSaleDetailCreate", "SparePartSaleDetail", new { sparePartSaleId = "p1" })";
+        link = link.replace("p1", '@Model.SparePartSaleId');
+
+        ShowPopup(frameTitle, link,1000,348);
+    }
+
+    function RegisterEventHandlers() {
+        $("body").delegate(".modalClickDetail", "click", function (e) {
+            $('#modalClickDetailWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            var width = "1000";
+            var height = "348";
+
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("BankDetails", "Bank", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("OtokarSparePartSaleDetailUpdate", "SparePartSaleDetail", new { id = -1 })";
+                link = link.replace("-1", clickedId);
+                width = "1000";
+                height = "348";
+
+            }
+            else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("OtokarSparePartSaleDetailCreate", "SparePartSaleDetail", new { sparePartSaleId = Model.SparePartSaleId })";
+                link = link.replace("-1", clickedId);
+                width = "1000";
+                height = "348";
+            }
+
+            ShowPopup(frameTitle, link, width, height);
+
+        });
+    }
+
+    function DeleteSpareSaleDetail(Id) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("OtokarSparePartSaleDetailDelete", "SparePartSaleDetail")",
+                data: { Id: Id,"__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#gridSparePartSaleDetail').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+</script>
+<div class="kendoGridDiv" id="grdSparePartSaleDetail">
+    @(Html.Kendo().Grid<OSparePartSaleDetailListModel>()
+          .Name("gridSparePartSaleDetail")
+          .Columns(columns =>
+              {
+                  columns.Bound(b => b.SparePartSaleDetailId).ClientTemplate("#if(StatusId==1){#" +
+                      "<center><a class='edit modalClickDetail' id='#=SparePartSaleDetailId#' frameTitle='" + MessageResource.OtokarPartSaleDetail_PageTitle_Update + "' href='/SparePartSaleDetail/OtokarSparePartSaleDetailUpdate/#=SparePartSaleDetailId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'/></a></center>" +
+                      "#}else{#" +
+                      "" +
+                      "#}#").Title(MessageResource.Global_Display_Update).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Bank.BankUpdate) && ViewBag.PartSaleStatus == ((int)CommonValues.SparePartSaleStatus.NewRecord).ToString());
+                  columns.Bound(b => b.SparePartSaleDetailId).ClientTemplate("#if(StatusId==1){#" +
+                      "<center><a href='javascript:void(0);' frameTitle='" + MessageResource.Bank_PageTitle_Delete + "' onclick='DeleteSpareSaleDetail(#=SparePartSaleDetailId#);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>" +
+                      "#}else{#" +
+                      "" +
+                      "#}#").Title(MessageResource.Global_Display_Delete).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Bank.BankDelete) && ViewBag.PartSaleStatus == ((int)CommonValues.SparePartSaleStatus.NewRecord).ToString());
+                  columns.Bound(b => b.PartsNameCode).Width(200).Sortable(true);
+                  columns.Bound(b => b.Status).Width(200).Sortable(true);
+                  columns.Bound(b => b.StatusId).Width(200).Sortable(true).Visible(false);
+                  columns.Bound(b => b.PlanQuantity).Width(200).Sortable(true);
+                  columns.Bound(b => b.DiscountPrice).Format("{0:c}").Width(200).Sortable(true).Title(MessageResource.OtokarPartSaleDetail_Display_DealerPrice);
+                  columns.Bound(b => b.ReasonText).Width(200).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListOtokarSparePartSaleDetailIndex", "SparePartSaleDetail", Model).Data("SearchSparePartSaleDetail"))
+                                        .Model(model => model.Field(b => b.SparePartSaleId).DefaultValue(-1)))
+    )
+
+</div>
+
+<br />
+
+
+

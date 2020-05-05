@@ -1,0 +1,45 @@
+﻿@model ODMSModel.SparePartSAPUnit.SparePartSAPUnitViewModel
+
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("SparePartSAPUnit_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<script src="~/Scripts/UI_Scripts/SparePartSAPUnit.js"></script>
+
+
+
+@using (Html.BeginForm("SparePartSAPUnitUpdate", "SparePartSAPUnit", FormMethod.Post))
+{
+
+    @Html.HiddenFor(x => x.PartId)
+    @Html.HiddenFor(x => x.SparePartCode)
+    @Html.HiddenFor(x => x.SparePartName)
+
+    <div class="labelDiv">@Html.LabelFor(v => v.SparePartCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.SparePartCode)</div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.SparePartName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.SparePartName)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.UnitName)</div>
+    <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.UnitId).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.UnitsList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")) @Html.ValidationMessageFor(v => v.UnitId)</div>
+
+
+    <div class="labelDiv">@Html.LabelFor(v => v.ShipQuantity)</div>
+    @Html.Kendo().NumericTextBoxFor(v => v.ShipQuantity).HtmlAttributes(new { type = "text" }) @Html.ValidationMessageFor(c => c.ShipQuantity)
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="labelDiv">@Html.LabelFor(c => c.StateName)</div>
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+
+        <div class="clearDiv">&nbsp;</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    <div class="shortTxtDiv">
+        @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.SparePartSAPUnit.SparePartSAPUnitUpdate, "SparePartSAPUnitUpdate")
+    </div>
+}

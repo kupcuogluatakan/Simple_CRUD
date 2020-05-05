@@ -1,0 +1,163 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.SparePartGuaranteeAuthorityNeed;
+
+@model ODMSModel.SparePartGuaranteeAuthorityNeed.SparePartGuaranteeAuthorityNeedListModel
+
+@{
+    ViewBag.Title = MessageResource.SparePartGuaranteeAuthorityNeed_PageTitle_Index;
+}
+
+ 
+@Html.AntiForgeryToken()
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(v => v.GuaranteeAuthorityNeed)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.GuaranteeAuthorityNeedSearch).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.SLStatus as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+
+        <div class="labelDiv">@Html.LabelFor(v=>v.PartCode)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(v=>v.PartCode)</div>
+    </div>
+</div>
+
+    @ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.SparePartGuaranteeAuthorityNeed.SparePartGuaranteeAuthorityNeedIndex)
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+<br />
+<div id="SparePartGuaranteeAuthorityNeedModelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("SparePartGuaranteeAuthorityNeedModelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(350)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#SparePartGuaranteeAuthorityNeedGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+    }"))
+    )
+</div>
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script type="text/javascript">
+    function DeleteSparePartGuaranteeAuthorityNeed(pId) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        DeleteConfirm(function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteSparePartGuaranteeAuthorityNeed", "SparePartGuaranteeAuthorityNeed")",
+                data: { partId: pId, "__RequestVerificationToken": token },
+                traditional: true,
+                success: function (result) {
+                    if (result.Status == 0)
+                        SetErrorMessage(result.Message);
+                    else {
+                        var grid = $('#SparePartGuaranteeAuthorityNeedGrid').data('kendoGrid');
+                        grid.dataSource.read();
+                        SetSuccessMessage(result.Message);
+                    }
+                },
+                dataType: "json"
+            });
+        });
+    }
+
+
+    $(document).ready(init);
+
+    function GetParameters()
+    {
+        return {
+            IsActive: $("#IsActive").val(),
+            ReportType: 16,
+            Columns: "PartCode,PartName,GuaranteeAuthorityNeedName",
+            PartCode: $('#PartCode').val(),
+            GuaranteeAuthorityNeedSearch: $("#GuaranteeAuthorityNeedSearch").val()
+        };
+    }
+    function init() {
+
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#SparePartGuaranteeAuthorityNeedGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#SparePartGuaranteeAuthorityNeedModelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var frameTitle = $(this).attr("frameTitle");
+            $("#SparePartGuaranteeAuthorityNeedModelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#SparePartGuaranteeAuthorityNeedModelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+               
+            });
+    }
+
+</script>
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<SparePartGuaranteeAuthorityNeedListModel>()
+          .Name("SparePartGuaranteeAuthorityNeedGrid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(o => o.PartId).ClientTemplate("<center><a href='javascript:void(0);' frameTitle='" + MessageResource.SparePartGuaranteeAuthorityNeed_PageTitle_Delete + "' onclick='DeleteSparePartGuaranteeAuthorityNeed(\"#=PartId#\");'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.SparePartGuaranteeAuthorityNeed.SparePartGuaranteeAuthorityNeedDelete));
+                  columns.Bound(p => p.PartCode).Sortable(true);
+                  columns.Bound(p => p.PartName).Sortable(true);
+                  columns.Bound(p => p.GuaranteeAuthorityNeedName).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListSparePartGuaranteeAuthorityNeed", "SparePartGuaranteeAuthorityNeed", Model).Data("GetParameters"))
+                                        .Model(model => model.Field(o => o.PartId).DefaultValue(-1)))
+
+          )
+</div>
+<br />
+<div id="excelVisibility">
+    <h4>@Html.Raw(MessageResource.Global_Display_UploadFromExcel) </h4>
+    <div class="labelDiv" style="width: 80px">@MessageResource.Global_Display_SampleFile </div>
+    <div>
+        <a class="k-link2" href="@Url.Action("ExcelSample")">
+            <img class=iconLink src='@Url.Content("~/Images/excelSample.png")' title='@MessageResource.Global_Display_SampleFile'>
+        </a>
+        <br /> @using (Html.BeginForm("SparePartGuaranteeAuthorityNeedIndex", "SparePartGuaranteeAuthorityNeed", FormMethod.Post))
+               {
+                   @Html.Kendo().Upload().Name("excelFile").Events(e => e.Select("onSelect")).TemplateId("fileTemplate").Multiple(false).Messages(m=>m.Select(MessageResource.Global_Display_SelectFile))
+                   <div id="divExcepUpload">
+                       @ODMSHelpers.Button("Upload", CommonUtility.GetResourceValue("Global_Display_UploadFromExcel"), "", "UploadExcel")
+                   </div>
+               }
+    </div>
+</div>

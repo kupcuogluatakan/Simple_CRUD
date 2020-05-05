@@ -1,0 +1,136 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.CycleCount.CycleCountViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("CycleCount_PageTitle_Create");
+}
+
+
+@using (Html.BeginForm("CycleCountIndex", "CycleCount", FormMethod.Post))
+{
+    <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.CycleCountName)</div>
+    if (Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Planning)
+    {
+        <div class="shortTxtDiv">@Html.TextBoxFor(v => v.CycleCountName) @Html.ValidationMessageFor(v => v.CycleCountName) </div>
+    }
+    else
+    {
+        <div class="shortTxtDiv" style="width: 200px">@Html.DisplayFor(v => v.CycleCountName) &nbsp;</div>
+    }
+    <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.DealerName)</div>
+    <div class="shortTxtDiv" style="width: 500px">
+        @Html.DisplayFor(v => v.DealerName)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.DisplayCurrentAmountName)</div>
+    if (Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Planning)
+    {
+        <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.DisplayCurrentAmount)@Html.ValidationMessageFor(v => v.DisplayCurrentAmount)</div>
+    }
+    else
+    {
+        <div class="shortTxtDiv" style="width: 200px">@Html.DisplayFor(v => v.DisplayCurrentAmountName) &nbsp;</div>
+    }
+    if (Model.CycleCountStatus != (int)CommonValues.CycleCountStatus.Planning)
+    {
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.CycleCountStatusName)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.CycleCountStatusName) &nbsp;</div>
+    }
+    <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.StockTypeName)</div>
+    if (Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Planning)
+    {
+        <div class="shortTxtDiv">
+            @ViewBag.BedelliText
+            @Html.HiddenFor(v => v.StockTypeId)
+            @* @Html.Kendo().ComboBoxFor(c => c.StockTypeId).DataValueField("Value").DataTextField("Text").Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.StockTypeList as List<SelectListItem>).SelectedIndex(0)*@
+        </div>
+    }
+    else
+    {
+        <div class="shortTxtDiv" style="width: 500px">@Html.DisplayFor(v => v.StockTypeName) &nbsp;</div>
+    }
+    <div class="clearDiv">&nbsp;</div>
+
+    if (Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Started)
+    {
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv" style="width: 200px">@Html.DisplayFor(v => v.StartDate) &nbsp;</div>
+    }
+
+    if (Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Finished)
+    {
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv" style="width: 200px">@Html.DisplayFor(v => v.StartDate) &nbsp;</div>
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.EndDate) &nbsp;</div>
+    }
+
+
+    if (Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Approved)
+    {
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.StartDate)</div>
+        <div class="shortTxtDiv" style="width: 200px">@Html.DisplayFor(v => v.StartDate) &nbsp;</div>
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.EndDate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.EndDate) &nbsp;</div>
+        <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.ConfirmDate)</div>
+        <div class="shortTxtDiv">@Html.DisplayFor(v => v.ConfirmDate) &nbsp;</div>
+    }
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv" style="width: 200px">@Html.LabelFor(v => v.CreateUser)</div>
+    <div class="shortTxtDiv" style="width: 500px">
+        @Html.DisplayFor(v => v.CreateUser)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+
+    if (string.IsNullOrEmpty(Model.CycleCountId))
+    {
+        @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("CycleCount_Display_Save"), CommonValues.PermissionCodes.CycleCount.CycleCountCreate, "CycleCountCreate")
+    }
+    if (!string.IsNullOrEmpty(Model.CycleCountId) && Model.CycleCountStatus == (int)CommonValues.CycleCountStatus.Planning)
+    {
+        @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("CycleCount_Display_Update"), CommonValues.PermissionCodes.CycleCount.CycleCountUpdate, "CycleCountUpdate")
+        @ODMSHelpers.Button("Start", CommonUtility.GetResourceValue("Global_Display_StartCycleCount"), CommonValues.PermissionCodes.CycleCount.CycleCountStart, "CycleCountStart")
+    }
+    if (!string.IsNullOrEmpty(Model.CycleCountId) && Model.CycleCountStatus != (int)CommonValues.CycleCountStatus.Approved &&
+        Model.CycleCountStatus != (int)CommonValues.CycleCountStatus.Cancelled)
+    {
+        @ODMSHelpers.Button("Cancel", CommonUtility.GetResourceValue("Global_Display_CancelCycleCount"), CommonValues.PermissionCodes.CycleCount.CycleCountCancel, "CycleCountCancel")
+    }
+
+    if (!string.IsNullOrEmpty(Model.CycleCountId) && Model.CycleCountStatus != (int)CommonValues.CycleCountStatus.Planning && Model.CycleCountStatus != (int)CommonValues.CycleCountStatus.Cancelled)
+    {
+        @ODMSHelpers.Button("GetReport", CommonUtility.GetResourceValue("Global_Display_GetReportCycleCount"), CommonValues.PermissionCodes.CycleCount.CycleCountCancel, "CycleCountReport")
+    }
+
+
+    @Html.HiddenFor(v => v.DealerId)
+    @Html.HiddenFor(v => v.DealerName)
+    @Html.HiddenFor(v => v.CycleCountId)
+    @Html.HiddenFor(v => v.CycleCountName)
+    @Html.HiddenFor(v => v.CycleCountStatus)
+}
+
+<br />
+@if (!string.IsNullOrEmpty(Model.CycleCountId) && Model.CycleCountStatus != Convert.ToInt32(CommonValues.CycleCountStatus.Cancelled))
+{
+    <div id="divDetails">
+        @(Html.Kendo().TabStrip()
+                              .Name("CycleCountDetails")
+                              .Items(tabstrip => tabstrip.Add().Text(MessageResource.CycleCountPlan_PageTitle_Index).LoadContentFrom(Url.Action("CycleCountPlanIndex", "CycleCountPlan", new { cycleCountId = @Model.CycleCountId })).Selected(@Model.CycleCountStatus == Convert.ToInt32(CommonValues.CycleCountStatus.Planning)))
+                              .Items(tabstrip => tabstrip.Add().Text(MessageResource.CycleCountResult_PageTitle_Index).Visible(@Model.CycleCountStatus != (int)CommonValues.CycleCountStatus.Planning).LoadContentFrom(Url.Action("CycleCountResultIndex", "CycleCountResult", new { cycleCountId = @Model.CycleCountId })).Selected((@Model.CycleCountStatus == Convert.ToInt32(CommonValues.CycleCountStatus.Started) || @Model.CycleCountStatus == Convert.ToInt32(CommonValues.CycleCountStatus.Finished)) && !@Model.IsClosedApproveTab))
+                              .Items(tabstrip => tabstrip.Add().Text(MessageResource.CycleCountStockDiff_PageTitle_Index).Visible(@Model.IsClosedApproveTab).LoadContentFrom(Url.Action("CycleCountStockDiffIndex", "CycleCountStockDiff", new { cycleCountId = @Model.CycleCountId })).Selected(@Model.CycleCountStatus == Convert.ToInt32(CommonValues.CycleCountStatus.Finished) || @Model.CycleCountStatus == Convert.ToInt32(CommonValues.CycleCountStatus.Approved))))
+
+    </div>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

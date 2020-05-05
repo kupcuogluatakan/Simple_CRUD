@@ -1,0 +1,55 @@
+﻿@using ODMSCommon.Resources
+@model List<ODMSModel.ProposalCard.ProposalMaintenanceModel>
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<style type="text/css">
+    #popupContentWrapper {
+        min-height: 200px !important;
+    }
+
+    .special input[type=text] {
+        width: 250px !important;
+    }
+
+    #popupContent {
+        width: 480px !important;
+    }
+</style>
+@if (ViewBag.HideElements == false)
+{
+    <table class="table table-responsive" id="mTable">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.MaintenancName
+                </td>
+                <td><a class="a" href="javascript:void(0);" onclick="SaveProposalMaintenance(@item.ProposalId,@item.ProposalDetailId,@item.MaintenanceId,@item.ProposalSeq);">@MessageResource.Global_Display_Add</a></td>
+            </tr>
+        }
+    </table>
+}
+<script>
+    function SaveProposalMaintenance(proposalId, proposalDetailId, MaintId, seq) {
+        $("#mTable").css("display", "none");
+
+        $.post("@Url.Action("AddProposalMaint", "Proposal_Card")", {
+            ProposalId: proposalId,
+            ProposalDetailId: proposalDetailId,
+            MaintenanceId: MaintId,
+            ProposalSeq: seq
+        }, function (json) {
+            if (json.Result == false) {
+                AlertErrorMessage(json.Message);                
+            } else {
+                AlertSuccessMessage(json.Message);
+            }
+            window.location.reload()
+
+        },"json");
+
+
+     
+    }
+</script>

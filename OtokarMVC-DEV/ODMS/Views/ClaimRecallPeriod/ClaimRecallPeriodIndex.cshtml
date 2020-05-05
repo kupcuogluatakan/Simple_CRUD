@@ -1,0 +1,126 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.ClaimRecallPeriod.ClaimRecallPeriodListModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("ClaimRecallPeriodList_PageTitle_Index");
+}
+ 
+
+<div id="showSearch">@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")</div>
+<div id="searchDiv">
+    <div id="searchFields">
+         <div class="labelDiv">@Html.LabelFor(v => v.IsActiveName)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(v => v.IsActive).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.StatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))</div>
+    </div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "", CommonValues.PermissionCodes.ClaimRecallPeriod.ClaimRecallPeriodDetails)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClickClaimRecallPeriod createNewClaimRecallPeriod", CommonUtility.GetResourceValue("ClaimRecallPeriod_PageTitle_Create"), CommonValues.PermissionCodes.ClaimRecallPeriod.ClaimRecallPeriodCreate)
+
+<br />
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+     .Draggable()
+    .Resizable()
+    .Width(950)
+    .Height(440)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#ClaimRecallPeriodGrid').data('kendoGrid');
+        grid.dataSource.page(1);
+$('#ClaimRecallPeriodId').val(0);
+    }"))
+          )
+
+</div>
+<script>
+    function Search() {
+        return {
+            IsActive: $('#IsActive').val(),
+            ClaimRecallPeriodId: $('#ClaimRecallPeriodId').val()
+        };
+    }
+    $(document).ready(function () {
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#ClaimRecallPeriodGrid').data('kendoGrid');
+            grid.dataSource.page(1);
+            $('#divDetails').hide();
+        });
+        $("body").delegate("#showSearch", "click", function (e) {
+            var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+            if (!IsVisible) {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Hide_Search_Criteria")');
+                $(this).addClass("searchVisible");
+                $("#searchDiv").show("slow");
+            }
+            else {
+                $(this).html('@CommonUtility.GetResourceValue("Global_Display_Search_Criteria")');
+                $(this).removeClass("searchVisible");
+                $("#searchDiv").hide("slow");
+            }
+        });
+        $("body").delegate(".modalClickClaimRecallPeriod", "click", function (e) {
+            $('#modelWindow').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("ClaimRecallPeriodDetails", "ClaimRecallPeriod", new { claimRecallPeriodId = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("ClaimRecallPeriodUpdate", "ClaimRecallPeriod", new { claimRecallPeriodId = -1 })";
+                link = link.replace("-1", clickedId);
+            }
+            else if ($(this).hasClass("createNewClaimRecallPeriod")) {
+                link = "@Url.Action("ClaimRecallPeriodCreate", "ClaimRecallPeriod")";
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+
+    });
+</script>
+
+
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<ODMSModel.ClaimRecallPeriod.ClaimRecallPeriodListModel>()
+          .Name("ClaimRecallPeriodGrid")
+
+          .Columns(columns =>
+              {  
+                  columns.Bound(p => p.ClaimRecallPeriodId).ClientTemplate("<center><a class='details modalClickClaimRecallPeriod' id='#=ClaimRecallPeriodId#' frameTitle='" + @CommonUtility.GetResourceValue("ClaimRecallPeriod_PageTitle_Details") + "' href='/ClaimRecallPeriod/ClaimRecallPeriodDetails/#=ClaimRecallPeriodId#'><img class=iconLink src='" + Url.Content("~/Images/view.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimRecallPeriod.ClaimRecallPeriodDetails));
+                  columns.Bound(p => p.ClaimRecallPeriodId).ClientTemplate("<center><a class='edit modalClickClaimRecallPeriod' id='#=ClaimRecallPeriodId#' frameTitle='" + @CommonUtility.GetResourceValue("ClaimRecallPeriod_PageTitle_Update") + "' href='/ClaimRecallPeriod/ClaimRecallPeriodUpdate/#=ClaimRecallPeriodId#'><img class=iconLink src='" + Url.Content("~/Images/edit.png") + "'/></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.ClaimRecallPeriod.ClaimRecallPeriodUpdate));
+                  columns.Bound(p => p.ClaimRecallPeriodId).Width(100).Sortable(true);
+                  columns.Bound(p => p.ValidLastDay).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true); 
+                  columns.Bound(p => p.ShipFirstDay).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+                  columns.Bound(p => p.ShipLastDay).Format("{0:dd/MM/yyyy}").Width(100).Sortable(true);
+                  columns.Bound(p => p.IsActiveName).Width(100).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListClaimRecallPeriod", "ClaimRecallPeriod", Model).Data("Search"))
+                                        .Model(model => model.Field(o => o.ClaimRecallPeriodId).DefaultValue(-1)))
+
+          )
+</div>
+

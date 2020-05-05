@@ -1,0 +1,184 @@
+﻿@model ODMSModel.PrivateMessage.PrivateMessageListModel
+@using ODMSCommon.Resources
+@using ODMSModel.PrivateMessage
+<style>
+    .danger {
+        background-color: #F9D1D0;
+    }
+</style>
+
+@{
+    ViewBag.Title = MessageResource.PrivateMessage_PageTitle_Index;
+}
+@*search start*@
+<div id="searchDiv2" style="display: block">
+    <div id="searchFields">
+
+        <div class="labelDiv">@Html.LabelFor(v => v.Type)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBox().Name("Type").BindTo(ViewBag.TypesList as List<SelectListItem>).DataValueField("Value").DataTextField("Text").SelectedIndex(0).Events(e => e.Change("SelectedTypeChanged")) </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div>
+@*serach end*@
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("PrivateMessage_Display_NewMessage"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("PrivateMessage_PageTitle_Create"), CommonValues.PermissionCodes.PrivateMessage.PrivateMessageSend)
+
+@*grid start*@
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PrivateMessageListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.MessageId).ClientTemplate(Html.Raw("<center><a class='' style='cursor:pointer' onclick='OpenMessages(#=MessageId#,\"#=Title#\",\"#=Sender#\",\"#=Reciever#\",\"#=RecieverId#\");' data-id='#=MessageId#' ><img class=iconLink src='" + Url.Content("~/Images/select.png") + "'></a></center>").ToString()).Title(CommonUtility.GetResourceValue("Global_Display_Select")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PrivateMessage.PrivateMessageSend));
+                  columns.Bound(p => p.IsUrgent).ClientTemplate("#if(IsUrgent) {# " +
+                                                                 "<center><img class='iconLink' style='width:16px' src='" + Url.Content("~/Images/messagebox_warning.png") + "'></center> " +
+                                                                 "#}#")
+                                                                 .Width(60).Sortable(false);
+                  columns.Bound(p => p.Title).Sortable(true);
+                  columns.Bound(p => p.Message).Sortable(true);
+                  columns.Bound(p => p.Sender).Sortable(true);
+                  columns.Bound(p => p.Reciever).Sortable(true);
+                  columns.Bound(p => p.CreateDate).Sortable(true).Format("{0:dd/MM/yyyy HH:mm}");
+                  columns.Bound(p => p.ReadDate).Sortable(true).Format("{0:dd/MM/yyyy HH:mm}");
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .Events(c => c.DataBound("OnDataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListMessages", "PrivateMessage", Model).Data("Search"))
+                                        ))
+
+
+</div>
+@*grid end*@
+
+@*modelWindow start*@
+<div id="modelWindowDiv">
+    @(Html.Kendo().Window()
+        .Name("modelWindow")
+    .Title("Customer")
+     .Draggable()
+    .Resizable()
+    .Width(763)
+    .Height(500)
+    .Visible(false)
+    .Modal(true)
+    .Iframe(true)
+    .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+    )
+</div>
+<div id="MessagesWindow"></div>
+@*modelWindow end*@
+
+
+@*scripts start*@
+@section Scripts{
+    <script type="text/javascript">
+        function Search() {
+            return {
+                type: $('#Type').val()
+            };
+        }
+
+        function OnDataBound(e) {
+            var grid = this;
+            var currentRecords = grid.dataSource.view();
+
+            for (var i = 0; i < currentRecords.length; i++) {
+                if (currentRecords[i].IsUrgent == true) {
+                    grid.tbody.find("tr[data-uid='" + currentRecords[i].uid + "']").addClass("danger");
+                }
+                if (currentRecords[i].ReadDate == null) {
+                    grid.tbody.find("tr[data-uid='" + currentRecords[i].uid + "']").addClass("bold");
+                }
+            }
+        }
+
+        function SelectedTypeChanged() {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.read();
+        }
+
+        function OpenMessages(id, title, sender, reciever, recieverId) {
+
+            $('#MessagesWindow').kwnd('@Url.Action("PrivateMessageSend")' + '?id=' + id + '&sender=' + escape(sender) + '&reciever=' + escape(reciever) + '&recieverId=' + recieverId, title, {
+                iframe: true, width: 763, height: 500, onClose: function () {
+                    $('#MessagesWindow').data("kendoWindow").destroy();
+                    $("body").append("<div  id='MessagesWindow'/>");
+                    var grid = $('#grid').data('kendoGrid');
+                    grid.dataSource.read();
+                }
+            });
+            OpenWindow($('#MessagesWindow'));
+        }
+
+        $(document).ready(init);
+
+
+
+
+        function init() {
+
+
+
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+
+            });
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                } else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("SendNewMessage", "PrivateMessage")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+                //$('.k-overlay').unbind('click');
+                //$('.k-overlay').click(function() {
+                //    var popup = $("#modelWindow").data("kendoWindow");
+                //    if (popup)
+                //        popup.close();
+                //    $('#modelWindow').html('');
+                //});
+            });
+        }
+
+
+    </script>
+    <script src="~/Scripts/custom.js"></script>
+}
+@*scripts end*@
+

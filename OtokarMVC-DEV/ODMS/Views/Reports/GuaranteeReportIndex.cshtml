@@ -1,0 +1,178 @@
+﻿@using ODMSCommon.Resources
+@using ODMSModel.Reports
+@using Kendo.Mvc.UI
+
+@model GuaranteeReportFilterRequest
+
+@{
+    ViewBag.Title = MessageResource.GuaranteeReport_Title_Index;
+    var months = new List<SelectListItem>();
+    months.Add(new SelectListItem { Value = "1", Text = MessageResource.Global_Display_January });
+    months.Add(new SelectListItem { Value = "2", Text = MessageResource.Global_Display_February });
+    months.Add(new SelectListItem { Value = "3", Text = MessageResource.Global_Display_March });
+    months.Add(new SelectListItem { Value = "4", Text = MessageResource.Global_Display_April });
+    months.Add(new SelectListItem { Value = "5", Text = MessageResource.Global_Display_May });
+    months.Add(new SelectListItem { Value = "6", Text = MessageResource.Global_Display_June });
+    months.Add(new SelectListItem { Value = "7", Text = MessageResource.Global_Display_July });
+    months.Add(new SelectListItem { Value = "8", Text = MessageResource.Global_Display_August });
+    months.Add(new SelectListItem { Value = "9", Text = MessageResource.Global_Display_September });
+    months.Add(new SelectListItem { Value = "10", Text = MessageResource.Global_Display_October });
+    months.Add(new SelectListItem { Value = "11", Text = MessageResource.Global_Display_November });
+    months.Add(new SelectListItem { Value = "12", Text = MessageResource.Global_Display_December });
+
+    var years = new List<SelectListItem>();
+    for (int i = DateTime.Now.Year; i > 2000; i--)
+    {
+        years.Add(new SelectListItem { Value = i.ToString(), Text = i.ToString() });
+    }
+}
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(b => b.DealerIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.DealerIdList).HtmlAttributes(new { style = "width:200px;" }).Value(ODMSCommon.Security.UserManager.UserInfo.DealerID.ToString()).Enable(ODMSCommon.Security.UserManager.UserInfo.DealerID == 0).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.RegionIdList)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.RegionIdList).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.DealerRegionList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.Year)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.Year).HtmlAttributes(new { style = "width:200px;" }).BindTo(years as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.Month)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c => c.Month).HtmlAttributes(new { style = "width:200px;" }).BindTo(months as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.IndicatorType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.IndicatorType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.IndicatorTypeList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.ProcessType)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ProcessType).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).BindTo(ViewBag.ProcessTypeCodeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataValueField("Value").DataTextField("Text")</div>
+        <div class="clearDiv">&nbsp;</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.GuaranteeCategory)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.GuaranteeCategory).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.GifCostCenterList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+
+        <div class="labelDiv">@Html.LabelFor(b => b.VinNo)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(x => x.VinNo)</div>
+        <div class="clearDiv">&nbsp;</div>
+        <div class="labelDiv">@Html.LabelFor(b => b.ConfirmedUser)</div>
+        <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(c => c.ConfirmedUser).HtmlAttributes(new { style = "width:200px;" }).AutoBind(true).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).BindTo(ViewBag.ConfirmedUserList as List<SelectListItem>).DataValueField("Value").DataTextField("Text")</div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", MessageResource.Global_Display_Search, "", "", "", CommonValues.PermissionCodes.Reports.GuaranteeReportIndex)
+<div id="AddHourMaintWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+@if (ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.Reports.GuaranteeExcelExport))
+{
+    @Html.Partial("_ExcelExport",new ODMS.Model.ExportModel())
+}
+<div id="details"></div>
+<div class="kendoGridDiv" id="grd">
+    @(
+        Html.Kendo().Grid<GuaranteeReport>().Name("gridReport")
+        .Columns(columns =>
+        {
+            columns.Bound(g => g.DEALER_SSID).Sortable(true).Width(200);
+            columns.Bound(g => g.RegionName).Sortable(true).Width(200);
+            columns.Bound(g => g.DealerName).Sortable(true).Width(300);
+            columns.Bound(g => g.VEHICLE_VIN_NO).Sortable(true).Width(200).ClientTemplate("<a class='k-link' onclick='OpenVehicleHistory(#=ID_VEHICLE#)'>#=VEHICLE_VIN_NO#</a>");
+            columns.Bound(g => g.ID_WORK_ORDER).Sortable(true).Width(200).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}/#=ID_WORK_ORDER#'>#=ID_WORK_ORDER#</a>", Url.Action("WorkOrderCardIndex", "WorkOrderCard")));
+            columns.Bound(g => g.ID_WORK_ORDER_DETAIL).Sortable(true).Width(200);
+            columns.Bound(g => g.GuaranteeSeqNo).Visible(false);
+            columns.Bound(g => g.GuaranteeId).Visible(false);
+            columns.Bound(g => g.SSID_GUARANTEE).Sortable(true).Width(100).ClientTemplate(String.Format("<a class='k-link' target='_blank' href='{0}?guaranteeId=#=GuaranteeId#&guaranteeSeq=#=GuaranteeSeqNo#&isEditable=0'>#=SSID_GUARANTEE#</a>", Url.Action("GuaranteeRequestApproveDetailIndex", "GuaranteeRequestApproveDetail")));
+            columns.Bound(g => g.CATEGORY_LOOKVAL).Sortable(true).Width(100);
+            columns.Bound(g => g.VEHICLE_KM).Sortable(true).Width(100);
+            columns.Bound(g => g.CAMPAIGN_CODE).Sortable(true).Width(100);
+            columns.Bound(g => g.VEHICLE_PLATE).Sortable(true).Width(100);
+            columns.Bound(g => g.VEHICLE_NOTES).Sortable(true).Width(200);
+            columns.Bound(g => g.CustomerName).Sortable(true).Width(300);
+            columns.Bound(g => g.CODE).Sortable(true).Width(200).HtmlAttributes( new { title = " #= CODEDESC # " ,style="color:red;"});
+            columns.Bound(g => g.CREATE_DATE).Sortable(true).Format("{0:dd/MM/yyyy}").Width(200);
+            columns.Bound(g => g.VEHICLE_LEAVE_DATE).Sortable(true).Format("{0:dd/MM/yyyy}").Width(200);
+            columns.Bound(g => g.PDI_GIF).Sortable(true).Width(200);
+            columns.Bound(g => g.CRM_CUSTOMER_CUSTOMER_NAME).Sortable(true).Width(200);
+            columns.Bound(g => g.CRM_CUSTOMER_CUSTOMER_LASTNAME).Sortable(true).Width(200);
+            columns.Bound(g => g.PARTS_TOTAL_PRICE).Sortable(true).HtmlAttributes(new { style = "text-align:right" }).Width(200);
+            columns.Bound(g => g.LABOUR_TOTAL_PRICE).Sortable(true).HtmlAttributes(new { style = "text-align:right" }).Width(200);
+
+            columns.Bound(g => g.WEB_SERVICE_PARTS_TOTAL_PRICE).Sortable(true).HtmlAttributes(new { style = "text-align:right" }).Width(200);
+            columns.Bound(g => g.WEB_SERVICE_LABOUR_TOTAL_PRICE).Sortable(true).HtmlAttributes(new { style = "text-align:right" }).Width(200);
+
+            columns.Bound(g => g.INDICATOR_TYPE_NAME).Sortable(true).Width(200);
+            columns.Bound(g => g.PROCESS_TYPE_NAME).Sortable(true).Width(200);
+        })
+        .Pageable()
+        .Sortable()
+
+        .Scrollable()
+        .DataSource(datasource => datasource
+                                              .Ajax()
+                                              .Events(e => e.RequestStart("onDataBinding"))
+                                              .PageSize(10).ServerOperation(true).Read(read => read.Action("ListGuaranteeReport", "Reports", Model).Data("GetParameters"))))
+</div>
+<div id="VehicleHistoryWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+
+@Html.Partial("~/Views/Reports/_ResponseTimeForGrid.cshtml")
+@Html.Partial("_MultipleSelectionFunc")
+<script type="text/javascript">
+    function onDataBinding(e) {
+        if ($("#Year").val() == "") {
+            SetErrorMessage('@MessageResource.Guarantee_Validation_YearRequired');
+            e.preventDefault();
+        }
+        else if ($("#Month").val() == "") {
+            SetErrorMessage('@MessageResource.Guarantee_Validation_MonthRequired');
+            e.preventDefault();
+        }
+        else {
+            SetSuccessMessage('@MessageResource.Filtration_Success_Message');
+        }
+    }
+    $(document).ready(init);
+    
+    function GetParameters() {
+        return {
+            DealerIdList: $("#DealerIdList").data('kendoMultiSelect').value().toString(),
+            RegionIdList: $("#RegionIdList").data('kendoMultiSelect').value().toString(),
+            VinNo: $("#VinNo").val(),
+            Year: $("#Year").val(),
+            Month: $("#Month").val(),
+            IndicatorType: GetQuotedList($("#IndicatorType").data('kendoMultiSelect').value().toString()),
+            ProcessType: GetQuotedList($("#ProcessType").data('kendoMultiSelect').value().toString()),
+            GuaranteeCategory: GetQuotedList($("#GuaranteeCategory").data('kendoMultiSelect').value().toString()),
+            ConfirmedUser: GetQuotedList($("#ConfirmedUser").data('kendoMultiSelect').value().toString()),
+            ReportType: 46,
+            Columns: "DEALER_SSID,RegionName,DealerName,VEHICLE_VIN_NO,ID_WORK_ORDER,ID_WORK_ORDER_DETAIL,SSID_GUARANTEE,CATEGORY_LOOKVAL,VEHICLE_KM,CAMPAIGN_CODE,VEHICLE_PLATE,VEHICLE_NOTES,CustomerName,CODE,CREATE_DATE,VEHICLE_LEAVE_DATE,PDI_GIF,CRM_CUSTOMER_CUSTOMER_NAME,CRM_CUSTOMER_CUSTOMER_LASTNAME,PARTS_TOTAL_PRICE,LABOUR_TOTAL_PRICE,WEB_SERVICE_PARTS_TOTAL_PRICE,WEB_SERVICE_LABOUR_TOTAL_PRICE,INDICATOR_TYPE_NAME,PROCESS_TYPE_NAME"
+        };
+
+    }
+    function OpenVehicleHistory(obj) {
+        $('#VehicleHistoryWindow').kwnd('@Url.Action("VehicleHistoryIndex", "Vehicle")' + '?vehicleId=' + obj, '@Html.Raw(MessageResource.WorkOrderCard_Display_VehicleHistory)',
+        {
+            iframe: true,
+            width: 1250,
+            height: 650,
+            onClose: function () {
+                $("#VehicleHistoryWindow").html('');
+            }
+        });
+        $('#VehicleHistoryWindow').removeClass("hide");
+        OpenWindow($('#VehicleHistoryWindow'));
+    }
+    function init() {
+
+        $("#searchDiv").show("slow");
+
+        $("body").delegate("#btnReset", "click", function (e) {
+            $("#DealerIdList").data('kendoMultiSelect').value('');
+            $("#IndicatorType").data('kendoMultiSelect').value('');
+            //$("#DealerRegionIdList").data('kendoMultiSelect').value('');
+            //$("#StockTypeIdList").data('kendoMultiSelect').value('');
+            //$("#Currency").data('kendoComboBox').value('');
+            //$("#Date").data('kendoMultiSelect').value('');
+        });
+        $("body").delegate("#btnSearch", "click", function (e) {
+            var grid = $('#gridReport').data('kendoGrid');
+            grid.dataSource.page(1);
+        });
+
+    }
+
+</script>

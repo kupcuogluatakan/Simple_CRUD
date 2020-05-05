@@ -1,0 +1,186 @@
+﻿@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    var row = 0;
+    var addPartSearch = (bool) ViewBag.PartSearch;
+}
+<style>
+.k-numerictextbox {
+    width: 90px;
+}
+#popupContent {
+    width: 98%;
+}
+.special input[type=text] {
+        width: 250px !important;
+    }
+</style>
+@using ODMSCommon.Resources
+@using ODMSModel.PurchaseOrderDetail
+@model ODMSModel.ObjectSearch.PurchaseOrderSearchViewModel
+<div id="bodyContainer">
+<div id="searchCriterias">
+    <div class="labelDiv">@Html.LabelFor(v => v.PoNumber)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.PoNumber)</div>
+   @if (addPartSearch)
+   {
+       <div class="labelDiv">@Html.LabelFor(v => v.PartId)</div>
+    <div class="shortTxtDiv special">
+         @(Html.Action("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "SparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText ="", DefaultValue = ""}))
+    </div>
+   }
+    
+
+    <div class="clearDiv"></div>
+</div>
+@ODMSHelpers.LinkButton("btnSearch", ODMSCommon.Resources.MessageResource.Global_Display_Search, "", "", "", "")
+@ODMSHelpers.LinkButton("btnClear", ODMSCommon.Resources.MessageResource.Global_Display_Clear, "", "", "", "")
+<input type="button" class="k-button" value="@MessageResource.Global_Display_Save" onclick="selectDetails()"/>
+<div  id="grd">
+@(Html.Kendo().Grid<ODMSModel.ObjectSearch.PurchaseOrderSearchListModel>()
+          .Name("grid")
+          .Columns(columns =>
+              {
+                  columns.Bound(c => c.PoNumber).Sortable(true);
+                  columns.Bound(c => c.StatusName).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+          .ClientDetailTemplateId("template")
+          .Events(events => events.DataBound("dataBound"))
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(ODMSCommon.CommonValues.GridPageSize.Short)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("SearchPurchaseOrder", "ObjectSearch", new{SupplierId=(int)ViewBag.SupplierId}).Data("PurchaseOrderSearch"))
+                                        .Model(model => model.Field(o => o.PoNumber).DefaultValue(-1)))
+          )
+</div>
+</div>
+
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().Grid<PurchaseOrderDetailListModel>()
+          .Name("grid_#=PoNumber#")
+          .Columns(columns =>
+          {
+              columns.Bound("").Width(50).HtmlAttributes(new {style="text-align:center;"}).ClientTemplate( "<input type='checkbox' name='chkSelect' /> ");
+              //columns.Bound(p => p.PurchaseOrderDetailSeqNo).Width(100).Sortable(true);
+              columns.Bound(p => p.PartCode).Width(100).Sortable(true);
+              columns.Bound(p => p.PartName).Width(150).Sortable(true);
+              columns.Bound(p => p.PackageQuantity).Width(100).Sortable(true);
+              columns.Bound(p => p.DesireQuantity).Width(100).Sortable(true);
+              columns.Bound(p => p.OrderQuantity).Width(100).Sortable(true);
+              columns.Bound(p => p.ShipmentQuantity).ClientTemplate("<input  max='10000' min='0' name='ShipmentQuantity' type='number' value='0' />").Width(100).Sortable(true);
+              columns.Bound(p => p.OrderPrice).Width(100).Sortable(true);
+              columns.Bound(p => p.StatusName).Width(100).Sortable(true);
+          })
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .PageSize(10000)
+              .Read(read => read.Action("ListPurchaseOrderDetail", "ObjectSearch", new { PoNumber = "#=PoNumber#" }).Data("GetPartId"))
+          ).Events(c=>c.DataBound("setTextBox"))
+          .Pageable()
+          .Sortable()
+          .ToClientTemplate())
+
+
+</script>
+    <script id="campaign-request-delete-confirm-modal" type="text/x-kendo-template">
+     <p class="delete-message">@MessageResource.Delivery_Warning_ShipQuantityConfirm</p>
+        <p style="text-align:right">
+            <button class="delete-confirm k-button">@MessageResource.Global_Display_Yes</button>
+            <button class="delete-cancel k-button">@MessageResource.Global_Display_No</button>
+        </p>
+</script>
+<script type="text/javascript">
+    function PurchaseOrderSearch() {
+        return {
+            PoNumber: $('#PoNumber').val(),
+            PartId:$("#PartId").val()
+        };
+    }
+
+    function GetPartId() {
+        return {
+            PartId: $("#PartId").val()
+        };
+    }
+
+    function ConfirmShipmentQuantity(obj,val) {
+        var confirm = false;
+        var kendoWindow = $("<div />").kendoWindow({
+            title: "@MessageResource.Global_Display_Warning",
+                    resizable: false,
+                    modal: true
+                });
+
+                kendoWindow.data("kendoWindow")
+                    .content($("#campaign-request-delete-confirm-modal").html())
+                    .center().open();
+
+                kendoWindow
+                    .find(".delete-confirm, .delete-cancel")
+                    .click(function () {
+                        if ($(this).hasClass("delete-cancel")) {
+                            var ntb = $(obj).data("kendoNumericTextBox");
+                            ntb.value(val);
+                        }
+                        kendoWindow.data("kendoWindow").close();
+                    })
+                    .end();
+                return confirm;
+            }
+
+
+    function dataBound() {
+        this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+    function setTextBox() {
+        $('input[name=ShipmentQuantity]', this.tbody).each(function(i, e) {
+            var $this = $(this);
+            var innerGrid = $($this).parents("div.k-grid").first().data("kendoGrid");
+            var dataItem = innerGrid.dataItem($($this).closest('tr'));
+            $this.kendoNumericTextBox({ 'spinners': false, 'decimals': 2, value: dataItem.OrderQuantity - dataItem.ShipmentQuantity });
+          
+            $(this).blur(function() {         
+                if (dataItem.OrderQuantity - dataItem.ShipmentQuantity - parseFloat($this.val().toString().replace(",", ".")) < 0) {
+                    ConfirmShipmentQuantity($(this), dataItem.OrderQuantity - dataItem.ShipmentQuantity);
+                }
+            });
+        });
+
+    }
+    function selectDetails() {
+
+        var items = new Array();
+        var grid = $('#grid').data().kendoGrid;
+        $('#grid input[type=checkbox]').each(function (i, e) {
+            if ($(e).is(':checked') == true) {
+                var innerGrid = $(e).parents("div.k-grid").first().data("kendoGrid");
+                var dataItem = innerGrid.dataItem($(e).closest('tr'));
+                items.push(dataItem.PurchaseOrderDetailSeqNo + '=>' + $("input[name=ShipmentQuantity]", $(e).closest('tr')).eq(0).val().toString().replace(",","."));
+            }
+        });
+        
+        window.parent.CloseSearch(items);
+
+
+    }
+
+        $(document).ready(function () {
+            $("#btnSearch").on("click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+            });
+
+            $("#btnClear").on("click", function (e) {
+                $('#searchCriterias').find('input:text').val('');
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+            });
+           
+          
+        });
+        
+</script>
+

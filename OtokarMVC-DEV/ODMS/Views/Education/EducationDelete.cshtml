@@ -1,0 +1,48 @@
+﻿@model ODMSModel.Education.EducationViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Education_PageTitle_Delete");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("EducationDelete", "Education", FormMethod.Post))
+{
+    if (!Model.HideFormElements)
+    {
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationCode)</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationTypeId)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationTypeName)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationName)</div>
+    <div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = false }); }</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.AdminDesc)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleModelName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.VehicleModelName)</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.EducationDurationDay)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.EducationDurationDay)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsMandatory)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.IsMandatory)</div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.IsActive)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.IsActive)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(v => v.EducationCode)
+    @ODMSHelpers.Button("Delete", CommonUtility.GetResourceValue("Global_Display_Delete"), CommonValues.PermissionCodes.Education.EducationDelete, "EducationDelete")    
+    }
+
+}
+

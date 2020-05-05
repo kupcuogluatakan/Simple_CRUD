@@ -1,0 +1,203 @@
+﻿@model PdiGifApproveGroupViewModel
+@using ODMSBusiness
+@using ODMSCommon.Resources
+@using ODMSModel.PdiGifApproveGroup
+@{
+    ViewBag.Title = MessageResource.PdiGifApproveGroup_PageTitle_Index;
+}
+@Html.AntiForgeryToken()
+@*search start*@
+<div id="showSearch">@MessageResource.Global_Display_Search_Criteria</div>
+<div id="searchDiv">
+    <div id="searchFields">
+        <div class="labelDiv">@Html.LabelFor(c=>c.GroupName)</div>
+        <div class="shortTxtDiv">@Html.TextBoxFor(c=>c.GroupName) </div>
+        <div class="labelDiv">@Html.LabelFor(c=>c.MailList)</div>
+        <div class="shortTxtDiv">@Html.TextAreaFor(c=>c.MailList) </div>
+        <div class="labelDiv">@Html.LabelFor(c => c.IsActive)</div>
+        <div class="shortTxtDiv">@Html.Kendo().ComboBoxFor(c=>c.SearchIsActive).BindTo(CommonBL.ListStatus().Data).DataTextField("Text").DataValueField("Value").Placeholder(MessageResource.Global_Display_All)  </div>
+        <div class="clearDiv">&nbsp;</div>
+    </div>
+</div> 
+@*serach end*@
+@ODMSHelpers.LinkButton("btnSearch", CommonUtility.GetResourceValue("Global_Display_Search"), "", "", "",CommonValues.PermissionCodes.PdiGifApproveGroup.PdiGifApproveGroupIndex)
+@ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("PdiGifApproveGroup_PageTitle_Create"),CommonValues.PermissionCodes.PdiGifApproveGroup.PdiGifApproveGroupCreate)
+
+@*grid start*@
+<div class="kendoGridDiv" id="grd">
+    @(Html.Kendo().Grid<PdiGifApproveGroupListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.GroupId).ClientTemplate("<center><a class='loadTab' onclick='ShowTabs(#=GroupId#);' id='#=GroupId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PdiGifApproveGroup.PdiGifApproveGroupDetails));
+                  columns.Bound(p => p.GroupId).ClientTemplate("<center><a class='details modalClick' id='#=GroupId#' frameTitle='" + CommonUtility.GetResourceValue("PdiGifApproveGroup_PageTitle_Details") + "' href='" + Url.Action("PdiGifApproveGroupDetails", "PdiGifApproveGroup") + "/#=GroupId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PdiGifApproveGroup.PdiGifApproveGroupDetails));
+                  columns.Bound(p => p.GroupId).ClientTemplate("<center><a class='edit modalClick' id='#=GroupId#' frameTitle='" + CommonUtility.GetResourceValue("PdiGifApproveGroup_PageTitle_Update") + "' href='" + Url.Action("PdiGifApproveGroupUpdate", "PdiGifApproveGroup") + "/#=GroupId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PdiGifApproveGroup.PdiGifApproveGroupUpdate));
+                  columns.Bound(o => o.GroupId).ClientTemplate("<center><a  id='#=GroupId#' frameTitle='" + CommonUtility.GetResourceValue("PdiGifApproveGroup_PageTitle_Delete") + "' onclick='DeletePdiGifApproveGroup(#=GroupId#);' href='javascript:void(0);'><img class='iconLink' src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.PdiGifApproveGroup.PdiGifApproveGroupDelete));
+                  columns.Bound(p => p.GroupName).Width(120).Sortable(true);
+                  columns.Bound(p => p.MailList).Width(100).Sortable(true);
+                  columns.Bound(p => p.IsActiveString).Width(120).Sortable(true);
+              })
+          .Pageable()
+          .Sortable()
+          .Scrollable()
+           
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListPdiGifApproveGroup", "PdiGifApproveGroup", Model).Data("PdiGifApproveGroupSearch"))
+                                        .Model(model => model.Field(o => o.GroupId).DefaultValue(-1)))
+
+          )
+</div>
+@*grid end*@
+
+@*modelWindow start*@
+    <div id="modelWindowDiv">
+        @(Html.Kendo().Window()
+              .Name("modelWindow")
+              .Title("Customer")
+              .Draggable()
+              .Resizable()
+              .Width(950)
+              .Height(250)
+              .Visible(false)
+              .Modal(true)
+              .Iframe(true)
+              .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+              )
+    </div>
+@*modelWindow end*@
+
+@*tab content start*@
+<div id="divDetails" style="display: none; margin-top: 20px;">
+       @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.PDIGOSApproveGroupDealers_PageTitle_Index).HtmlAttributes(new{onclick="LoadTabContent('" + Url.Action("PDIGOSApproveGroupDealersIndex", "PDIGOSApproveGroupDealers")+"');"}))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.PdiGifApproveGroupMembers_PageTitle_Index).HtmlAttributes(new{onclick="LoadTabContent('" + Url.Action("PdiGifApproveGroupMembersIndex", "PdiGifApproveGroupMembers")+"');"}))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.PDIGOSApproveGroupIndicatorTransTypes_PageTitle_Index).HtmlAttributes(new{onclick="LoadTabContent('" + Url.Action("PDIGOSApproveGroupIndicatorTransTypesIndex", "PDIGOSApproveGroupIndicatorTransTypes")+"');"}))
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.PDIGOSApproveGroupVehicleModels_PageTitle_Index).HtmlAttributes(new{onclick="LoadTabContent('" + Url.Action("PDIGOSApproveGroupVehicleModelsIndex", "PDIGOSApproveGroupVehicleModels")+"');"}))
+          )
+<div id="TabContent" style="padding:0 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+    </div>
+@*tab content end*@
+
+@*scripts start*@
+@section Scripts{
+    <script type="text/javascript">
+        var GroupId = 0;
+        function PdiGifApproveGroupSearch() {
+            return {
+                SearchIsActive: $('#SearchIsActive').val(),
+                GroupName: $('#GroupName').val(),
+                MailList: $('#MailList').val()
+            };
+        }
+        $(document).ready(init);
+        function init() {
+            $("body").delegate("#btnSearch", "click", function (e) {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.page(1);
+                $('#divDetails').hide();
+            });
+            $("body").delegate("#showSearch", "click", function (e) {
+                var IsVisible = Boolean($(this).hasClass("searchVisible"));
+
+                if (!IsVisible) {
+                    $(this).html('@MessageResource.Global_Display_Hide_Search_Criteria');
+                    $(this).addClass("searchVisible");
+                    $("#searchDiv").show("slow");
+                }
+                else {
+                    $(this).html("@MessageResource.Global_Display_Search_Criteria");
+                    $(this).removeClass("searchVisible");
+                    $("#searchDiv").hide("slow");
+                }
+            });
+            $("body").delegate(".modalClick", "click", function (e) {
+                $('#modelWindow').html('');
+                e.preventDefault();
+
+                var link;
+                var clickedId = $(this).attr("id");
+                var frameTitle = $(this).attr("frameTitle");
+                if ($(this).hasClass("details") == true) {
+                    link = "@Url.Action("PdiGifApproveGroupDetails", "PdiGifApproveGroup", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("edit")) {
+                    link = "@Url.Action("PdiGifApproveGroupUpdate", "PdiGifApproveGroup", new { id = -1 })";
+                    link = link.replace("-1", clickedId);
+                }
+                else if ($(this).hasClass("createNew")) {
+                    link = "@Url.Action("PdiGifApproveGroupCreate", "PdiGifApproveGroup")";
+                }
+                $("#modelWindow_wnd_title").html(frameTitle);
+
+                var windowWidget = $("#modelWindow").data("kendoWindow");
+                var closeOrigin = windowWidget.close;
+
+                windowWidget.refresh({
+                    url: link
+                }).center();
+                windowWidget.center();
+                windowWidget.open();
+               
+            });
+        }
+        function ShowTabs(id) {
+            GroupId = id;
+            $('#TabContent').html('');
+            $("#Tabs").data("kendoTabStrip").select(0);
+            $('#divDetails').show();
+            LoadTabContent('@Url.Action("PDIGOSApproveGroupDealersIndex", "PDIGOSApproveGroupDealers")');
+        }
+        function LoadTabContent(url) {
+            $('#TabContent').html('');
+            $.ajax({
+                type: "GET",
+                url: url + '/' + GroupId,
+                data: {},
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $('#TabContent').html(result);
+                },
+                error: function (request, status, err) {
+                    //console.log(arguments);
+                    alert(status);
+                    alert(err);
+                },
+                dataType: "html"
+            });
+        }
+
+        function DeletePdiGifApproveGroup(id) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            DeleteConfirm(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("DeletePdiGifApproveGroup","PdiGifApproveGroup")",
+                    data: { id: id, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            });
+        }
+    </script>
+}
+@*scripts end*@

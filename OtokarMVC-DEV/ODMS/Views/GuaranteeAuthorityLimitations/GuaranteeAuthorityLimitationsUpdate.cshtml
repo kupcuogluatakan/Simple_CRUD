@@ -1,0 +1,39 @@
+﻿@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+@model ODMSModel.GuaranteeAuthorityLimitations.GuaranteeAuthorityLimitationsViewModel
+@using (Html.BeginForm("GuaranteeAuthorityLimitationsUpdate", "GuaranteeAuthorityLimitations", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(c=>c.CurrencyCode)
+    @Html.HiddenFor(c=>c.ModelKod)
+     @Html.HiddenFor(c=>c.ModelName)
+    @Html.HiddenFor(c=>c.CurrencyName)
+    <div class="labelDiv">@Html.LabelFor(c => c.ModelName)</div>
+    <div class="shortTxtDiv">@Model.ModelName &nbsp; </div>
+    <div class="labelDiv">@Html.LabelFor(c => c.CurrencyName)</div>
+    <div class="shortTxtDiv">@Model.CurrencyName &nbsp; </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.Amount)</div>
+    <div style="width: 300px; float: left;">@Html.Kendo().NumericTextBoxFor(c => c.Amount).Decimals(2).Min(0).Format("{0:N2}").Spinners(true).HtmlAttributes(new { type = "text", maxlength = "12", style = "width:204px" })
+        @Html.ValidationMessageFor(v => v.Amount)
+    </div>
+    <div class="labelDiv">@Html.LabelFor(c => c.CumulativeAmount)</div>
+    <div style="width: 300px; float: left;">@Html.Kendo().NumericTextBoxFor(c => c.CumulativeAmount).Decimals(2).Min(0).Format("{0:N2}").Spinners(true).HtmlAttributes(new { type = "text", maxlength = "13", style = "width:204px" })
+        @Html.ValidationMessageFor(v => v.CumulativeAmount)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.GuaranteeAuthorityLimitations.GuaranteeAuthorityLimitationsCreate, "GuaranteeAuthorityLimitationsCreate")   
+}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('form').each(function() {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+</script>

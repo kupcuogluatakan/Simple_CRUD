@@ -1,0 +1,59 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Proficiency.ProficiencyDetailModel
+@{
+    ViewBag.Title = MessageResource.DealerProficiency_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("DealerProficiencyCreate", "DealerProficiency", FormMethod.Post))
+{
+    <div id="tagProficiencyDiv" class="labelDiv" style="position: absolute; margin-top: 10px; width: 120px">@Html.Label(MessageResource.DealerProficiency_Display_ProficiencyList)</div>
+    <div id="txtProficiencyDiv" class="shortTxtDiv" style="position: absolute; margin-top: 10px; margin-left: 120px;">
+        @(Html.Kendo().ComboBoxFor(d => d.ProficiencyCode)
+              .Placeholder(@MessageResource.DealerProficiency_Display_SelectProficiency)
+              .BindTo(ViewBag.ProficiencyList)
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .HtmlAttributes(new { @class = "ComboBox", @style = "width: 205px;" })
+              )
+        @Html.ValidationMessageFor(v => v.ProficiencyCode)
+    </div>
+    
+    @Html.HiddenFor(c=>c.DealerId)
+   
+    @ODMSHelpers.Button("Create", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.Proficiency.ProficiencyCreate, "ProficiencyCreate")        
+}
+
+<script>
+    $(document).ready(function () {
+        $("#ProficiencyCode").data("kendoComboBox").value('');
+        $("#ProficiencyCode").data("kendoComboBox").text('');
+        
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+    $(function () {
+        adjustPage();
+        adjustControlPositions();
+    });
+    
+    function adjustPage() {
+        $("#popupContent").css("width", 490);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 400);
+        $("#popupContentWrapper").css("width", 500);
+    }
+
+    function adjustControlPositions() {
+        $("#Create").css("position", "absolute");
+        $("#Create").css("margin-top", "60px");
+        $("#Create").css("width", "75px");
+        
+        $("#txtValidationErrorDiv li").css("list-style", "none");
+    }
+</script>

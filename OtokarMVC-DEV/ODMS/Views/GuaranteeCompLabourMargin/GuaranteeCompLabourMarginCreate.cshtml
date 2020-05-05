@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = ODMSCommon.Resources.MessageResource.GuaranteeCompLabourMargin_Title_Insert;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<style>
+    #popupContent {
+    width: 1400px;
+    padding-top: 10px;
+    padding-left: 10px;
+    margin: 0;
+    background-color: #EDF1F4 !important;
+    }
+ </style>
+
+
+@model ODMSModel.GuaranteeCompLabourMargin.GuaranteeCompLabourMarginViewModel
+
+    @using (Html.BeginForm("GuaranteeCompLabourMarginCreate", "GuaranteeCompLabourMargin", FormMethod.Post))
+    {
+
+        Html.RenderPartial("_GuaranteeCompLabourMarginEdit", Model);
+        Html.HiddenFor(v => v.IdGrntLabourMrgn);
+        @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.GuaranteeCompLabourMargin.GuaranteeCompLabourMarginCreate, "GuaranteeCompLabourMarginCreate")        
+
+    }
+
+<style>
+    body
+    {
+        background-color:#EDF1F4 !important;
+        height:2000px;
+        overflow:hidden;
+        width:2000px;
+    }
+
+</style>

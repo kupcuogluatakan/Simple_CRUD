@@ -1,0 +1,56 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.DealerStartupInventoryLevel.DealerStartupInventoryLevelViewModel
+@{
+    ViewBag.Title = MessageResource.DealerStartupInventoryLevel_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+
+@using (Html.BeginForm("DealerStartupInventoryLevelCreate", "DealerStartupInventoryLevel", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(b => b.DealerClassName)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().ComboBoxFor(v => v.DealerClassCode).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.DealerClassList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+        @Html.ValidationMessageFor(v => v.DealerClassCode)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(b => b.PartCodeName)</div>
+    <div class="shortTxtDiv">
+        @{
+            Html.RenderAction("AutocompleteSearch", "AutocompleteSearch", new { SearchType = "OrginalSparePart", ControlId = "PartId", Title1 = "", Title2 = "", DefaultText = "", DefaultValue = "" ,Required=true});
+        }        
+        @Html.ValidationMessageFor(v => v.PartId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.PackageQuantity)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.PackageQuantity)  </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Quantity)</div>
+    <div class="shortTxtDiv">
+        @Html.Kendo().NumericTextBoxFor(c => c.Quantity).Decimals(2).Format("{0:N}").HtmlAttributes(new { type = "text", maxlength = "6", data_val_min = "0", style = "width:200px" }).Spinners(false)
+        @Html.ValidationMessageFor(v => v.Quantity)
+    </div>  
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Create", MessageResource.Global_Display_Save, CommonValues.PermissionCodes.DealerStartupInventoryLevel.DealerStartupInventoryLevelCreate, "DealerStartupInventoryLevelCreate")        
+}
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+ 
+<script type="text/javascript">
+    $(function () {
+        $('.k-widget').addClass('input-validation-valid');
+        $(".k-widget").removeClass("input-validation-error");
+    });
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

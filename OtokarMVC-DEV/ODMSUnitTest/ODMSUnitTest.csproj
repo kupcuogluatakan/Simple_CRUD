@@ -1,0 +1,337 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D2330A30-D46D-46F3-9E04-9566DDC5FDE1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ODMSUnitTest</RootNamespace>
+    <AssemblyName>ODMSUnitTest</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Mvc">
+      <HintPath>..\ODMS\bin\System.Web.Mvc.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Choose>
+    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+  <ItemGroup>
+    <Compile Include="ActiveAnnouncementsBLTest.cs" />
+    <Compile Include="AnnouncementBLTest.cs" />
+    <Compile Include="AnnouncementDealerBLTest.cs" />
+    <Compile Include="AnnouncementRoleBLTest.cs" />
+    <Compile Include="AppointmentBLTest.cs" />
+    <Compile Include="AppointmentDetailsBLTest.cs" />
+    <Compile Include="AppointmentDetailsLaboursBLTest.cs" />
+    <Compile Include="AppointmentDetailsMaintenanceBLTest.cs" />
+    <Compile Include="AppointmentDetailsPartsBLTest.cs" />
+    <Compile Include="AppointmentIndicatorCategoryBLTest.cs" />
+    <Compile Include="AppointmentIndicatorFailureCodeBLTest.cs" />
+    <Compile Include="AppointmentIndicatorMainCategoryBLTest.cs" />
+    <Compile Include="AppointmentIndicatorSubCategoryBLTest.cs" />
+    <Compile Include="AppointmentTypeBLTest.cs" />
+    <Compile Include="BankBLTest.cs" />
+    <Compile Include="BodyworkDetailBLTest.cs" />
+    <Compile Include="BreakdownDefinitionBLTest.cs" />
+    <Compile Include="CampaignBLTest.cs" />
+    <Compile Include="CampaignDismantlePartBLTest.cs" />
+    <Compile Include="CampaignDocumentBLTest.cs" />
+    <Compile Include="CampaignLabourBLTest.cs" />
+    <Compile Include="CampaignPartBLTest.cs" />
+    <Compile Include="CampaignRequestApproveBLTest.cs" />
+    <Compile Include="CampaignRequestBLTest.cs" />
+    <Compile Include="CampaignRequestOrdersBLTest.cs" />
+    <Compile Include="CampaignVehicleBLTest.cs" />
+    <Compile Include="ClaimDismantledPartsBLTest.cs" />
+    <Compile Include="ClaimPeriodPartListApproveBLTest.cs" />
+    <Compile Include="ClaimRecallPeriodBLTest.cs" />
+    <Compile Include="ClaimRecallPeriodPartBLTest.cs" />
+    <Compile Include="ClaimSupplierBLTest.cs" />
+    <Compile Include="ClaimSupplierPartBLTest.cs" />
+    <Compile Include="ClaimWaybillListBLTest.cs" />
+    <Compile Include="CommonBLTest.cs" />
+    <Compile Include="CountryBLTest.cs" />
+    <Compile Include="CriticalStockCardBLTest.cs" />
+    <Compile Include="CriticalStockQuantityBLTest.cs" />
+    <Compile Include="CurrencyBLTest.cs" />
+    <Compile Include="CustomerAddressBLTest.cs" />
+    <Compile Include="CustomerBLTest.cs" />
+    <Compile Include="CustomerContactBLTest.cs" />
+    <Compile Include="CustomerDiscountBLTest.cs" />
+    <Compile Include="CustomerSparePartDiscountBLTest.cs" />
+    <Compile Include="CycleCountBLTest.cs" />
+    <Compile Include="CycleCountPlanBLTest.cs" />
+    <Compile Include="CycleCountResultBLTest.cs" />
+    <Compile Include="CycleCountStockDiffBLTest.cs" />
+    <Compile Include="DamagedItemDisposeBLTest.cs" />
+    <Compile Include="DealerAccountInfoBLTest.cs" />
+    <Compile Include="DealerBLTest.cs" />
+    <Compile Include="DealerClassBLTest.cs" />
+    <Compile Include="DealerFleetVehicleBLTest.cs" />
+    <Compile Include="DealerGuaranteeControlBLTest.cs" />
+    <Compile Include="DealerGuaranteeRatioBLTest.cs" />
+    <Compile Include="DealerPurchaseOrderBLTest.cs" />
+    <Compile Include="DealerPurchaseOrderConfirmBLTest.cs" />
+    <Compile Include="DealerPurchaseOrderPartConfirmBLTest.cs" />
+    <Compile Include="DealerRegionBLTest.cs" />
+    <Compile Include="DealerRegionResponsibleBLTest.cs" />
+    <Compile Include="DealerSaleChannelBLTest.cs" />
+    <Compile Include="DealerSaleChannelDiscountRatioBLTest.cs" />
+    <Compile Include="DealerSaleSparepartBLTest.cs" />
+    <Compile Include="DealerStartupInventoryLevelBLTest.cs" />
+    <Compile Include="DealerTechnicianGroupBLTest.cs" />
+    <Compile Include="DealerTechnicianGroupTechnicianBLTest.cs" />
+    <Compile Include="DealerUserBLTest.cs" />
+    <Compile Include="DeliveryBLTest.cs" />
+    <Compile Include="DeliveryGoodsPlacementBLTest.cs" />
+    <Compile Include="DeliveryListBLTest.cs" />
+    <Compile Include="DeliveryListPartBLTest.cs" />
+    <Compile Include="DocumentBLTest.cs" />
+    <Compile Include="EducationBLTest.cs" />
+    <Compile Include="EducationContributersBLTest.cs" />
+    <Compile Include="EducationDatesBLTest.cs" />
+    <Compile Include="EducationRequestBLTest.cs" />
+    <Compile Include="EducationRequestListBLTest.cs" />
+    <Compile Include="EducationTypeBLTest.cs" />
+    <Compile Include="EquipmentTypeBLTest.cs" />
+    <Compile Include="FavoriteScreenBLTest.cs" />
+    <Compile Include="FixAssetInventoryBLTest.cs" />
+    <Compile Include="FixAssetInventoryOutputBLTest.cs" />
+    <Compile Include="FleetBLTest.cs" />
+    <Compile Include="FleetPartPartialBLTest.cs" />
+    <Compile Include="FleetRequestBLTest.cs" />
+    <Compile Include="FleetRequestConfirmBLTest.cs" />
+    <Compile Include="FleetRequestVehicleApproveBLTest.cs" />
+    <Compile Include="FleetRequestVehicleBLTest.cs" />
+    <Compile Include="FleetVehicleBLTest.cs" />
+    <Compile Include="GeneralParameterBLTest.cs" />
+    <Compile Include="GuaranteeAuthorityGroupBLTest.cs" />
+    <Compile Include="GuaranteeAuthorityGroupDealersBLTest.cs" />
+    <Compile Include="GuaranteeAuthorityGroupIndicatorTransTypeBLTest.cs" />
+    <Compile Include="GuaranteeAuthorityGroupMemberBLTest.cs" />
+    <Compile Include="GuaranteeAuthorityGroupVehicleBLTest.cs" />
+    <Compile Include="GuaranteeAuthorityLimitationsBLTest.cs" />
+    <Compile Include="GuaranteeBLTest.cs" />
+    <Compile Include="GuaranteeCompLabourMarginBLTest.cs" />
+    <Compile Include="GuaranteeCompPartMarginBLTest.cs" />
+    <Compile Include="GuaranteeRequestApproveBLTest.cs" />
+    <Compile Include="GuaranteeRequestApproveDetailBLTest.cs" />
+    <Compile Include="IntegrationBLTest.cs" />
+    <Compile Include="LabourBLTest.cs" />
+    <Compile Include="LabourCountryVatRatioBLTest.cs" />
+    <Compile Include="LabourDurationBLTest.cs" />
+    <Compile Include="LabourMainGroupBLTest.cs" />
+    <Compile Include="LabourPriceBLTest.cs" />
+    <Compile Include="LabourSubGroupBLTest.cs" />
+    <Compile Include="LabourTechnicianBLTest.cs" />
+    <Compile Include="LabourTypeBLTest.cs" />
+    <Compile Include="LanguageBLTest.cs" />
+    <Compile Include="MaintenanceAppointmentBLTest.cs" />
+    <Compile Include="MaintenanceBLTest.cs" />
+    <Compile Include="MaintenanceLabourBLTest.cs" />
+    <Compile Include="MaintenancePartBLTest.cs" />
+    <Compile Include="MenuBLTest.cs" />
+    <Compile Include="ObjectSearchBLTest.cs" />
+    <Compile Include="PartCostBLTest.cs" />
+    <Compile Include="PartCostServiceBLTest.cs" />
+    <Compile Include="PartWithModelPairingBLTest.cs" />
+    <Compile Include="PasswordBLTest.cs" />
+    <Compile Include="PDIControlDefinitionBLTest.cs" />
+    <Compile Include="PDIControlPartDefinitionBLTest.cs" />
+    <Compile Include="PdiGifApproveGroupBLTest.cs" />
+    <Compile Include="PdiGifApproveGroupMembersBLTest.cs" />
+    <Compile Include="PDIGOSApproveGroupDealersBLTest.cs" />
+    <Compile Include="PDIGOSApproveGroupIndicatorTransTypeBLTest.cs" />
+    <Compile Include="PDIGOSApproveGroupVehicleModelsBLTest.cs" />
+    <Compile Include="PDIPartDefinitionBLTest.cs" />
+    <Compile Include="PDIResultDefinitionBLTest.cs" />
+    <Compile Include="PDIVehicleResultBLTest.cs" />
+    <Compile Include="PeriodicMaintControlListBLTest.cs" />
+    <Compile Include="PermissionBLTest.cs" />
+    <Compile Include="PriceBLTest.cs" />
+    <Compile Include="PriceListCountryMatchBLTest.cs" />
+    <Compile Include="PrivateMessageBLTest.cs" />
+    <Compile Include="ProficiencyBLTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProposalBLTest.cs" />
+    <Compile Include="ProposalCardBLTest.cs" />
+    <Compile Include="ProposalDocumentsBLTest.cs" />
+    <Compile Include="ProposalInvoicesBLTest.cs" />
+    <Compile Include="PurchaseOrderBLTest.cs" />
+    <Compile Include="PurchaseOrderDetailBLTest.cs" />
+    <Compile Include="PurchaseOrderGroupBLTest.cs" />
+    <Compile Include="PurchaseOrderGroupRelationBLTest.cs" />
+    <Compile Include="PurchaseOrderMatchBLTest.cs" />
+    <Compile Include="PurchaseOrderSuggestionBLTest.cs" />
+    <Compile Include="PurchaseOrderSuggestionDetailBLTest.cs" />
+    <Compile Include="PurchaseOrderTypeBLTest.cs" />
+    <Compile Include="RackBLTest.cs" />
+    <Compile Include="ReportCreateBLTest.cs" />
+    <Compile Include="ReportsBLTest.cs" />
+    <Compile Include="RoleBLTest.cs" />
+    <Compile Include="RolePermissionBLTest.cs" />
+    <Compile Include="SaleOrderBLTest.cs" />
+    <Compile Include="SchedulerBLTest.cs" />
+    <Compile Include="ScrapBLTest.cs" />
+    <Compile Include="ScrapDetailBLTest.cs" />
+    <Compile Include="ServiceCallScheduleBLTest.cs" />
+    <Compile Include="ServiceScheduleBLTest.cs" />
+    <Compile Include="SparePartAssembleBLTest.cs" />
+    <Compile Include="SparePartBarcodeBLTest.cs" />
+    <Compile Include="SparePartBLTest.cs" />
+    <Compile Include="SparePartCountryVatRatioBLTest.cs" />
+    <Compile Include="SparePartGuaranteeAuthorityNeedBLTest.cs" />
+    <Compile Include="SparePartSaleBLTest.cs" />
+    <Compile Include="SparePartSaleDetailBLTest.cs" />
+    <Compile Include="SparePartSaleInvoiceBLTest.cs" />
+    <Compile Include="SparePartSaleOrderBLTest.cs" />
+    <Compile Include="SparePartSaleOrderDetailBLTest.cs" />
+    <Compile Include="SparePartSaleWaybillBLTest.cs" />
+    <Compile Include="SparePartTypeBLTest.cs" />
+    <Compile Include="SpartInfoBLTest.cs" />
+    <Compile Include="StockBlockBLTest.cs" />
+    <Compile Include="StockBlockDetailBLTest.cs" />
+    <Compile Include="StockCardBLTest.cs" />
+    <Compile Include="StockCardChangePartBLTest.cs" />
+    <Compile Include="StockCardPriceListBLTest.cs" />
+    <Compile Include="StockCardPurchaseOrderBLTest.cs" />
+    <Compile Include="StockCardTransactionBLTest.cs" />
+    <Compile Include="StockCardYearlyBLTest.cs" />
+    <Compile Include="StockLocationBLTest.cs" />
+    <Compile Include="StockRackDetailBLTest.cs" />
+    <Compile Include="StockTypeDetailBLTest.cs" />
+    <Compile Include="SupplierBLTest.cs" />
+    <Compile Include="SupplierDispatchPartBLTest.cs" />
+    <Compile Include="SystemAdministrationBLTest.cs" />
+    <Compile Include="TechnicianOperationBLTest.cs" />
+    <Compile Include="TechnicianOperationControlBLTest.cs" />
+    <Compile Include="TestBLTest.cs" />
+    <Compile Include="TitleBLTest.cs" />
+    <Compile Include="UserBLTest.cs" />
+    <Compile Include="UserRoleBLTest.cs" />
+    <Compile Include="UserTitleBLTest.cs" />
+    <Compile Include="VatRatioBLTest.cs" />
+    <Compile Include="VehicleBLTest.cs" />
+    <Compile Include="VehicleBodyworkBLTest.cs" />
+    <Compile Include="VehicleCodeBLTest.cs" />
+    <Compile Include="VehicleGroupBLTest.cs" />
+    <Compile Include="VehicleHistoryBLTest.cs" />
+    <Compile Include="VehicleModelBLTest.cs" />
+    <Compile Include="VehicleNoteApproveBLTest.cs" />
+    <Compile Include="VehicleNoteProposalApproveBLTest.cs" />
+    <Compile Include="VehicleNotesBLTest.cs" />
+    <Compile Include="VehicleNotesProposalBLTest.cs" />
+    <Compile Include="VehicleTypeBLTest.cs" />
+    <Compile Include="WarehouseBLTest.cs" />
+    <Compile Include="WebServiceErrorDisplayBLTest.cs" />
+    <Compile Include="WebServiceLogsBLTest.cs" />
+    <Compile Include="WorkHourBLTest.cs" />
+    <Compile Include="WorkOrderBatchIvoiceBLTest.cs" />
+    <Compile Include="WorkOrderBLTest.cs" />
+    <Compile Include="WorkOrderCardBLTest.cs" />
+    <Compile Include="WorkOrderDocumentsBLTest.cs" />
+    <Compile Include="WorkOrderInvoiceListBLTest.cs" />
+    <Compile Include="WorkorderInvoicePaymentsBLTest.cs" />
+    <Compile Include="WorkOrderInvoicesBLTest.cs" />
+    <Compile Include="WorkorderListInvoicesBLTest.cs" />
+    <Compile Include="WorkOrderPickingBLTest.cs" />
+    <Compile Include="WorkOrderPickingDetailBLTest.cs" />
+    <Compile Include="WorkshopBLTest.cs" />
+    <Compile Include="WorkshopTypeBLTest.cs" />
+    <Compile Include="WorkshopWorkerBLTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ODMSBusiness\ODMSBusiness.csproj">
+      <Project>{33e51652-46f8-4e02-a526-557ac7731013}</Project>
+      <Name>ODMSBusiness</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSCommon\ODMSCommon.csproj">
+      <Project>{4dc1c8cf-146a-4703-a404-efc05c7318e9}</Project>
+      <Name>ODMSCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSData\ODMSData.csproj">
+      <Project>{b5081646-3912-40d1-bdb2-0b870ad13565}</Project>
+      <Name>ODMSData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODMSModel\ODMSModel.csproj">
+      <Project>{9ce95b96-f4c1-4642-a31c-55448673ba1e}</Project>
+      <Name>ODMSModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

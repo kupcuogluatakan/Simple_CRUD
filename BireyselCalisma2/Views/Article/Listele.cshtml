@@ -1,0 +1,98 @@
+﻿@model IEnumerable<BireyselCalisma2.Models.CustomMakale>
+@{
+    ViewBag.Title = "Listele";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 style="color:black">Makale Listesi</h1>
+
+
+@Html.ActionLink("Yeni Makale Oluştur", "Add", new { }, new { @class = "btn btn-outline-primary" })  @*bu kısımda ilk yer adını değiştirme,ilgili sayfayı etkiler,başka bir virgül varsa benim istediğim özel bir sayfaya gider*@
+
+<br />
+<br />
+
+
+<div >
+    @using (Html.BeginForm("Listele", "Article", FormMethod.Get))
+    {
+        <div class="row" style="float:left">
+            <div class="col-md-8">
+                @Html.TextBox("searching", null, null, new { @class = "form-control" })
+            </div>
+            <div class="col-md-2">
+                <input type="submit" class="btn btn-primary" value="Ara" />
+            </div>
+            <div class="col-md-2">
+                <a class="btn btn-info" href="/Article/Listele"> Temizle </a>
+            </div>
+
+
+
+        </div>
+    }
+</div>
+    <table class="table-bordered table">
+        <tr style="color:black">
+            <th>
+                @*@Html.DisplayNameFor(model => model.MTitle)*@ @*database isim çeker*@
+                <h1>Başlık</h1>
+
+            </th>
+            <th> <h2> Kategori Adı</h2></th>
+            <th>
+                @*@Html.DisplayNameFor(model => model.MDetail)*@
+
+            </th>
+
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Makale.MTitle)
+
+                </td>
+                <td>
+                    @item.KategoriAd
+                </td>
+                <td>
+                    <div style="width:100px; float:right;">
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Makale.MakaleId }, new { @class = "btn btn-block btn-outline-success" })
+                        <input type="button" value="Sil" data-id="@item.Makale.MakaleId" class="delete-row btn btn-block btn-outline-danger" />
+                        @*<button class="btn btn-block btn-outline-danger" href="#" onclick="deleteMakale(this,@item.MakaleId);">Sil</button>*@ @*tıkladığımı ifade ediyor*@
+
+                    </div>
+                </td>
+            </tr>
+        }
+
+    </table>
+
+    <script type="text/javascript" src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".delete-row").click(function () {
+                var id = $(this).attr("data-id");
+                var closestTR = $(this).closest("tr");
+                var confirmDelete = confirm('ID\'si' + id + ' olan kayıdı silmek istediğinizden emin misiniz?');
+                if (confirmDelete) {
+                    $.ajax({
+                        url: '/Article/Delete/' + id,
+                        type: 'POST',
+                        success: function (result) {
+                            if (result == "true") {
+                                closestTR.fadeOut(1000, function () {
+                                    closestTR.remove();
+                                });
+                            }
+                            else alert("Silme işlemi sırasında hata oluştu");
+                        }
+                    });
+                }
+
+            });
+
+        });
+    </script>

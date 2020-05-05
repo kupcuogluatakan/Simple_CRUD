@@ -1,0 +1,44 @@
+﻿@model ODMSModel.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("AppointmentIndicatorMainCategory_PageTitle_Create");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+ 
+@using (Html.BeginForm("AppointmentIndicatorMainCategoryCreate", "AppointmentIndicatorMainCategory", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.MainCode)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.MainCode)  @Html.ValidationMessageFor(v => v.MainCode)</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.AdminDesc)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.AdminDesc)  @Html.ValidationMessageFor(v => v.AdminDesc)</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+    
+    <div class="labelDiv" style="margin-top: 5px">@Html.LabelFor(v => v.AppointmentIndicatorMainCategoryName)</div>
+    <div class="shortTxtDiv" style="margin-top: 5px">
+        @{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = "", IsEnabled = true }); }
+        @Html.ValidationMessageFor(v => v.MultiLanguageContentAsText)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+
+
+             <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.IsActive)  </div>
+
+    <div class="labelDiv">@Html.LabelFor(v => v.CanBeUsedInAppointment)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(v => v.CanBeUsedInAppointment)</div>
+
+    <div class="clearDiv">&nbsp;</div>
+
+    @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), ODMSCommon.CommonValues.PermissionCodes.AppointmentIndicatorMainCategory.AppointmentIndicatorMainCategoryCreate, "AppointmentIndicatorMainCategoryCreate")        
+}
+<script>
+    $(document).ready(function () {
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Menu_PageTitle_Details");
+}
+@{
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+
+@model ODMSModel.Menu.MenuIndexViewModel
+ 
+<div class="labelDiv">@Html.LabelFor(v => v.LinkName)</div>
+<div class="shortTxtDiv">&nbsp;@Html.DisplayFor(v => v.LinkName) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.Status)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.Status) &nbsp;</div>
+<div class="clearDiv">&nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.OrderNo)</div>
+<div class="shortTxtDiv">@Html.DisplayFor(v => v.OrderNo) &nbsp;</div>
+<div class="labelDiv">@Html.LabelFor(v => v.MenuText)</div>
+<div class="shortTxtDiv">@{ Html.RenderAction("MultiLanguageTextbox", "MultiLanguage", new { DefaultText = Model.MultiLanguageContentAsText, IsEnabled = false }); }</div>
+
+<div class="clearDiv">&nbsp;</div>
+<br />

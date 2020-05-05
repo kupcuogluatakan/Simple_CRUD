@@ -1,0 +1,99 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.LabourDuration.LabourDurationDetailModel
+@{
+    ViewBag.Title = MessageResource.LabourDuration_PageTitle_Create;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+<link href="~/Style/bootstrap.css" rel="stylesheet" />
+@using (Html.BeginForm("LabourDurationCreate", "LabourDuration", FormMethod.Post))
+{
+    <div class="labelDiv">@Html.LabelFor(c=>c.LabourCode)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourCode) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>    
+    <div class="labelDiv">@Html.LabelFor(c=>c.LabourName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourName) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>    
+    <div class="labelDiv">@Html.LabelFor(c=>c.LabourDesc)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.LabourDesc) &nbsp;</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.Label(MessageResource.LabourDuration_Display_VehicleModelList)</div>
+    <div class="shortTxtDiv">
+        @(Html.Kendo().ComboBox()
+              .Name("VehicleModelId")
+              .Events(e => e.Change("SelectedModelChanged"))
+              .Placeholder(@MessageResource.LabourDuration_Display_SelectVehicleModel)
+              .BindTo(ViewBag.VehicleModelList)
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .HtmlAttributes(new { @class = "ComboBox", @style = "width: 200px;" })
+              )
+        @Html.ValidationMessageFor(c => c.VehicleModelId)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.Label(MessageResource.LabourDuration_Display_VehicleTypeList)</div>
+
+    <div class="shortTxtDiv" style="width:203px;">@Html.Kendo().MultiSelectFor(c => c.VehicleEngineTypeIdList).Name("VehicleEngineTypeIdList").AutoBind(false).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose")).DataSource(ds => ds.Read(read => read.Action("ListVehicleEngineTypes", "LabourDuration").Data("GetParameters")).ServerFiltering(true)).DataValueField("Value").DataTextField("Text")
+        @Html.ValidationMessageFor(d => d.VehicleEngineTypeIdList)
+    </div>
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.DurationString)</div>
+    <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(b => b.Duration).Format("#").Spinners(false).Decimals(0).HtmlAttributes(new { type = "text", maxlength = 4, style = "width:204px" })
+        @Html.ValidationMessageFor(d => d.Duration)
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(d => d.IsActiveString)</div>
+    <div class="shortTxtDiv">@Html.CheckBoxFor(d => d.IsActive)</div>
+    <div class="clearDiv">&nbsp;</div>
+    @Html.HiddenFor(c => c.LabourId)   
+    @Html.HiddenFor(c => c.LabourCode) 
+    @Html.HiddenFor(c => c.LabourName) 
+    @Html.HiddenFor(c => c.LabourDesc)
+        @ODMSHelpers.Button("Create", CommonUtility.GetResourceValue("Global_Display_Save"), CommonValues.PermissionCodes.LabourDuration.LabourDurationCreate, "LabourDurationCreate")        
+
+}
+<script type="text/x-kendo-tmpl" id="VehicleTypeItemTemplate">
+    <div class="ListItemText" style="padding:3px 0 0 5px; cursor:default">
+        <span data-vehicletypeid=#:Value#>#:Text#</span>
+    </div>
+</script>
+<script type="text/javascript">
+    function SelectedModelChanged() {
+
+        var vehicleEngineTypeList = $("#VehicleEngineTypeIdList").data("kendoMultiSelect");
+        vehicleEngineTypeList.value("");
+        vehicleEngineTypeList.dataSource.read();
+    }
+    $(document).ready(function () {
+        if ($('#VehicleModelId').val() == 0) {
+            $("#VehicleModelId").data("kendoComboBox").value('');
+            $("#VehicleModelId").data("kendoComboBox").text('');
+        }
+
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+
+    function GetParameters() {
+        return {
+            VehicleModelId: $("#VehicleModelId").val(),
+            LabourId: $("#LabourId").val()
+        };
+    }
+    $(function () {
+        adjustPage();
+    });
+    function VehicleEngineTypeIdListChange() {
+       
+    }
+    function adjustPage() {
+        $("#popupContent").css("width", 500);
+        $("#popupContentWrapper").css("min-height", 100);
+        $("#popupContentWrapper").css("height", 350);
+        $("#popupContentWrapper").css("width", 500);
+    }
+</script>

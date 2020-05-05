@@ -1,0 +1,59 @@
+﻿@using ODMSCommon.Resources
+@model ODMSModel.Menu.MenuPlacementViewModel
+
+@{
+    ViewBag.Title = MessageResource.Menu_PageTitle_Place;
+        
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+<script>
+    function filterParams() {
+        return {
+            id : '@Model.MenuId'
+        };
+    }
+</script>
+ 
+@using (Html.BeginForm("MenuPlacementUpdate", "Menu", FormMethod.Post,new {id="frmMenu"}))
+{
+    <div class="labelDiv">@Html.LabelFor(v => v.MenuName)</div>
+    <div class="shortTxtDiv">@Html.DisplayFor(v => v.MenuName)</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SubMenus)</div>
+    <div class="shortTxtDiv">@Html.Kendo().MultiSelectFor(v=>v.SubMenus).DataTextField("Text").DataValueField("Value").DataSource(source =>
+                          {
+                              source.Read(read =>
+                                  {
+                                      read.Action("ListSubMenus", "Menu")
+                                          .Data("filterParams");
+                                  })
+                                    .ServerFiltering(false);
+                          }).Placeholder(MessageResource.Global_Display_Choose).Value(Model.DefinedSubMenuList)
+    </div>
+    @Html.HiddenFor(v => v.MenuId)
+    @Html.HiddenFor(v => v.MenuName)
+    @Html.HiddenFor(v => v.SubMenuString)
+    <div class="clearDiv">&nbsp;</div>
+    <br />
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Menu.MenuUpdate, "MenuUpdate")
+    
+}
+
+<script>
+    
+    $(document).ready(function () {
+        $('#frmMenu').submit(function () {
+            $("#SubMenuString").val($("#SubMenus").data("kendoMultiSelect").value().toString());
+            return true;
+        });
+        $("#popupContentWrapper").css("min-height", 370);
+        $("#popupContentWrapper").css("width", 470);
+    });
+</script>
+<style>
+    #SubMenus
+    {
+        width:202px;
+    }
+</style>

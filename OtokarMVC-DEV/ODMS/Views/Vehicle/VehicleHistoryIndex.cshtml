@@ -1,0 +1,168 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@using ODMSModel.ListModel
+
+@model VehicleHistoryListModel
+@{
+    ViewBag.Title = @MessageResource.VehicleHistory_PageTitle_Index;
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+}
+
+@Html.Partial("_ExcelExport", new ODMS.Model.ExportModel())
+
+<div id="VehicleHistoryTotalPriceWindowDiv">
+    @(Html.Kendo().Window()
+                .Name("VehicleHistoryTotalPriceWindow")
+             .Draggable()
+            .Resizable()
+            .Width(950)
+            .Height(350)
+            .Visible(false)
+            .Modal(true)
+            .Iframe(true)
+            .Events(ev => ev.Close(@"function(e){
+     var grid = $('#gridVehicleHistory').data('kendoGrid');
+    grid.dataSource.page(1);
+}"))
+    )
+</div>
+<div class="clearDiv">&nbsp;</div>
+<script>
+    function onDataBound() {
+        var grid = $("#gridVehicleHistory").data("kendoGrid");
+        var data = grid.dataSource.data();
+        $.each(data, function (i, row) {
+            grid.collapseRow(grid.tbody.find('>tr[data-uid="' + row.uid + '"].k-master-row:first'));
+        });
+    }
+</script>
+
+<script>
+
+    function SearchVehicleHistoryDetail() {
+        return {
+            VehicleId: @Model.VehicleId
+        };
+    }
+</script>
+
+<div class="kendoGridDiv" id="gridDet">
+    @(Html.Kendo().Grid<VehicleHistoryListModel>()
+                  .Name("gridVehicleHistory")
+                  .HtmlAttributes(new { style = "width: 1820px;" })
+                  .Columns(columns =>
+                  {
+                      columns.Bound(b => b.IndicatorType).Width(100).Sortable(true);
+                      columns.Bound(b => b.ProcessType).Width(100).Sortable(true);
+                      columns.Bound(p => p.WorkOrderId).Width(60).Sortable(true);
+                      columns.Bound(b => b.AppIndicCode).ClientTemplate("<span title='#=AppIndicName#'>#=AppIndicCode#</span>").Width(100).Sortable(true);
+                      columns.Bound(b => b.CampaignNameCode).Width(200).Sortable(true);
+                      columns.Bound(b => b.DealerName).Width(300).Sortable(true);
+                      columns.Bound(b => b.IndicatorDate).Format("{0:dd/MM/yyyy}").Width(80).Sortable(true);
+                      columns.Bound(b => b.VehicleKM).Width(100).Sortable(true);
+                      columns.Bound(b => b.WorkOrderDate).Format("{0:dd/MM/yyyy}").Width(80).Sortable(true);
+
+                  })
+                  .Sortable()
+                  .Events(e => e.DataBound("onDataBound"))
+                  .ClientDetailTemplateId("template").ToolBar(p =>
+                  {
+                      p.Template(@<text>
+                        @if (UserManager.UserInfo.ActiveDealerId > 0)
+                                    {
+                            @ODMSHelpers.LinkButton("btnVehicleTotalPrice", MessageResource.VehicleHistory_Display_IndicatorPriceList, "", "", "", null)
+                                    }
+                        /**/
+                    </text>);
+                        })
+                                                          .DataSource(dataSource => dataSource
+                                                              .Ajax()
+                                                              .PageSize(10)
+                                                              .ServerOperation(true)
+                                                              .Read(read => read.Action("ListVehicleHistory", "Vehicle", Model).Data("SearchVehicleHistoryDetail"))
+                                                              .Model(model => model.Field(b => b.VehicleHistoryId).DefaultValue(-1)))
+    )
+
+</div>
+<script id="template" type="text/kendo-tmpl">
+    <div class="clearfix"></div>
+    @(Html.Kendo().Grid<VehicleHistoryDetailListModel>()
+                  .Name("VehicleHistoryDetailGrid#=VehicleHistoryId#_#=DealerId#")
+                  .Columns(columns =>
+                  {
+                      columns.Bound(p => p.DetailCode).Width(30).Sortable(true);
+                      columns.Bound(p => p.DetailDescription).Width(100).Sortable(true);
+                      columns.Bound(p => p.ListPrice).Width(30).Sortable(true);
+                      columns.Bound(p => p.WarratyRatio).Width(30).Sortable(true);
+                      columns.Bound(p => p.WarrantyPrice).Width(30).Sortable(true);
+                      columns.Bound(p => p.Quantity).Width(30).Sortable(true);
+                  })
+                  .Sortable()
+                  .Events(e => e.DataBound("HistoryDetailExpand"))
+                  .DataSource(dataSource => dataSource
+                      .Ajax()
+                      .Read(read => read.Action("ListVehicleHistoryDetail", "Vehicle", new { VehicleHistoryId = "#=VehicleHistoryId#" }))
+                      .Model(m => m.Id(p => p.VehicleHistoryDetailId))
+                  )
+                  .AutoBind(true)
+                  .ToClientTemplate()
+    )
+
+</script>
+<div id="ShowWorkOrderDocumentsWindow" style="background-color: #EDF1F4 !important" class="hide"></div>
+<script>
+    function ShowPopupVehicle(frameTitle, link) {
+        $("#VehicleHistoryTotalPriceWindow_wnd_title").html(frameTitle);
+        console.log(link);
+        var windowWidget = $("#VehicleHistoryTotalPriceWindow").data("kendoWindow");
+        var closeOrigin = windowWidget.close;
+        windowWidget.wrapper.css({
+            width: 1200,
+            height: 500
+        });
+        windowWidget.refresh({
+            url: link
+        }).center();
+        windowWidget.center();
+        windowWidget.open();
+
+    }
+
+    $("#btnVehicleTotalPrice").click(function() {
+        ShowPopupVehicle('@Html.Raw(MessageResource.VehicleHistoryTotalPrice_PageTitle_Index)', '@Url.Action("VehicleHistoryTotalPriceIndex", "Vehicle")/@Model.VehicleId' );
+
+    });
+
+    function HistoryDetailExpand(arg) {
+        var gridSplit = arg.sender.element[0].id.split('_');
+        var clientDealerId = '@UserManager.UserInfo.DealerID';
+        var rowDealerId = gridSplit[1];
+        var gridId = arg.sender.element[0].id;
+
+        var grid = $("#" + gridId).data("kendoGrid");
+        var data = grid.dataSource.data();
+        $.each(data, function (i, row) {
+            if(parseInt(clientDealerId)!=0){
+                if (parseInt(rowDealerId) != parseInt(clientDealerId)) {
+
+                    row.set('ListPrice','@MessageResource.GLobal_Display_HiddenInfo');
+                    row.set('WarrantyPrice','@MessageResource.GLobal_Display_HiddenInfo');
+                    row.set('WarratyRatio','@MessageResource.GLobal_Display_HiddenInfo');
+                }
+            }
+        });
+    }
+    $(document).ready(function() {
+        $("#popupContentWrapper").css("min-height", 500);
+    });
+
+    function GetParameters() {
+        return {
+            VehicleId: @Model.VehicleId,
+            DealerId: @Model.DealerId,
+            ReportType: 59,
+            Columns: "IndicatorType,ProcessType,WorkOrderId,AppIndicCode,CampaignNameCode,DealerName,IndicatorDate,VehicleKM,WorkOrderDate,DetailCode,DetailDescription,ListPrice,WarratyRatio,WarrantyPrice,Quantity"
+        };
+    }
+
+</script>

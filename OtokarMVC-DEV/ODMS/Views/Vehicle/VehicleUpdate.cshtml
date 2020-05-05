@@ -1,0 +1,470 @@
+﻿@using ODMSCommon.Resources
+@using ODMSCommon.Security
+@model ODMSModel.Vehicle.VehicleIndexViewModel
+@{
+    ViewBag.Title = CommonUtility.GetResourceValue("Vehicle_PageTitle_Update");
+    Layout = "~/Views/Shared/Popup_Layout.cshtml";
+    HtmlHelper.ClientValidationEnabled = false;
+}
+
+<script src="~/Scripts/jquery.maskedinput.js"></script>
+<script src="~/Scripts/odms.objectsearch.js"></script>
+ 
+@using (Html.BeginForm("VehicleUpdate", "Vehicle", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()     
+    @Html.HiddenFor(c => c.PlateWillBeUpdated)
+
+      @Html.HiddenFor(v => v.VehicleId)
+    <div class="labelDiv">@Html.LabelFor(v => v.CustomerName)</div>
+    <div class="shortTxtDivObjectSearch">@Html.Partial("~/Views/ObjectSearch/ObjectSearch.cshtml", new ODMSModel.ObjectSearch.ObjectSearchModel { ObjectSearchType = CommonValues.ObjectSearchType.Customer, WindowTitle = ODMSCommon.Resources.MessageResource.ObjectSearch_WindowTitle_Customer, ReferenceObjectId = "CustomerId", ClearCallBackFunction = null, SelectCallBackFunction = null, Required = false, ReferenceObjectValue = Model == null ? null : Model.CustomerId, ParentWindowId = "modelWindow" })</div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VinNo)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextBoxFor(v => v.VinNo)
+            @Html.ValidationMessageFor(c => c.VinNo)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.VinNo)
+            @Html.HiddenFor(v => v.VinNo)
+        }
+    </div> 
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleCode)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().ComboBoxFor(v => v.VehicleCode).HtmlAttributes(new { @style = "width:270px;" }).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VehicleCodeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            @Html.ValidationMessageFor(c => c.VehicleCode)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.VehicleCode)
+            @Html.HiddenFor(v => v.VehicleCode)
+        }
+    </div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Plate)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Plate, new { @onkeyup = "InputToUpperWithoutWhiteSpace(this);" }) @Html.ValidationMessageFor(v => v.Plate) </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.EngineNo)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextBoxFor(v => v.EngineNo)
+            @Html.ValidationMessageFor(v => v.EngineNo)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.EngineNo)
+            @Html.HiddenFor(v => v.EngineNo)
+        }
+    </div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ContractNo)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextBoxFor(v => v.ContractNo)
+            @Html.ValidationMessageFor(v => v.ContractNo)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.ContractNo)
+            @Html.HiddenFor(v => v.ContractNo)
+        }
+    </div> 
+    <div class="labelDiv">@Html.LabelFor(v => v.Color)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Color) @Html.ValidationMessageFor(v => v.Color)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ModelYear)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextBoxFor(v => v.ModelYear) 
+            @Html.ValidationMessageFor(v => v.ModelYear)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.ModelYear)
+            @Html.HiddenFor(v => v.ModelYear)
+        }
+    </div>    
+    <div class="labelDiv">@Html.LabelFor(v => v.WarrantyStartDate)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().DatePickerFor(v => v.WarrantyStartDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })
+            @Html.ValidationMessageFor(v => v.WarrantyStartDate)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.WarrantyStartDate)
+            @Html.HiddenFor(v => v.WarrantyStartDate)
+        }
+
+
+
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.WarrantyEndDate)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().DatePickerFor(v => v.WarrantyEndDate).Events(e => e.Change("SetGuaranteeControl")).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })
+            @Html.ValidationMessageFor(v => v.WarrantyEndDate)
+        }
+        else
+        {
+            @Html.DisplayFor(p => p.WarrantyEndDate)
+            @Html.HiddenFor(p => p.WarrantyEndDate)
+        }
+
+    </div>
+    
+        if (!UserManager.UserInfo.IsDealer)
+        {
+    @Html.Raw("<div class='labelDiv'>" + Html.LabelFor(v => v.FactoryProductionDate) + "</div>")
+    @Html.Raw("<div class='shortTxtDiv'>" + Html.Kendo().DatePickerFor(v => v.FactoryProductionDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" }) + Html.ValidationMessageFor(v => v.FactoryProductionDate) + "</div>")
+        }
+        else
+        {
+    @Html.HiddenFor(p => p.FactoryProductionDate)
+        }
+
+
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.PaintWarrantyEndDate)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().DatePickerFor(v => v.PaintWarrantyEndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })
+            @Html.ValidationMessageFor(v => v.PaintWarrantyEndDate) 
+        }
+        else
+        {
+            @Html.DisplayFor(p => p.PaintWarrantyEndDate)
+            @Html.HiddenFor(p => p.PaintWarrantyEndDate)
+        }
+
+    </div>
+    <div class="labelDiv">@Html.LabelFor(v => v.WarrantyEndKilometer)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextBoxFor(v => v.WarrantyEndKilometer)
+            @Html.ValidationMessageFor(v => v.WarrantyEndKilometer)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.WarrantyEndKilometer)
+            @Html.HiddenFor(v => v.WarrantyEndKilometer)
+        }
+    </div> 
+    <div class="clearDiv">&nbsp;</div>
+        if (!UserManager.UserInfo.IsDealer)
+        {
+    @Html.Raw("<div class='labelDiv'>" + Html.LabelFor(v => v.FactoryQualityControlDate) + "</div>")
+    @Html.Raw("<div class='shortTxtDiv'>" + Html.Kendo().DatePickerFor(v => v.FactoryQualityControlDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" }) + Html.ValidationMessageFor(v => v.FactoryQualityControlDate) + "</div>")
+        }
+        else
+        {
+    @Html.HiddenFor(p => p.FactoryQualityControlDate)
+
+        }
+    <div class="labelDiv">@Html.LabelFor(v => v.CorrosionWarrantyEndDate)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().DatePickerFor(v => v.CorrosionWarrantyEndDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }).HtmlAttributes(new { type = "text" })
+            @Html.ValidationMessageFor(v => v.CorrosionWarrantyEndDate)
+        }
+        else
+        {
+            @Html.DisplayFor(p => p.CorrosionWarrantyEndDate)
+            @Html.HiddenFor(p => p.CorrosionWarrantyEndDate)
+        }
+
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VehicleKilometer)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextBoxFor(v => v.VehicleKilometer)
+            @Html.ValidationMessageFor(v => v.VehicleKilometer)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.VehicleKilometer)
+            @Html.HiddenFor(v => v.VehicleKilometer)
+        }
+    </div> 
+        if (!UserManager.UserInfo.IsDealer)
+        {
+    @Html.Raw("<div class='labelDiv'>" + Html.LabelFor(v => v.FactoryShipmentDate) + "</div>")
+    @Html.Raw("<div class='shortTxtDiv'>" + Html.Kendo().DatePickerFor(v => v.FactoryShipmentDate).Format("dd/MM/yyyy").ParseFormats(new[] { "dd.MM.yyyy" }) + Html.ValidationMessageFor(v => v.FactoryShipmentDate) + "</div>")
+        }
+        else
+        {
+    @Html.HiddenFor(p => p.FactoryShipmentDate)
+        }
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.SpecialConditions)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.TextAreaFor(v => v.SpecialConditions)
+            @Html.ValidationMessageFor(v => v.SpecialConditions)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.SpecialConditions)
+            @Html.HiddenFor(v => v.SpecialConditions)
+        }
+    </div> 
+    
+
+        if (!UserManager.UserInfo.IsDealer)
+        {
+    @Html.Raw("<div class='labelDiv'>" + Html.LabelFor(v => v.Notes) + "</div>")
+    @Html.Raw("<div class='shortTxtDiv'>" + Html.TextAreaFor(v => v.Notes) + "</div>")
+    @Html.ValidationMessageFor(v => v.Notes)
+        }
+        else
+        {
+    @Html.HiddenFor(v => v.Notes)
+        }
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.VatExcludeType)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {       
+            @Html.Kendo().ComboBoxFor(v => v.VatExcludeType).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.VatExcludeTypeList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            @Html.ValidationMessageFor(c => c.VatExcludeType)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.VatExcludeTypeName) 
+            @Html.HiddenFor(v => v.VatExcludeType)
+            @Html.HiddenFor(v => v.VatExcludeTypeName)
+        }
+    </div>     
+    <div class="labelDiv">@Html.LabelFor(v => v.WarrantyStatus)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().ComboBoxFor(v => v.WarrantyStatus).Events(ev => ev.Change(@"function(e){HideShowDesc();}")).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.WarrantyStatusList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            @Html.ValidationMessageFor(v => v.WarrantyStatus)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.WarrantyStatusName)
+            @Html.HiddenFor(v => v.WarrantyStatus)
+            @Html.HiddenFor(v => v.WarrantyStatusName)
+        }
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.OutOfWarrantyDescription)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            <div id="divDetail">
+                @Html.TextAreaFor(v => v.OutOfWarrantyDescription)
+                @Html.ValidationMessageFor(v => v.OutOfWarrantyDescription)
+            </div>
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.OutOfWarrantyDescription)
+            @Html.HiddenFor(v => v.OutOfWarrantyDescription)
+        }
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.IdPriceList)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.Kendo().ComboBoxFor(v => v.IdPriceList).DataTextField("Text").DataValueField("Value").BindTo(ViewBag.PriceList as List<SelectListItem>).Placeholder(CommonUtility.GetResourceValue("Global_Display_Choose"))
+            @Html.ValidationMessageFor(v => v.IdPriceList)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.SSIDPriceList)
+            @Html.HiddenFor(v => v.IdPriceList)
+            @Html.HiddenFor(v => v.SSIDPriceList)
+        }
+    </div>
+    
+    <div class="labelDiv">@Html.LabelFor(c => c.IsActiveName)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.CheckBoxFor(v => v.IsActive)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.IsActiveName)
+            @Html.HiddenFor(v => v.IsActive)
+            @Html.HiddenFor(v => v.IsActiveName)
+        }
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.Location)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.Location) @Html.ValidationMessageFor(v => v.Location)</div> 
+    <div class="labelDiv">@Html.LabelFor(v => v.ResponsiblePerson)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ResponsiblePerson) @Html.ValidationMessageFor(v => v.ResponsiblePerson)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(v => v.ResponsiblePersonPhone)</div>
+    <div class="shortTxtDiv">@Html.TextBoxFor(v => v.ResponsiblePersonPhone) @Html.ValidationMessageFor(v => v.ResponsiblePersonPhone)</div> 
+    <div class="clearDiv">&nbsp;</div>
+    <div class="labelDiv">@Html.LabelFor(c => c.IsHourMaintName)</div>
+    <div class="shortTxtDiv">
+        @if (!UserManager.UserInfo.IsDealer)
+        {
+            @Html.CheckBoxFor(v => v.IsHourMaint)
+        }
+        else
+        {
+            @Html.DisplayFor(v => v.IsHourMaintName)
+            @Html.HiddenFor(v => v.IsHourMaint)
+            @Html.HiddenFor(v => v.IsHourMaintName)
+        }
+    </div>
+    <div id="divHour">
+        <div class="labelDiv">@Html.LabelFor(c => c.Hour)</div>
+        <div class="shortTxtDiv">@Html.Kendo().NumericTextBoxFor(c => c.Hour).Decimals(0).Spinners(false).Min(0).Max(9999).HtmlAttributes(new { type = "text", maxlength = "4", data_val_min = "0", style = "width:204px" })
+            @Html.ValidationMessageFor(v => v.Hour)
+        </div>
+    </div>
+    <div class="clearDiv">&nbsp;</div>
+    <br/>
+}
+    @ODMSHelpers.Button("Update", CommonUtility.GetResourceValue("Global_Display_Update"), CommonValues.PermissionCodes.Vehicle.VehicleUpdate, "VehicleUpdate" ,  !UserManager.UserInfo.IsDealer?"checkWarranty();":" $('form').submit();")
+ 
+
+<script type="text/javascript">
+    
+    function checkWarranty() {       
+        var currentDate = new Date();
+        var chosenDate = new Date($('#WarrantyEndDate').data('kendoDatePicker').value());
+        if (chosenDate != currentDate) {
+            CustomConfirm(function() {
+                    isFormValidated = true;
+                    $('form').unbind('submit').submit();
+                }, '@MessageResource.Global_Display_Warning', '@MessageResource.Vehicle_Warning_WarrantyProlong',
+                "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+        } else {
+            $('form').submit();
+        }
+    }
+
+    var isFormValidated = false;
+    // TFS NO : 27733 OYA 26.12.2014
+    function CheckPlate(e) {
+        if (!isFormValidated) {
+            var plateParam = $('#Plate').val();
+            var vehicleIdParam = $('#VehicleId').val();
+            if (plateParam != '') {
+                e.preventDefault();
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("CheckPlate", "Vehicle")",
+                    data: { vehicleId: vehicleIdParam, plate: plateParam, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function (result) {
+                        if (result.IsPlateExists) {
+                            CustomConfirm(function () {
+                                    $('#PlateWillBeUpdated').val(true);
+                                    isFormValidated = true;
+                                    $('form').unbind('submit').submit();
+                                }, '@MessageResource.Vehicle_PageTitle_CheckPlate', '@MessageResource.Vehicle_Warning_PlateExists',
+                                "@MessageResource.Global_Display_Yes", "@MessageResource.Global_Display_No");
+
+                        } else {
+                            isFormValidated = true;
+                            $('form').unbind('submit').submit();
+                        }
+                    },
+                    dataType: "json"
+                });
+            }
+        }
+    }
+    function SetGuaranteeControl() {
+        var currentDate = new Date();
+        var choosenDate = new Date($('#WarrantyEndDate').data('kendoDatePicker').value());
+
+        if (choosenDate > currentDate) {
+            $("#WarrantyStatus").data("kendoComboBox").value("1");
+        }
+        else {
+            $("#WarrantyStatus").data("kendoComboBox").value("0");
+        }
+    }
+    function DisableInputs(obj) {
+        $("input,select,textarea", obj).attr("disabled", "disabled");
+    }
+    function EnableInputs(obj) {
+        $("input,select,textarea", obj).removeAttr("disabled");
+    }
+    function HideShowDesc() {
+        if ($('#WarrantyStatus').val() != '') {
+            if ($('#WarrantyStatus').val() == 0) {
+                EnableInputs($('#divDetail'));
+            } else {
+                DisableInputs($('#divDetail'));
+            }
+        }
+        else {
+            DisableInputs($('#divDetail'));
+        }
+    }
+    $(document).ready(function () {
+        $("form").submit(function (event) {
+            eval($(this).attr("onsubmit"));
+            CheckPlate(event);
+        });
+        HideShowDesc();
+
+        if ($('#IsHourMaint').is(':checked')) {
+            $('#divHour').show();
+            //$("#Hour").removeAttr("disabled");
+        } else {
+            $('#divHour').hide();
+            //$("#Hour").attr("disabled", "disabled");
+            $("#Hour").data('kendoNumericTextBox').value(0);
+        }
+
+        $('#IsHourMaint').change(function () {
+            var isChecked = $(this).is(':checked');
+            if (!isChecked) {
+                $('#divHour').hide();
+                //$("#Hour").attr("disabled", "disabled");
+                $("#Hour").data('kendoNumericTextBox').value(0);
+            }
+            else {
+                $('#divHour').show();
+                //$("#Hour").removeAttr("disabled");
+            }
+        });
+
+        $("#ResponsiblePersonPhone").mask("(999) 999 99 99", { placeholder: " " });
+
+        if ('@UserManager.UserInfo.IsDealer' == 'True') {
+            DisableInputs($('#divDetail'));
+        }
+        $(function () {
+            $('.k-widget').addClass('input-validation-valid');
+            $(".k-widget").removeClass("input-validation-error");
+        });
+        $('form').each(function () {
+            var validator = $(this).data('validator');
+            if (validator && validator.settings) {
+                validator.settings.ignore = "";
+            }
+        });
+    });
+</script>

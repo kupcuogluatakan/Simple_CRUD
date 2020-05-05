@@ -1,0 +1,237 @@
+﻿@model ODMSModel.AppointmentDetails.AppointmentDetailsViewModel
+@using ODMSCommon.Resources
+@using ODMSModel.AppointmentDetails
+
+@{
+    ViewBag.Title = MessageResource.AppointmentDetails_PageTitle_Index;
+}
+<div id="appointmentdetailContent">
+    @Html.AntiForgeryToken()
+    @if (Model.HideElements)
+    {
+        <script type="text/javascript">
+            $(document).ready(function () {
+                SetErrorMessage("@MessageResource.Error_DB_NoRecordFound");
+            });
+        </script>
+    }
+
+    @Html.HiddenFor(c => c.AppointmentId)
+
+    <div class="labelDiv">@Html.LabelFor(v => v.AppointmentId)</div>
+    <div class="shortTxtDiv"><a frameTitle="@ODMSCommon.Resources.MessageResource.Appointment_PageTitle_Details" class="details modalClick" href="javascript:void(0);">@Html.DisplayFor(v => v.AppointmentId)</a></div>
+    
+    <div class="labelDiv">@Html.LabelFor(v => v.TotalPrice)
+        <a href="#" onclick="getAppointmentTotalPrice()"><img width="20" height="20" src="@Url.Content("~/Images/refresh.png")"></a>
+    </div>
+    <div class="shortTxtDiv">@Html.Label("0", new { id = "lblTotalPrice"})</div>
+    
+    <div class="clearDiv">&nbsp;</div>
+
+    @ODMSHelpers.LinkButton("btnCreate", CommonUtility.GetResourceValue("Global_Display_New"), "Create", "modalClick createNew", CommonUtility.GetResourceValue("AppointmentDetails_PageTitle_Create"), CommonValues.PermissionCodes.AppointmentDetail.AppointmentDetailCreate)
+
+    @*grid start*@
+    <div class="kendoGridDiv" id="grd">
+        @(Html.Kendo().Grid<AppointmentDetailsListModel>()
+          .Name("grid")
+
+          .Columns(columns =>
+              {
+                  columns.Bound(p => p.AppointmentId).ClientTemplate("#if(IndicTypeValue=='IT_T'){#"+
+                      "#}else{#"+
+                      "<center><a class='loadTab' onclick='ShowTabs(#=AppointmentIndicatorId#);' id='#=AppointmentId#'><img class=iconLink src='" + Url.Content("~/Images/tabs.png") + "'></a></center>"+
+                      "#}#"
+                      ).Title(CommonUtility.GetResourceValue("Global_Display_Details")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentDetail.AppointmentDetailDetails));
+                  //columns.Bound(p => p.AppointmentIndicatorId).ClientTemplate("<center><a class='details modalClick' id='#=AppointmentIndicatorId#' frameTitle='" + CommonUtility.GetResourceValue("AppointmentDetails_PageTitle_Details") + "' href='" + Url.Action("AppointmentDetailsDetails", "AppointmentDetails") + "/#=AppointmentIndicatorId#'><img class='iconLink' src='" + Url.Content("~/Images/view.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_View")).Width(50).Sortable(false);
+                  //columns.Bound(p => p.AppointmentIndicatorId).ClientTemplate("<center><a class='edit modalClick' id='#=AppointmentIndicatorId#' frameTitle='" + CommonUtility.GetResourceValue("AppointmentDetails_PageTitle_Update") + "' href='" + Url.Action("AppointmentDetailsUpdate", "AppointmentDetails") + "/#=AppointmentIndicatorId#'><img class='iconLink' src='" + Url.Content("~/Images/edit.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Update")).Width(60).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentDetail.AppointmentDetailUpdate));
+                  columns.Bound(o => o.AppointmentIndicatorId).ClientTemplate("<center><a href='javascript:void(0);' id='#=AppointmentIndicatorId#' frameTitle='" + CommonUtility.GetResourceValue("AppointmentDetails_PageTitle_Delete") + "' onclick='DeleteAppointmentDetails(#=AppointmentIndicatorId#)' ><img class=iconLink src='" + Url.Content("~/Images/delete.png") + "'></a></center>").Title(CommonUtility.GetResourceValue("Global_Display_Delete")).Width(50).Sortable(false).Visible(ODMSHelpers.UserHasPermission(CommonValues.PermissionCodes.AppointmentDetail.AppointmentDetailDelete));
+                  columns.Bound(p => p.IndicType).Width(80).Sortable(true);
+                  columns.Bound(p => p.MainCategoryName).Width(80).Sortable(true);
+                  columns.Bound(p => p.CategoryName).Width(120).Sortable(true);
+                  columns.Bound(p => p.SubCategoryName).Width(120).Sortable(true);
+                  columns.Bound(p => p.FailureCode).Width(120).Sortable(true);
+                  
+              })
+          .Pageable()
+          .Sortable()
+           
+          .Scrollable()
+
+          .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .ServerOperation(true)
+                                        .Read(read => read.Action("ListAppointmentDetails", "AppointmentDetails", Model).Data("AppointmentDetailsSearch"))
+                                        .Model(model => model.Field(o => o.AppointmentIndicatorId).DefaultValue(-1)))
+
+          )
+    </div>
+    @*grid end*@
+
+    @*tab content start*@
+    <div id="divDetails" style="display: none; margin-top: 20px;">
+        @(Html.Kendo().TabStrip()
+          .Name("Tabs")
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.AppointDetailsParts_PageTitle_Index).Selected(true).HtmlAttributes(new {onclick=" LoadTabContent('" + Url.Action("AppointmentDetailsPartsIndex", "AppointmentDetailsParts")+"');"}) )
+          .Items(tabstrip => tabstrip.Add().Text(MessageResource.AppointmentDetailsLabours_PageTitle_Index).HtmlAttributes(new {onclick=" LoadTabContent('" + Url.Action("AppointmentDetailsLaboursIndex", "AppointmentDetailsLabours")+"');"}) )
+          
+          )
+           
+         @*.Items(tabstrip => tabstrip.Add().Text(MessageResource.AppointmentDetailsMaint_PageTitle_Index).HtmlAttributes(new { onclick = " LoadTabContent('" + Url.Action("AppointmentDetailsMaintenanceIndex", "AppointmentDetailsMaintenance") + "');" }))*@
+
+    </div>
+    <div id="TabContent" style="padding-left: 20px;" class="k-content" role="tabpanel" aria-expanded="true"></div>
+    @*ab content end*@
+
+    @*modelWindow start*@
+    <div id="modelWindowDiv">
+        @(Html.Kendo().Window()
+          .Name("modelWindow")
+          .Title("Customer")
+          .Draggable()
+          .Resizable()
+          .Width(950)
+          .Height(300)
+          .Visible(false)
+          .Modal(true)
+          .Iframe(true)
+          .Events(ev => ev.Close(@"function(e){
+         var grid = $('#grid','#appointmentdetailContent').data('kendoGrid');      
+        grid.dataSource.read();
+    }"))
+          )
+    </div>
+
+    @*modelWindow end*@
+
+</div>
+
+@*scripts start*@
+@section Scripts{
+    <script type="text/javascript" src="@Url.Content("~/Scripts/custom.js")">
+        
+        
+    </script>
+    <script type="text/javascript">
+    function onClose() {
+        LoadTabContent('@Url.Action("AppointmentDetailsMaintenanceIndex", "AppointmentDetailsMaintenance")');
+    }
+
+    var AppointmentIndicatorId = 0;
+
+    function ShowTabs(id) {
+        AppointmentIndicatorId = id;
+        $("#Tabs").data("kendoTabStrip").select(0);
+        $('#TabContent', '#appointmentdetailContent').html('');
+        $('#divDetails', '#appointmentdetailContent').show();
+        LoadTabContent('@Url.Action("AppointmentDetailsPartsIndex", "AppointmentDetailsParts")');
+
+
+    }
+
+    function LoadTabContent(url) {
+        $('#TabContent', '#appointmentdetailContent').html('');
+        $.ajax({
+            type: "GET",
+            url: url + '/' + AppointmentIndicatorId,
+            data: {},
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                $('#TabContent', '#appointmentdetailContent').html(result);
+            },
+            error: function (request, status, err) {
+                alert(status);
+                alert(err);
+            },
+            dataType: "html"
+        });
+    }
+
+    function getAppointmentTotalPrice() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("AppointmentDetailsGetTotalPrice", "AppointmentDetails")",
+            data: { appId: $("#AppointmentId").val(), "__RequestVerificationToken": token },
+            traditional: true,
+            success: function (result) {
+                $("#lblTotalPrice").html(parseFloat(result.Total).toFixed(2).replace(".", ","));
+            },
+            dataType: "json"
+        });
+    }
+
+    function AppointmentDetailsSearch() {
+        return {
+            AppointmentId: $('#AppointmentId', '#appointmentdetailContent').val()
+        };
+    }
+
+    $(document).ready(init);
+
+    function init() {
+        getAppointmentTotalPrice();
+        $("body").delegate(".modalClick", "click", function (e) {
+            $('#modelWindow', '#appointmentdetailContent').html('');
+            e.preventDefault();
+
+            var link;
+            var clickedId = $(this).attr("id");
+            var frameTitle = $(this).attr("frameTitle");
+            var width = "950";
+            var height = "350";
+            if ($(this).hasClass("details") == true) {
+                link = "@Url.Action("AppointmentDetails", "Appointment", new {id = Model.AppointmentId})";
+                width = 1200;
+            } else if ($(this).hasClass("edit")) {
+                link = "@Url.Action("AppointmentDetailsUpdate", "AppointmentDetails", new {id = -1})";
+                link = link.replace("-1", clickedId);
+            } else if ($(this).hasClass("createNew")) {
+                link = "@Url.Action("AppointmentDetailsCreate", "AppointmentDetails", new {id = Model.AppointmentId})";
+            }
+            $("#modelWindow_wnd_title").html(frameTitle);
+
+            var windowWidget = $("#modelWindow").data("kendoWindow");
+            windowWidget.wrapper.css({
+                width: width,
+                height: height
+            });
+            var closeOrigin = windowWidget.close;
+
+            windowWidget.refresh({
+                url: link
+            }).center();
+            windowWidget.center();
+            windowWidget.open();
+
+        });
+    }
+
+    function DeleteAppointmentDetails(id) {
+        CustomConfirm(function() {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("AppointmentDetailsDelete", "AppointmentDetails")",
+                    data: { id: id, "__RequestVerificationToken": token },
+                    traditional: true,
+                    success: function(result) {
+                        if (result.Status == 0)
+                            SetErrorMessage(result.Message);
+                        else {
+                            var grid = $('#grid', '#appointmentdetailContent').data('kendoGrid');
+                            grid.dataSource.read();
+                            SetSuccessMessage(result.Message);
+                        }
+                    },
+                    dataType: "json"
+                });
+            }, '@MessageResource.AppointmentDetails_PageTitle_Delete',
+            '@MessageResource.AppointmentDetail_Message_DeleteDetail',
+            '@MessageResource.Global_Display_Yes',
+            '@MessageResource.Global_Display_No'
+        );
+    }
+    </script>
+}
+@*scripts end*@

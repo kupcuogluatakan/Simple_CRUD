@@ -1,0 +1,82 @@
+﻿@using ODMSBusiness.Terminal.Common
+@using ODMSBusiness.Terminal.StockMovement.Dtos
+@using ODMSTerminal.Infrastructure.Utility
+@model ODMSTerminal.Models.WarehouseSearchModel
+@{
+    ViewBag.Title = MessageResource.Terminal_StockMovement_Title_Index;
+    ViewBag.WrapperCssClass = "wrapper-colored white-background";
+    ViewBag.BodyCssClass = "primary";
+    var warehouses = ViewBag.Warehouses as EnumerableResponse<DealerWareHouseListItem>;
+    bool hasOnlyOneRack = (warehouses.Count() == 1 &&  warehouses.First().Racks.Count() == 1);
+
+}
+@section header{
+    @Html.Partial("_subheader")
+}
+<div class="margin-3 pageContent">
+    @using (Html.BeginForm("AddressChange", "StockMovement", FormMethod.Get, new { id = "frm" }))
+    {
+
+        <table border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+            <tbody>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.CycleCountResultReport_Display_WareHouseName:</td>
+                    <td width="60%">
+                        @if (warehouses.Count() == 1)
+                        {
+                            @Html.TextBox("WarehouseCode", warehouses.First().WarehouseCode, new { @class = "text", @readonly = "readonly" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(c => c.WarehouseCode, new { @class = "text", onblur = "StockMovement.SearchWareHouse()" })
+                        }
+                    </td>
+                    <td class="last-child">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.CycleCountResultReport_Display_RackName:</td>
+                    <td width="60%">
+                        @if (hasOnlyOneRack)
+                        {
+                            @Html.TextBox("RackCode", warehouses.First().Racks.First().RackCode, new { @class ="text", @readonly = "readonly" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(c => c.RackCode, new { @class = "text", onblur = "StockMovement.SearchRack()" })
+                        }
+                    </td>
+                    <td class="last-child">&nbsp;</td>
+
+                </tr>
+                <tr>
+                    <td class="bold stay-line">@MessageResource.PurchaseOrderReport_Display_PartName:</td>
+                    <td width="60%">
+                        @Html.TextBoxFor(c => c.PartCode, new { @class = "text", onblur = "StockMovement.SearchPart()" })
+                    </td>
+                    <td class="last-child">&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+        <input type="hidden" name="WarehouseId" id="WarehouseId" value="@Html.Raw(warehouses.Count() == 1?warehouses.First().WarehouseId.ToString():"")" />
+        <input type="hidden" name="RackId" id="RackId" value="@Html.Raw(hasOnlyOneRack?warehouses.First().Racks.First().RackId.ToString():"")" />
+        @Html.HiddenFor(c => c.PartId)
+    }
+    <table  border="0" cellspacing="1" width="100%" class="margin-top-3 readonly">
+        <tr>
+           <td class="last-child"><input id="btnSearch" type="submit" class="btn btn-xs success margin-top-3" value="@MessageResource.Global_Display_Search"></td>
+        </tr>   
+    </table>
+   
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/views/stockmovement/index.js"></script>
+    <script>
+        $(document).ready(function() {
+            StockMovement.PageInit();
+            StockMovement.SetRackFocus(@hasOnlyOneRack.ForJavascript());
+        });
+    </script>
+
+}
